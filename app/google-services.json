@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "49387131109",
+    "firebase_url": "https://class-portal-6f81f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "class-portal-6f81f",
+    "storage_bucket": "class-portal-6f81f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49387131109:android:ef66856eeb7a053dabc40c",
+        "android_client_info": {
+          "package_name": "com.app.classportal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49387131109-8jsoba30jsp24r708thjl9gi0mkj2er6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.classportal",
+            "certificate_hash": "2eb31aa87f916ac74208ba6e415c738c7929a180"
+          }
+        },
+        {
+          "client_id": "49387131109-psekmoukma6pj0u827f1t2au694flsv2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCtVByHLelGpdeO-Um27mVwVey9INe8Kc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49387131109-psekmoukma6pj0u827f1t2au694flsv2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49387131109:android:4924c50e5db9811cabc40c",
+        "android_client_info": {
+          "package_name": "com.mike.studentportal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49387131109-ua83ljsl7qqrdemi7csvopae43c9uc5s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mike.studentportal",
+            "certificate_hash": "2eb31aa87f916ac74208ba6e415c738c7929a180"
+          }
+        },
+        {
+          "client_id": "49387131109-psekmoukma6pj0u827f1t2au694flsv2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCtVByHLelGpdeO-Um27mVwVey9INe8Kc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49387131109-psekmoukma6pj0u827f1t2au694flsv2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
