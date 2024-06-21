@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -141,6 +142,12 @@ object CommonComponents {
             GlobalColors.primaryColor, GlobalColors.secondaryColor, GlobalColors.primaryColor
         )
     )
+
+    val primary = Color(0xff000000)
+    val secondary = Color(0xffFFFFFF)
+    val tertiary = Color(0xff636363)
+    val textColor = Color(0xffDCDCDC)
+    val style = Color(0xff32E0C4)
 
     @Composable
     fun appTextFieldColors(): TextFieldColors {
