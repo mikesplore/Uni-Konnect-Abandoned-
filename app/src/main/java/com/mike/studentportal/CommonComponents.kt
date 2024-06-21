@@ -147,7 +147,7 @@ object CommonComponents {
     val secondary = Color(0xffFFFFFF)
     val tertiary = Color(0xff636363)
     val textColor = Color(0xffDCDCDC)
-    val style = Color(0xff32E0C4)
+    val style = Color(0xffAA14F0)
 
     @Composable
     fun appTextFieldColors(): TextFieldColors {
