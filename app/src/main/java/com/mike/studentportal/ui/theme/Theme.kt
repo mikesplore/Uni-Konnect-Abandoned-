@@ -38,9 +38,27 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
-val RobotoMono = FontFamily(
-    Font(R.font.segoepr, FontWeight.Normal),
+val Segoe = FontFamily(
+    Font(R.font.segoe, FontWeight.Normal),
 
+    )
+
+val Lora = FontFamily(
+    Font(R.font.lora, FontWeight.Normal)
+)
+
+val Amatic = FontFamily(
+    Font(R.font.amatic, FontWeight.Normal)
+)
+
+val Crimson = FontFamily(
+    Font(R.font.crimson, FontWeight.Normal)
+)
+val Zeyada = FontFamily(
+    Font(R.font.zeyada, FontWeight.Normal)
+)
+val Caveat = FontFamily(
+    Font(R.font.caveat, FontWeight.Normal)
 )
 
 
