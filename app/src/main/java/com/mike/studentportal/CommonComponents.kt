@@ -1,21 +1,13 @@
 package com.mike.studentportal
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import android.content.Context
+import android.icu.util.Calendar
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,14 +18,20 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mike.studentportal.ui.theme.RobotoMono
+import java.time.LocalTime
+
 
 object CommonComponents {
+    private val calendar: Calendar = Calendar.getInstance()
+    private val day = calendar.get(Calendar.DAY_OF_MONTH)
+    private val currentday = calendar.get(Calendar.DAY_OF_WEEK)
+    private val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed, so add 1
+    private val year = calendar.get(Calendar.YEAR)
+    val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
     @Composable
     fun PasswordTextField(
         modifier: Modifier = Modifier,
@@ -42,15 +40,18 @@ object CommonComponents {
         label: String,
         enabled: Boolean = true,
         isError: Boolean = false,
-        singleLine: Boolean
+        context: Context
+
     ) {
-        var passwordVisibility by remember { mutableStateOf(false) } // Moved inside function for each instance
+        val currentFont = currentFontFamily(context) // Get initial font
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
+        var passwordVisibility by remember { mutableStateOf(false) }
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = RobotoMono),
-            label = { Text(text = label, fontFamily = RobotoMono) },
+            textStyle = TextStyle(fontFamily = selectedFontFamily),
+            label = { Text(text = label, fontFamily = selectedFontFamily) },
             singleLine = true,
             enabled = enabled,
             isError = isError,
@@ -74,6 +75,21 @@ object CommonComponents {
         )
     }
 
+    @Composable
+    fun getGreetingMessage(): String {
+        val currentTime = LocalTime.now()
+        return when (currentTime.hour) {
+            in 5..11 -> "Good Morning"
+            in 12..17 -> "Good Afternoon"
+            in 18..21 -> "Good Evening"
+            else -> "Good Night"
+        }
+    }
+    val primary = Color(0xff000000)
+    val secondary = Color(0xffFFFFFF)
+    val tertiary = Color(0xff636363)
+    val textColor = Color(0xffDCDCDC)
+    val style = Color(0xffAA14F0)
 
     @Composable
     fun SingleLinedTextField(
@@ -83,14 +99,17 @@ object CommonComponents {
         label: String,
         enabled: Boolean = true,
         isError: Boolean = false,
-        singleLine: Boolean
-    ) {
+        singleLine: Boolean,
+        context: Context
 
+    ) {
+        val currentFont = currentFontFamily(context) // Get initial font
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = RobotoMono),
-            label = { Text(text = label, fontFamily = RobotoMono, fontSize = 14.sp) },
+            textStyle = TextStyle(fontFamily = selectedFontFamily),
+            label = { Text(text = label, fontFamily = selectedFontFamily, fontSize = 14.sp) },
             singleLine = singleLine,
             enabled = enabled,
             isError = isError,
@@ -104,50 +123,70 @@ object CommonComponents {
         )
     }
 
+
+
     @Composable
-    fun BasicTextField(title: String, onTitleChange: (String) -> Unit, singleLine: Boolean) {
-        androidx.compose.foundation.text.BasicTextField(value = title,
-            singleLine = singleLine,
-            onValueChange = { onTitleChange },
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = TextStyle(fontSize = 16.sp),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .background(
-                            GlobalColors.tertiaryColor, shape = MaterialTheme.shapes.small
-                        )
-                        .padding(8.dp)
-                ) {
-                    if (title.isEmpty()) {
-                        Text("Title", style = descriptionTextStyle)
-                    }
-                    innerTextField()
-                }
-            })
+    fun descriptionTextStyle(context: Context): TextStyle {
+        val currentFont = currentFontFamily(context) // Get initial font
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
+        return TextStyle(
+            fontFamily = selectedFontFamily,
+            color = GlobalColors.textColor,
+            fontSize = 15.sp
+        )
     }
 
-    val titleTextStyle = TextStyle(
-        fontFamily = RobotoMono,
-        color = GlobalColors.textColor,
-        fontWeight = FontWeight.Bold,
-        fontSize = 25.sp
-    )
 
-    val descriptionTextStyle = TextStyle(
-        fontFamily = RobotoMono, color = GlobalColors.textColor, fontSize = 15.sp
-    )
     val backbrush = Brush.verticalGradient(
-        colors = listOf(
-            GlobalColors.primaryColor, GlobalColors.secondaryColor, GlobalColors.primaryColor
+        listOf(
+            GlobalColors.primaryColor,
+            GlobalColors.secondaryColor,
         )
     )
 
-    val primary = Color(0xff000000)
-    val secondary = Color(0xffFFFFFF)
-    val tertiary = Color(0xff636363)
-    val textColor = Color(0xffDCDCDC)
-    val style = Color(0xffAA14F0)
+    @Composable
+    fun currentDate(): String {
+        return "$day/$month/$year"
+    }
+
+    fun currentDay(): String {
+        return when (dayOfWeek) {
+            Calendar.SUNDAY -> "Sunday"
+            Calendar.MONDAY -> "Monday"
+            Calendar.TUESDAY -> "Tuesday"
+            Calendar.WEDNESDAY -> "Wednesday"
+            Calendar.THURSDAY -> "Thursday"
+            Calendar.FRIDAY -> "Friday"
+            Calendar.SATURDAY -> "Saturday"
+            else -> "Invalid Day" // This should never happen
+        }
+    }
+
+    fun currentDayID(): Int {
+        return when (dayOfWeek) {
+            Calendar.SUNDAY -> 0
+            Calendar.MONDAY -> 1
+            Calendar.TUESDAY -> 2
+            Calendar.WEDNESDAY -> 3
+            Calendar.THURSDAY -> 4
+            Calendar.FRIDAY -> 5
+            Calendar.SATURDAY -> 6
+            else -> 0
+        }
+    }
+
+
+    @Composable
+    fun titleTextStyle(context: Context): TextStyle {
+        val currentFont = currentFontFamily(context) // Get initial font
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
+        return TextStyle(
+            fontFamily = selectedFontFamily,
+            color = GlobalColors.textColor,
+            fontSize = 25.sp
+        )
+    }
+
 
     @Composable
     fun appTextFieldColors(): TextFieldColors {
@@ -164,5 +203,3 @@ object CommonComponents {
         )
     }
 }
-
-
