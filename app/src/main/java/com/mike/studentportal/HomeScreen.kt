@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -35,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -42,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.mike.studentportal.CommonComponents as CC
 
 
@@ -55,6 +59,14 @@ fun HomeScreen() {
         IconItem(Icons.Filled.Home, "Home"),
         IconItem(Icons.Filled.Search, "Search"),
         IconItem(Icons.Filled.Settings, "Settings"),
+    )
+
+    val imageUrls = listOf(
+        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
+        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
+        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
+        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
+        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
     )
     Column(modifier = Modifier
         .background(CC.primary)
@@ -76,6 +88,11 @@ fun HomeScreen() {
             horizontalArrangement = Arrangement.SpaceBetween) {
             Text("Recent Units", style = CC.titleTextStyle, fontSize = 20.sp)
             Text("View All", style = CC.descriptionTextStyle, fontSize = 15.sp)
+        }
+        Row (
+            modifier = Modifier.fillMaxWidth()
+        ){
+            ImageList(imageUrls, 250.dp)
         }
 
 
@@ -149,13 +166,66 @@ fun SearchTextField() {
     )
 }
 
-@Composable
-fun UnitsBoxes(){
 
+@Composable
+fun ImageBox(imageUrl: String, boxSize: Dp) {
+    var isLoading by remember { mutableStateOf(true) }
+
+    Box(
+        modifier = Modifier
+            .width(250.dp)
+            .height(200.dp)
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f) // Occupy half the height
+                    .background(Color.LightGray), // Optional background for the image area
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Image",
+                    modifier = Modifier.fillMaxSize(),
+                    onLoading = { isLoading = true },
+                    onSuccess = { isLoading = false }
+                )
+
+                if (isLoading) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f) // Occupy the other half of the height
+                    .padding(8.dp)
+            ) {
+                Text("Some text here...", modifier = Modifier.fillMaxWidth())
+                // Add more text or other composables as needed
+            }
+        }
+    }
+}
+
+@Composable
+fun ImageList(imageUrls: List<String>, boxSize: Dp) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        items(imageUrls) { imageUrl ->
+            ImageBox(imageUrl, boxSize)
+        }
+    }
 }
 
 @Preview
 @Composable
 fun PreviewHomeScreen() {
     HomeScreen()
+
 }
