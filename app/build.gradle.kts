@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.coil.compose)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.messaging.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
