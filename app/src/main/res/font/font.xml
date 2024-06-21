@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <font-family xmlns:android="http://schemas.android.com/apk/res/android">
+
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
-        android:font="@font/segoepr" />
+        android:font="@font/segoe" />
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/amatic" />
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/crimson" />
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/lora" />
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/zeyada" />
 </font-family>
