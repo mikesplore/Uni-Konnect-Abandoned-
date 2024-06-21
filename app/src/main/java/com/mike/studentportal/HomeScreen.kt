@@ -1,7 +1,10 @@
 package com.mike.studentportal
 
+import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,11 +24,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -37,24 +46,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.mike.studentportal.CommonComponents as CC
 
 
 data class IconItem(val icon: ImageVector, val contentDescription: String)
+
 @Composable
-fun HomeScreen() {
+fun HomeScreen(context: Context, navController: NavController) {
     val iconList = listOf(
-        IconItem(Icons.Filled.Home, "Home"),
-        IconItem(Icons.Filled.Search, "Search"),
+        IconItem(Icons.Filled.Home, "Dashboard"),
+        IconItem(Icons.Filled.Search, ""),
         IconItem(Icons.Filled.Settings, "Settings"),
         IconItem(Icons.Filled.Home, "Home"),
         IconItem(Icons.Filled.Search, "Search"),
@@ -62,37 +82,73 @@ fun HomeScreen() {
     )
 
     val imageUrls = listOf(
-        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
-        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
-        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
-        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
-        "https://st4.depositphotos.com/12985848/24137/i/450/depositphotos_241370954-stock-photo-cropped-view-woman-writing-notebook.jpg",
+        Pair(
+            "https://burycollegewebstore.blob.core.windows.net/uploads/4877dfea-c2a7-4a8c-bb1f-4075789d27c6/pexels-jeshootscom-530024_1296x800.jpg",
+            "Text for Image 1"
+        ),
+        Pair(
+            "https://burycollegewebstore.blob.core.windows.net/uploads/4877dfea-c2a7-4a8c-bb1f-4075789d27c6/pexels-jeshootscom-530024_1296x800.jpg",
+            "Text for Image 2"
+        ),
+        // Add more image URLs and their corresponding text
     )
-    Column(modifier = Modifier
-        .background(CC.primary)
-        .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally)
-    {
-        Row(modifier = Modifier
-            .horizontalScroll(rememberScrollState())
-            .padding(10.dp)
-            .width(350.dp)) {
+    Column(
+        modifier = Modifier
+            .background(CC.primary)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(10.dp)
+                .width(350.dp)
+        ) {
             SearchTextField()
         }
         Spacer(modifier = Modifier.height(10.dp))
-        IconList(iconList, 60.dp)
+        IconList(iconList, navController = navController)
 
-        Row(modifier = Modifier
-            .padding(15.dp)
-            .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Recent Units", style = CC.titleTextStyle, fontSize = 20.sp)
-            Text("View All", style = CC.descriptionTextStyle, fontSize = 15.sp)
+        Row(
+            modifier = Modifier
+                .padding(15.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("Recently accessed courses", style = CC.titleTextStyle(context), fontSize = 20.sp)
+            Text("View All", style = CC.descriptionTextStyle(context), fontSize = 15.sp)
         }
-        Row (
+        Row(
             modifier = Modifier.fillMaxWidth()
-        ){
-            ImageList(imageUrls, 250.dp)
+        ) {
+            ImageList(imageUrls, context)
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(
+            modifier = Modifier
+                .padding(15.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween){
+            Text("Upcoming events", style = CC.titleTextStyle(context), fontSize = 20.sp)
+            Text("View All", style = CC.descriptionTextStyle(context), fontSize = 15.sp)
+        }
+        Row(modifier = Modifier
+            .border(
+                1.dp,
+                CC.tertiary,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .height(230.dp)
+            .fillMaxWidth(0.9f)){
+            EventCard(
+                title = "Event 1",
+                dateTime = "10:00 AM - 12:00 PM",
+                location = "Location 1",
+                description = "Description 1",
+                onRegisterClick = {},
+                context
+            )
+
         }
 
 
@@ -100,47 +156,153 @@ fun HomeScreen() {
 }
 
 @Composable
-fun IconBox(item: IconItem, boxSize: Dp) {
+fun IconBox(item: IconItem, navController: NavController) { // Add NavController parameter
     Box(
         modifier = Modifier
             .padding(start = 10.dp)
-            .size(boxSize)
-            .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp)),
+            .size(60.dp)
+            .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp))
+            .clickable {
+                // Navigate to the appropriate route based on the icon clicked
+                navController.navigate("routeFor${item.contentDescription}") // Replace with actual route
+            },
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = item.icon,
-            tint = CC.secondary  ,
+            tint = CC.secondary,
             contentDescription = item.contentDescription,
-            modifier = Modifier.size(boxSize / 2) // Adjust icon size as needed
+            modifier = Modifier.size(60.dp / 2)
         )
     }
 }
 
 @Composable
-fun IconList(iconList: List<IconItem>, boxSize: Dp) {
+fun IconList(iconList: List<IconItem>, navController: NavController) { // Add NavController parameter
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp) // Add padding around the row
+        contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
         items(iconList) { item ->
-            IconBox(item, boxSize)
+            IconBox(item, navController) // Pass navController to IconBox
         }
     }
 }
 
 @Composable
+fun EventCard(
+    title: String,
+    dateTime: String,
+    location: String,
+    description: String,
+    onRegisterClick: () -> Unit,
+    context: Context
+
+) {
+    var isLoading by remember { mutableStateOf(true) }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .shadow(8.dp, RoundedCornerShape(16.dp)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center) {
+            AsyncImage(
+                model = "https://www.adobe.com/content/dam/www/us/en/events/overview-page/eventshub_evergreen_opengraph_1200x630_2x.jpg",
+                contentDescription = "Event Image",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(radius = 8.dp), // Apply blur effect
+                contentScale = ContentScale.Crop,
+                onLoading = { isLoading = true },
+                onSuccess = { isLoading = false }
+            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = CC.secondary, trackColor = CC.primary
+                )
+            }
+            if(!isLoading){
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = title,
+                    style = CC.titleTextStyle(context),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "Event Date and Time",
+                        tint = CC.secondary
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = dateTime,
+                        style = CC.descriptionTextStyle(context)
+                    )
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Event Location",
+                        tint = CC.secondary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = location,
+                        style = CC.descriptionTextStyle(context)
+                    )
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = description,
+                    style = CC.descriptionTextStyle(context),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = onRegisterClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xff810CA8),
+                        contentColor = CC.secondary
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(text = "Register", style = CC.descriptionTextStyle(context))
+                }
+            }
+        }
+    }
+    }
+}
+
+
+@Composable
 fun SearchTextField() {
     var searchText by remember { mutableStateOf("") }
 
-    OutlinedTextField(
-        value = searchText,
+    OutlinedTextField(value = searchText,
         onValueChange = { searchText = it },
         label = { Text("Search") },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "Search Icon"
+                imageVector = Icons.Filled.Search, contentDescription = "Search Icon"
             )
         },
         modifier = Modifier
@@ -168,11 +330,12 @@ fun SearchTextField() {
 
 
 @Composable
-fun ImageBox(imageUrl: String, boxSize: Dp) {
+fun ImageBox(imageUrl: String, boxText: String,context: Context) { // Add boxText parameter
     var isLoading by remember { mutableStateOf(true) }
 
     Box(
         modifier = Modifier
+            .padding(1.dp)
             .width(250.dp)
             .height(200.dp)
             .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
@@ -180,45 +343,65 @@ fun ImageBox(imageUrl: String, boxSize: Dp) {
         Column {
             Box(
                 modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp, 10.dp, 0.dp, 0.dp))
                     .fillMaxWidth()
-                    .weight(1f) // Occupy half the height
-                    .background(Color.LightGray), // Optional background for the image area
+                    .weight(1f)
+                    .background(CC.secondary),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = imageUrl,
+                AsyncImage(model = imageUrl,
                     contentDescription = "Image",
                     modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
                     onLoading = { isLoading = true },
-                    onSuccess = { isLoading = false }
-                )
+                    onSuccess = { isLoading = false })
 
                 if (isLoading) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        color = CC.secondary, trackColor = CC.primary
+                    )
                 }
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // Occupy the other half of the height
-                    .padding(8.dp)
+                    .weight(1f)
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Some text here...", modifier = Modifier.fillMaxWidth())
-                // Add more text or other composables as needed
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Last accessed: 2 hours ago", style = CC.descriptionTextStyle(context))
+                }
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .height(50.dp)
+                        .border(1.dp, Color(0xff6E85B2), shape = RoundedCornerShape(10.dp))
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CC.primary, contentColor = CC.secondary
+                    )
+
+                ) {
+                    Text("Visit", style = CC.descriptionTextStyle(context))
+                }
+
             }
         }
     }
 }
 
 @Composable
-fun ImageList(imageUrls: List<String>, boxSize: Dp) {
+fun ImageList(imageUrls: List<Pair<String, String>>, context: Context) { // Use Pair for image and text
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
-        items(imageUrls) { imageUrl ->
-            ImageBox(imageUrl, boxSize)
+        items(imageUrls) { (imageUrl, boxText) -> // Destructure Pair
+            ImageBox(imageUrl, boxText, context)
         }
     }
 }
@@ -226,6 +409,6 @@ fun ImageList(imageUrls: List<String>, boxSize: Dp) {
 @Preview
 @Composable
 fun PreviewHomeScreen() {
-    HomeScreen()
+    HomeScreen(LocalContext.current, navController = rememberNavController())
 
 }
