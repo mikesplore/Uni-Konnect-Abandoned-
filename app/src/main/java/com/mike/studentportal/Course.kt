@@ -81,7 +81,7 @@ fun CourseScreen(courseCode: String, context: Context) {
                 title = { Text("Course Screen") },
                 actions = {
                     IconButton(onClick = { isLoading = true }) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = GlobalColors.textColor)
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh Icon", tint = GlobalColors.textColor)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
