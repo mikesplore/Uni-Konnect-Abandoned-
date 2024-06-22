@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.mike.studentportal" />
-                  <option name="mobileSdkAppId" value="1:49387131109:android:4924c50e5db9811cabc40c" />
-                  <option name="projectId" value="class-portal-6f81f" />
-                  <option name="projectNumber" value="49387131109" />
+                  <option name="mobileSdkAppId" value="1:545774727181:android:a96e95ef8a72519b0aa544" />
+                  <option name="projectId" value="myclass-36fee" />
+                  <option name="projectNumber" value="545774727181" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
