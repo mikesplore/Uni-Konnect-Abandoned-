@@ -40,9 +40,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -57,9 +59,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            //MainScreen()
-            val navController = rememberNavController()
-            CoursesScreen(navController, this)
+            MainScreen()
+
         }
     }
 }
@@ -90,6 +91,16 @@ fun MainScreen() {
         composable("dashboard") {Dashboard(navController,pagerState,coroutineScope,screens,context)}
         composable("moredetails") { MoreDetails(context, navController) }
         composable("settings") { ColorSettings(navController, context) }
+        composable("courses") {
+            CoursesScreen(navController = navController, context)
+        }
+        composable(
+            "course/{courseCode}",
+            arguments = listOf(navArgument("courseCode") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val courseCode = backStackEntry.arguments?.getString("courseCode") ?: ""
+            CourseScreen(courseCode = courseCode, context)
+        }
     }
 }
 
