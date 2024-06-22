@@ -31,6 +31,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +52,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.mike.studentportal.MyDatabase.readItems
 import com.mike.studentportal.CommonComponents as CC
 
+object CourseName{
+    var name: MutableState<String> = mutableStateOf("Course Name")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +82,7 @@ fun CourseScreen(courseCode: String, context: Context) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Course Screen") },
+                title = { Text(CourseName.name.value, style = CC.titleTextStyle(context)) },
                 actions = {
                     IconButton(onClick = { isLoading = true }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Refresh Icon", tint = GlobalColors.textColor)
