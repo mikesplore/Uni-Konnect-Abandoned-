@@ -8,12 +8,10 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.util.Calendar
 
-
 open class User(
     val id: String = MyDatabase.generateIndexNumber(),
     val name: String = "",
     val email: String = "",
-
     )
 
 data class Timetable(
@@ -27,14 +25,14 @@ data class Timetable(
 )
 
 data class Course(
-    val courseCode: String = "", val courseName: String = ""
-
+    val courseCode: String = "",
+    val courseName: String = "",
+    var lastDate: String = ""
 )
 data class Subjects(
     val id: String = MyDatabase.generateSubjectsID(),
     val name: String = "",
-
-    )
+)
 
 data class Student(
     val id: String = MyDatabase.generateIndexNumber(), val firstName: String
@@ -197,7 +195,8 @@ object MyDatabase {
             override fun onCancelled(error: DatabaseError) {
                 onUsersFetched(null)
             }
-        })
+        }
+        )
     }
 
     fun readItems(courseId: String, section: Section, onItemsRead: (List<GridItem>) -> Unit) {
@@ -293,9 +292,6 @@ object MyDatabase {
         })
     }
 
-
-
-
     fun writeSubject(subject: Subjects, onComplete: (Boolean) -> Unit) {
         database.child("Subjects").child(subject.id).setValue(subject)
             .addOnCompleteListener { task ->
@@ -383,7 +379,8 @@ object MyDatabase {
             override fun onCancelled(error: DatabaseError) {
                 onUsersFetched(null)
             }
-        })
+        }
+      )
     }
 
 
@@ -438,7 +435,8 @@ object MyDatabase {
             override fun onCancelled(error: DatabaseError) {
                 onStudentsLoaded(null)
             }
-        })
+        }
+      )
     }
 
     fun loadAttendanceRecords(onAttendanceRecordsLoaded: (List<AttendanceRecord>?) -> Unit) {
@@ -460,7 +458,8 @@ object MyDatabase {
                 override fun onCancelled(error: DatabaseError) {
                     onAttendanceRecordsLoaded(null)
                 }
-            })
+            }
+        )
     }
 
     //fetch the day id using the day name
@@ -475,7 +474,8 @@ object MyDatabase {
                 override fun onCancelled(error: DatabaseError) {
                     onDayIdFetched(null)
                 }
-            })
+            }
+        )
     }
 
 
