@@ -1,7 +1,6 @@
 package com.mike.studentportal
 
 import android.content.Context
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,22 +25,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,54 +50,38 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.mike.studentportal.CommonComponents as CC
 
 
-data class IconItem(val icon: ImageVector, val contentDescription: String)
-
 @Composable
 fun HomeScreen(context: Context, navController: NavController) {
-    val iconList = listOf(
-        IconItem(Icons.Filled.Home, "settings"),
-        IconItem(Icons.Filled.Search, "settings"),
-        IconItem(Icons.Filled.Settings, "settings"),
-        IconItem(Icons.Filled.Home, "settings"),
-        IconItem(Icons.Filled.Search, "settings"),
-        IconItem(Icons.Filled.Settings, "settings"),
-    )
+    val courses = remember { mutableStateListOf<Course>() }
+    var loading by remember { mutableStateOf(true) }
 
-    val imageUrls = listOf(
-        Pair(
-            "https://burycollegewebstore.blob.core.windows.net/uploads/4877dfea-c2a7-4a8c-bb1f-4075789d27c6/pexels-jeshootscom-530024_1296x800.jpg",
-            "Text for Image 1"
-        ),
-        Pair(
-            "https://burycollegewebstore.blob.core.windows.net/uploads/4877dfea-c2a7-4a8c-bb1f-4075789d27c6/pexels-jeshootscom-530024_1296x800.jpg",
-            "Text for Image 2"
-        ),
-        // Add more image URLs and their corresponding text
-    )
+    LaunchedEffect(loading) {
+        MyDatabase.fetchCourses { fetchedCourses ->
+            courses.clear() // Clear existing courses
+            courses.addAll(fetchedCourses) // Add fetched courses
+            loading = false // Set loading to false after fetching
+        }
+    }
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .background(CC.primary)
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             modifier = Modifier
@@ -109,8 +92,37 @@ fun HomeScreen(context: Context, navController: NavController) {
             SearchTextField()
         }
         Spacer(modifier = Modifier.height(10.dp))
-        IconList(iconList, navController = navController, context)
+        if (loading) {
+            Column(
+                modifier = Modifier
+                    .height(90.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(
+                    color = CC.secondary, trackColor = CC.primary
+                )
 
+            }
+
+        } else {
+            if (courses.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .height(90.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No courses found", style = CC.descriptionTextStyle(context)
+                    )
+                }
+            } else {
+                IconList(courses, navController, context)
+            }
+        }
         Row(
             modifier = Modifier
                 .padding(15.dp)
@@ -118,30 +130,69 @@ fun HomeScreen(context: Context, navController: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("Recently accessed courses", style = CC.titleTextStyle(context), fontSize = 20.sp)
-            Text("View All", style = CC.descriptionTextStyle(context), fontSize = 15.sp)
+            Text("View All",
+                style = CC.descriptionTextStyle(context),
+                fontSize = 15.sp,
+                modifier = Modifier.clickable {
+                    navController.navigate("courses")
+                })
         }
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
-            ImageList(imageUrls, context)
+            if (loading) {
+                Column(
+                    modifier = Modifier
+                        .height(200.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = CC.secondary, trackColor = CC.primary
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Loading...", color = CC.textColor
+                    )
+                }
+
+            } else {
+                if (courses.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No courses found", style = CC.descriptionTextStyle(context)
+                        )
+                    }
+                } else {
+                    ImageList(courses, context, navController)
+                }
+            }
         }
         Spacer(modifier = Modifier.height(10.dp))
         Row(
             modifier = Modifier
                 .padding(15.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween){
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text("Upcoming events", style = CC.titleTextStyle(context), fontSize = 20.sp)
             Text("View All", style = CC.descriptionTextStyle(context), fontSize = 15.sp)
         }
-        Row(modifier = Modifier
-            .border(
-                1.dp,
-                CC.tertiary,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .height(230.dp)
-            .fillMaxWidth(0.9f)){
+        Row(
+            modifier = Modifier
+                .border(
+                    1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                )
+                .height(230.dp)
+                .fillMaxWidth(0.9f)
+        ) {
             EventCard(
                 title = "Event 1",
                 dateTime = "10:00 AM - 12:00 PM",
@@ -150,18 +201,15 @@ fun HomeScreen(context: Context, navController: NavController) {
                 onRegisterClick = {},
                 context
             )
-
         }
-
-
     }
 }
 
+
 @Composable
-fun IconBox(item: IconItem, navController: NavController, context: Context) {
+fun IconBox(course: Course, navController: NavController, context: Context) {
     Column(
-        modifier = Modifier
-            .padding(start = 10.dp),
+        modifier = Modifier.padding(start = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally // Center the content horizontally
     ) {
         Box(
@@ -169,20 +217,20 @@ fun IconBox(item: IconItem, navController: NavController, context: Context) {
                 .size(60.dp)
                 .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp))
                 .clickable {
-                    navController.navigate(item.contentDescription)
-                },
-            contentAlignment = Alignment.Center
+                    CourseName.name.value = course.courseName
+                    navController.navigate("course/${course.courseCode}")
+                }, contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = item.icon,
+                imageVector = Icons.Filled.School,
                 tint = CC.secondary,
-                contentDescription = item.contentDescription,
+                contentDescription = course.courseName,
                 modifier = Modifier.size(60.dp / 2)
             )
         }
         // Text below the Box
         Text(
-            text = item.contentDescription,
+            text = course.courseName,
             style = CC.descriptionTextStyle(context = context),
             modifier = Modifier.padding(top = 4.dp) // Add some spacing between the box and text
         )
@@ -190,16 +238,17 @@ fun IconBox(item: IconItem, navController: NavController, context: Context) {
 }
 
 @Composable
-fun IconList(iconList: List<IconItem>, navController: NavController, context: Context) { // Add NavController parameter
+fun IconList(courses: List<Course>, navController: NavController, context: Context) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
-        items(iconList) { item ->
-            IconBox(item, navController, context) // Pass navController to IconBox
+        items(courses) { course ->
+            IconBox(course, navController, context) // Pass course, navController to IconBox
         }
     }
 }
+
 
 @Composable
 fun EventCard(
@@ -221,86 +270,80 @@ fun EventCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center) {
-            AsyncImage(
-                model = "https://www.adobe.com/content/dam/www/us/en/events/overview-page/eventshub_evergreen_opengraph_1200x630_2x.jpg",
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        ) {
+            AsyncImage(model = "https://www.adobe.com/content/dam/www/us/en/events/overview-page/eventshub_evergreen_opengraph_1200x630_2x.jpg",
                 contentDescription = "Event Image",
                 modifier = Modifier
                     .fillMaxSize()
                     .blur(radius = 8.dp), // Apply blur effect
                 contentScale = ContentScale.Crop,
                 onLoading = { isLoading = true },
-                onSuccess = { isLoading = false }
-            )
+                onSuccess = { isLoading = false })
             if (isLoading) {
                 CircularProgressIndicator(
                     color = CC.secondary, trackColor = CC.primary
                 )
-            }
-            if(!isLoading){
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = title,
-                    style = CC.titleTextStyle(context),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = "Event Date and Time",
-                        tint = CC.secondary
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = dateTime,
-                        style = CC.descriptionTextStyle(context)
+                        text = title,
+                        style = CC.titleTextStyle(context),
+                        textAlign = TextAlign.Center
                     )
-                }
-                Spacer(modifier = Modifier.height(5.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = "Event Location",
-                        tint = CC.secondary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = "Event Date and Time",
+                            tint = CC.secondary
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = dateTime, style = CC.descriptionTextStyle(context)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Place,
+                            contentDescription = "Event Location",
+                            tint = CC.secondary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = location, style = CC.descriptionTextStyle(context)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
                     Text(
-                        text = location,
-                        style = CC.descriptionTextStyle(context)
+                        text = description,
+                        style = CC.descriptionTextStyle(context),
+                        textAlign = TextAlign.Center
                     )
-                }
-                Spacer(modifier = Modifier.height(5.dp))
-                Text(
-                    text = description,
-                    style = CC.descriptionTextStyle(context),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
-                    onClick = onRegisterClick,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xff810CA8),
-                        contentColor = CC.secondary
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text(text = "Register", style = CC.descriptionTextStyle(context))
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onRegisterClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xff810CA8), contentColor = CC.secondary
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text(text = "Register", style = CC.descriptionTextStyle(context))
+                    }
                 }
             }
         }
-    }
     }
 }
 
@@ -342,81 +385,75 @@ fun SearchTextField() {
 
 
 @Composable
-fun ImageBox(imageUrl: String, boxText: String,context: Context) { // Add boxText parameter
-    var isLoading by remember { mutableStateOf(true) }
-
+fun ImageBox(course: Course, context: Context, navController: NavController) {
     Box(
         modifier = Modifier
-            .padding(1.dp)
+            .padding(8.dp)
             .width(250.dp)
-            .height(200.dp)
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
+            .height(250.dp)
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
+            .clickable { navController.navigate(course.courseCode) },
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp, 10.dp, 0.dp, 0.dp))
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .background(CC.secondary),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(model = imageUrl,
-                    contentDescription = "Image",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    onLoading = { isLoading = true },
-                    onSuccess = { isLoading = false })
-
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        color = CC.secondary, trackColor = CC.primary
-                    )
-                }
-            }
-
-            Column(
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxSize().padding(10.dp)
+        ) {
+            AsyncImage(
+                model = "https://tipa.in/wp-content/uploads/2021/05/Online-courses.jpg",
+                contentDescription = course.courseName,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.LightGray)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = course.courseName,
+                style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    CourseName.name.value = course.courseName
+                    navController.navigate("course/${course.courseCode}")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CC.tertiary,
+                    contentColor = Color.White
+                )
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Last accessed: 2 hours ago", style = CC.descriptionTextStyle(context))
-                }
-                Button(
-                    onClick = {},
-                    modifier = Modifier
-                        .height(50.dp)
-                        .border(1.dp, Color(0xff6E85B2), shape = RoundedCornerShape(10.dp))
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CC.primary, contentColor = CC.secondary
-                    )
-
-                ) {
-                    Text("Visit", style = CC.descriptionTextStyle(context))
-                }
-
+                Text("Open Course", style = CC.descriptionTextStyle(context))
             }
         }
     }
 }
 
+
 @Composable
-fun ImageList(imageUrls: List<Pair<String, String>>, context: Context) { // Use Pair for image and text
+fun ImageList(courses: List<Course>, context: Context, navController: NavController) {
+    val sortedCourses =
+        courses.sortedByDescending { it.lastDate } // Sort by lastDate in descending order
+
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
-        items(imageUrls) { (imageUrl, boxText) -> // Destructure Pair
-            ImageBox(imageUrl, boxText, context)
+        items(sortedCourses) { course -> // Use the sorted list
+            ImageBox(course, context, navController)
         }
     }
 }
+
 
 @Preview
 @Composable
