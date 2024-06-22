@@ -62,7 +62,6 @@ fun EventScreen(navController: NavController, context: Context) {
             isLoading = false
         }
     }
-    Details.totalAnnouncements.value = events.size
 
     val showNotification = remember { mutableStateOf(false) }
     val calendar = Calendar.getInstance()
