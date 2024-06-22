@@ -6,14 +6,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Announcement
@@ -21,7 +24,11 @@ import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +37,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -115,34 +127,73 @@ fun Dashboard(
     context: Context
 ) {
     Scaffold(topBar = {
+        var expanded by remember { mutableStateOf(false) }
+
         TopAppBar(
             title = {
-                Row(
-                    modifier = Modifier
-                        .padding(start = 10.dp, end = 10.dp)
-                        .fillMaxWidth(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
                     Text(
                         "Hello, Michael",
                         style = CC.descriptionTextStyle(context),
                         fontSize = 20.sp
                     )
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Box(
-                            modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.AccountCircle,
-                                contentDescription = "Settings",
-                                tint = Color.White,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
+
+            },
+            actions = {
+                IconButton(onClick = { expanded = !expanded }) {
+
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = "Settings",
+                        tint = Color.White,
+
+                        )
+
                 }
-            }, colors = TopAppBarDefaults.topAppBarColors(
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .border(
+                            1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                        )
+                        .background(CC.primary)
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Profile",
+                                tint = GlobalColors.textColor)
+                                Spacer(modifier = Modifier.width(5.dp))
+                            Text("Profile", style = CC.descriptionTextStyle(context)) }},
+                        onClick = {
+                            navController.navigate("moredetails")
+                            expanded = false
+                            }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Default.Settings, contentDescription = "Profile",
+                                    tint = GlobalColors.textColor)
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text("Settings", style = CC.descriptionTextStyle(context)) }},
+                        onClick = {
+                            navController.navigate("moredetails")
+                            expanded = false
+                        }
+                    )
+                }
+            },
+
+            colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = CC.primary
             )
         )
