@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
@@ -73,12 +74,12 @@ data class IconItem(val icon: ImageVector, val contentDescription: String)
 @Composable
 fun HomeScreen(context: Context, navController: NavController) {
     val iconList = listOf(
-        IconItem(Icons.Filled.Home, "Dashboard"),
-        IconItem(Icons.Filled.Search, ""),
-        IconItem(Icons.Filled.Settings, "Settings"),
-        IconItem(Icons.Filled.Home, "Home"),
-        IconItem(Icons.Filled.Search, "Search"),
-        IconItem(Icons.Filled.Settings, "Settings"),
+        IconItem(Icons.Filled.Home, "settings"),
+        IconItem(Icons.Filled.Search, "settings"),
+        IconItem(Icons.Filled.Settings, "settings"),
+        IconItem(Icons.Filled.Home, "settings"),
+        IconItem(Icons.Filled.Search, "settings"),
+        IconItem(Icons.Filled.Settings, "settings"),
     )
 
     val imageUrls = listOf(
@@ -94,6 +95,7 @@ fun HomeScreen(context: Context, navController: NavController) {
     )
     Column(
         modifier = Modifier
+            .verticalScroll(rememberScrollState())
             .background(CC.primary)
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -107,7 +109,7 @@ fun HomeScreen(context: Context, navController: NavController) {
             SearchTextField()
         }
         Spacer(modifier = Modifier.height(10.dp))
-        IconList(iconList, navController = navController)
+        IconList(iconList, navController = navController, context)
 
         Row(
             modifier = Modifier
@@ -156,35 +158,45 @@ fun HomeScreen(context: Context, navController: NavController) {
 }
 
 @Composable
-fun IconBox(item: IconItem, navController: NavController) { // Add NavController parameter
-    Box(
+fun IconBox(item: IconItem, navController: NavController, context: Context) {
+    Column(
         modifier = Modifier
-            .padding(start = 10.dp)
-            .size(60.dp)
-            .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp))
-            .clickable {
-                // Navigate to the appropriate route based on the icon clicked
-                navController.navigate("routeFor${item.contentDescription}") // Replace with actual route
-            },
-        contentAlignment = Alignment.Center
+            .padding(start = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally // Center the content horizontally
     ) {
-        Icon(
-            imageVector = item.icon,
-            tint = CC.secondary,
-            contentDescription = item.contentDescription,
-            modifier = Modifier.size(60.dp / 2)
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp))
+                .clickable {
+                    navController.navigate(item.contentDescription)
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = item.icon,
+                tint = CC.secondary,
+                contentDescription = item.contentDescription,
+                modifier = Modifier.size(60.dp / 2)
+            )
+        }
+        // Text below the Box
+        Text(
+            text = item.contentDescription,
+            style = CC.descriptionTextStyle(context = context),
+            modifier = Modifier.padding(top = 4.dp) // Add some spacing between the box and text
         )
     }
 }
 
 @Composable
-fun IconList(iconList: List<IconItem>, navController: NavController) { // Add NavController parameter
+fun IconList(iconList: List<IconItem>, navController: NavController, context: Context) { // Add NavController parameter
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
         items(iconList) { item ->
-            IconBox(item, navController) // Pass navController to IconBox
+            IconBox(item, navController, context) // Pass navController to IconBox
         }
     }
 }
