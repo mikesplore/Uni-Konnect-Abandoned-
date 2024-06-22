@@ -149,6 +149,8 @@ object CommonComponents {
         return "$day/$month/$year"
     }
 
+    val lastDate = calendar.time
+
     fun currentDay(): String {
         return when (dayOfWeek) {
             Calendar.SUNDAY -> "Sunday"
