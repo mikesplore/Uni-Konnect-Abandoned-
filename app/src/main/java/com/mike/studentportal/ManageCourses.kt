@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.mike.studentportal.CommonComponents as CC
 
 
 
@@ -49,7 +50,6 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun CoursesScreen(navController: NavController, context: Context) {
     val courses = remember { mutableStateListOf<Course>() }
-    var showAddDialog by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
 
     LaunchedEffect(loading) {
@@ -123,6 +123,8 @@ fun CoursesScreen(navController: NavController, context: Context) {
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(onClick = {
+                        course.lastDate = CC.lastDate.toString()
+                        CourseName.name.value = course.courseName
                         navController.navigate("course/${course.courseCode}")
                     }) {
                         Icon(
