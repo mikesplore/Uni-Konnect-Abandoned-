@@ -165,7 +165,7 @@ fun Dashboard(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = "Profile",
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Profile Settings",
                                 tint = GlobalColors.textColor)
                                 Spacer(modifier = Modifier.width(5.dp))
                             Text("Profile", style = CC.descriptionTextStyle(context)) }},
