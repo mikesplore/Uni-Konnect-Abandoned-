@@ -62,6 +62,10 @@ data class Day(
     val id: String = MyDatabase.generateDayID(), val name: String = ""
 )
 
+enum class Section {
+    NOTES, PAST_PAPERS, RESOURCES
+}
+
 data class Announcement(
     val id: String = MyDatabase.generateAnnouncementID(),
     val date: String = "",
@@ -196,6 +200,18 @@ object MyDatabase {
         })
     }
 
+    fun readItems(courseId: String, section: Section, onItemsRead: (List<GridItem>) -> Unit) {
+        database.child("Courses").child(courseId).child(section.name).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val items = snapshot.children.mapNotNull { it.getValue(GridItem::class.java) }
+                onItemsRead(items)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onItemsRead(emptyList())
+            }
+        })
+    }
 
 
     fun writeFeedback(feedback: Feedback, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
