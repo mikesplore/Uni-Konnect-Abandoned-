@@ -26,6 +26,10 @@ data class Timetable(
     val dayId: String = ""
 )
 
+data class Course(
+    val courseCode: String = "", val courseName: String = ""
+
+)
 data class Subjects(
     val id: String = MyDatabase.generateSubjectsID(),
     val name: String = "",
@@ -79,6 +83,14 @@ data class Fcm(
     val id: String = MyDatabase.generateFcmID(), val token: String = ""
 )
 
+data class GridItem(
+    val title: String = "",
+    val description: String = "",
+    val thumbnail: String = "",
+    val link: String = "",
+    var fileType: String = "image"
+)
+
 
 
 object MyDatabase {
@@ -97,12 +109,19 @@ object MyDatabase {
     private var EventToken = 0
     private var calendar: Calendar = Calendar.getInstance()
     private var year = calendar.get(Calendar.YEAR)
+    private var gridID = 0
 
     // index number
     fun generateIndexNumber(): String {
         val currentID = userID
         userID++
         return "CP$currentID$year"
+    }
+
+    fun generateGridID(): String{
+        val currentID = gridID
+        gridID++
+        return "G$currentID$year"
     }
 
     fun generateEventID(): String {
@@ -177,6 +196,8 @@ object MyDatabase {
         })
     }
 
+
+
     fun writeFeedback(feedback: Feedback, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
         val feedbackRef = database.child("Feedback").child(feedback.id)
         feedbackRef.setValue(feedback)
@@ -193,13 +214,6 @@ object MyDatabase {
         database.child("FCM").child(token.id).setValue(token)
     }
 
-
-    fun writeTimetable(timetable: Timetable, onComplete: (Boolean) -> Unit) {
-        database.child("Timetable").child(timetable.id).setValue(timetable)
-            .addOnCompleteListener { task ->
-                onComplete(task.isSuccessful)
-            }
-    }
 
     fun getTimetable(dayId: String, onAssignmentsFetched: (List<Timetable>?) -> Unit) {
         database.child("Timetable").orderByChild("dayId").equalTo(dayId)
@@ -247,6 +261,20 @@ object MyDatabase {
                     onTimetableFetched(null)
                 }
             })
+    }
+
+    fun fetchCourses(onCoursesFetched: (List<Course>) -> Unit) {
+        database.child("Courses").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val courseList = snapshot.children.mapNotNull { it.getValue(Course::class.java) }
+                onCoursesFetched(courseList) // Call the callback with the fetched courses
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle the error, maybe pass an empty list or an error state to the callback
+                onCoursesFetched(emptyList())
+            }
+        })
     }
 
 
@@ -357,9 +385,6 @@ object MyDatabase {
         })
     }
 
-    fun deleteAnnouncement(announcementId: String) {
-        database.child("Announcements").child(announcementId.toString()).removeValue()
-    }
 
     fun loadSubjectsAndAssignments(callback: (List<Subjects>?) -> Unit) {
         database.child("Subjects").get().addOnCompleteListener { task ->
@@ -435,14 +460,6 @@ object MyDatabase {
                     onDayIdFetched(null)
                 }
             })
-    }
-
-    fun saveAttendanceRecords(records: List<AttendanceRecord>, onComplete: (Boolean) -> Unit) {
-        val batch = database.child("attendanceRecords")
-        records.map { record ->
-            val key = batch.push().key ?: ""
-            batch.child(key).setValue(record)
-        }
     }
 
 
