@@ -68,8 +68,6 @@ fun MoreDetails(context: Context, navController: NavController) {
             days.addAll(fetchedDays ?: emptyList())
         }
         mloading = false
-        Details.totalAssignments.value = assignments?.size ?: 0
-        Details.totalusers.value = users?.size ?: 0
 
     }
     if(mloading){
