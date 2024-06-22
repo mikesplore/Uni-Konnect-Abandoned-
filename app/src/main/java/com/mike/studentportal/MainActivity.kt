@@ -57,7 +57,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MainScreen()
+            //MainScreen()
+            val navController = rememberNavController()
+            CoursesScreen(navController, this)
         }
     }
 }
@@ -69,7 +71,7 @@ sealed class Screen(val title: String, val icon: ImageVector) {
     data object Announcements : Screen("Announcements", Icons.AutoMirrored.Filled.Announcement)
 }
 
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class, ExperimentalSnapperApi::class)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
@@ -87,6 +89,7 @@ fun MainScreen() {
         composable("login") { LoginScreen(navController, context) }
         composable("dashboard") {Dashboard(navController,pagerState,coroutineScope,screens,context)}
         composable("moredetails") { MoreDetails(context, navController) }
+        composable("settings") { ColorSettings(navController, context) }
     }
 }
 
@@ -155,7 +158,7 @@ fun Dashboard(
                             tint = if (pagerState.currentPage == index) CC.secondary else CC.tertiary,
                             modifier = Modifier
                                 .padding(5.dp)
-                                .size(34.dp)
+                                .size(30.dp)
                                 .clickable {
                                     coroutineScope.launch {
                                         pagerState.animateScrollToPage(index)
