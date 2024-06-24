@@ -197,11 +197,11 @@ fun SystemSettings(context: Context) {
             .padding(10.dp)
     ) {
         SettingSwitch(context, "Disable EdgeToEdge", edge) {
-            Notification.edgeToEdge.value = !Notification.edgeToEdge.value
+            Global.edgeToEdge.value = !Global.edgeToEdge.value
             edge = !edge
         }
         SettingSwitch(context, "Enable System Notifications", checked) {
-            Notification.showAlert.value = !Notification.showAlert.value
+            Global.showAlert.value = !Global.showAlert.value
             checked = !checked
         }
     }
@@ -351,6 +351,7 @@ fun ProfileCard(
                                                 "Profile updated successfully",
                                                 Toast.LENGTH_SHORT
                                             ).show()
+                                            Details.name.value = currentName
                                         })
                                     isEditing = false
 
