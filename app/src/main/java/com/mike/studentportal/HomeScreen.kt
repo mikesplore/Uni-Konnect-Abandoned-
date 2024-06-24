@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -208,18 +209,27 @@ fun HomeScreen(context: Context, navController: NavController) {
 
 @Composable
 fun IconBox(course: Course, navController: NavController, context: Context) {
+    val brush = Brush.linearGradient(
+        listOf(
+        Color(0xff3572EF),
+        Color(0xffFF76CE),
+    ))
+
+
     Column(
         modifier = Modifier.padding(start = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally // Center the content horizontally
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
+                .background(brush, RoundedCornerShape(8.dp))
                 .size(60.dp)
                 .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp))
                 .clickable {
                     CourseName.name.value = course.courseName
                     navController.navigate("course/${course.courseCode}")
-                }, contentAlignment = Alignment.Center
+                },
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.School,
@@ -228,11 +238,10 @@ fun IconBox(course: Course, navController: NavController, context: Context) {
                 modifier = Modifier.size(60.dp / 2)
             )
         }
-        // Text below the Box
         Text(
             text = course.courseName,
             style = CC.descriptionTextStyle(context = context),
-            modifier = Modifier.padding(top = 4.dp) // Add some spacing between the box and text
+            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
