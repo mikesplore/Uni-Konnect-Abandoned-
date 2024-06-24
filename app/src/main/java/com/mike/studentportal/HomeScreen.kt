@@ -79,12 +79,11 @@ import com.mike.studentportal.CommonComponents as CC
 fun HomeScreen(context: Context, navController: NavController) {
     val courses = remember { mutableStateListOf<Course>() }
     val announcements by remember { mutableStateOf(emptyList<Announcement>()) }
-    var loading by remember { mutableStateOf(true) }
-    LaunchedEffect(loading) {
+    LaunchedEffect(Global.loading.value) {
         MyDatabase.fetchCourses { fetchedCourses ->
             courses.clear() // Clear existing courses
             courses.addAll(fetchedCourses) // Add fetched courses
-            loading = false // Set loading to false after fetching
+            Global.loading.value = false // Set loading to false after fetching
         }
     }
 
@@ -301,19 +300,12 @@ fun EventCard(
             .padding(5.dp)
             .clip(RoundedCornerShape(16.dp))
             .shadow(8.dp, RoundedCornerShape(16.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = GlobalColors.primaryColor
+        )
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-        ) {
-            AsyncImage(model = "https://www.adobe.com/content/dam/www/us/en/events/overview-page/eventshub_evergreen_opengraph_1200x630_2x.jpg",
-                contentDescription = "Event Image",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(radius = 8.dp), // Apply blur effect
-                contentScale = ContentScale.Crop,
-                onLoading = { },
-                onSuccess = {  })
+
             if (Global.loading.value) {
                 ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp)))
             } else {
@@ -363,33 +355,22 @@ fun EventCard(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        onClick = onRegisterClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xff810CA8), contentColor = CC.secondary
-                        ),
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    ) {
-                        Text(text = "Register", style = CC.descriptionTextStyle(context))
-                    }
                 }
             }
-        }
+
     }
 }
 
 @Composable
 fun TodayTimetable(context: Context) {
     var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Global.loading.value) {
         MyDatabase.getCurrentDayTimetable(
             CC.currentDay(),
             onTimetableFetched = {
                 timetables = it
-                isLoading = false
+                Global.loading.value = false
             }
         )
     }
@@ -402,18 +383,9 @@ fun TodayTimetable(context: Context) {
             .shadow(8.dp, RoundedCornerShape(16.dp)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    color = CC.secondary,
-                    trackColor = CC.primary
-                )
-            }
+        if (Global.loading.value) {
+            ColorProgressIndicator(modifier = Modifier.fillMaxSize().height(100.dp))
+
         } else {
             val timetable = timetables?.firstOrNull()
 
