@@ -179,6 +179,7 @@ fun MoreDetails(context: Context, navController: NavController) {
                                             email = Details.email.value
                                         )
                                     )
+
                             navController.navigate("dashboard")
 
 
