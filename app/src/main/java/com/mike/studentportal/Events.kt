@@ -16,10 +16,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -79,40 +84,27 @@ fun EventScreen(navController: NavController, context: Context) {
     LaunchedEffect(Unit) {
         visible = true
     }
-
-    Scaffold(floatingActionButton = {
-        FloatingActionButton(onClick = {
-            isLoading = true
-            getEvents { fetchedEvents ->
-                events.clear()
-                events.addAll(fetchedEvents ?: emptyList())
-                isLoading = false
-            }
-        },
-            containerColor = GlobalColors.tertiaryColor,
-            contentColor = GlobalColors.primaryColor,
-            content = {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-            })
-    }) {
         Column(
             modifier = Modifier
-                .background(CC.backbrush)
+                .background(GlobalColors.primaryColor)
                 .fillMaxSize()
-                .padding(it)
         ) {
 
             if (isLoading) {
                 Column(
                     modifier = Modifier
+                        .verticalScroll(rememberScrollState())
                         .background(GlobalColors.primaryColor)
                         .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    MyProgress()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Loading Events...", style = CC.descriptionTextStyle(context))
+                   LoadingEventCard()
+                   LoadingEventCard()
+                   LoadingEventCard()
+                   LoadingEventCard()
+                   LoadingEventCard()
+                   LoadingEventCard()
+                   LoadingEventCard()
                 }
             } else if (events.isEmpty()) {
                 Column(
@@ -145,7 +137,7 @@ fun EventScreen(navController: NavController, context: Context) {
             }
         }
     }
-}
+
 
 
 @Composable
@@ -220,6 +212,42 @@ fun EventCard(
             }
         }
     }
+}
+
+@Composable
+fun LoadingEventCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(GlobalColors.secondaryColor, shape = RoundedCornerShape(8.dp))
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Icon(
+                Icons.Default.AccountCircle,
+                contentDescription = "Announcement Icon",
+                modifier = Modifier
+                    .size(50.dp)
+                    .padding(end = 8.dp),
+            )
+            Row(modifier = Modifier
+                .width(100.dp)
+                .height(40.dp)){
+                ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+            }
+            Row(modifier = Modifier
+                .width(70.dp)
+                .height(40.dp)) {
+                ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+            }
+        }
+
+    }
+    Spacer(modifier = Modifier.height(25.dp))
 }
 
 
