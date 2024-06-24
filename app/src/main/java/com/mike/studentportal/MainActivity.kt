@@ -1,15 +1,22 @@
 package com.mike.studentportal
 
+import android.Manifest
 import android.content.Context
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,12 +28,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.automirrored.filled.EventNote
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,9 +60,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -66,16 +80,53 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.mike.studentportal.CommonComponents as CC
 
+object Notification{
+    val showAlert: MutableState<Boolean> = mutableStateOf(false)
+    val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
+}
+
 class MainActivity : ComponentActivity() {
+    private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        if(Notification.edgeToEdge.value){
+            enableEdgeToEdge()
+        }
+
         setContent {
+            sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
             MainScreen()
 
         }
+        createNotificationChannel(this)
     }
+    fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                // Permission already granted
+                sharedPreferences.edit().putBoolean("NotificationPermissionGranted", true).apply()
+            }
+        }
+    }
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
+                sharedPreferences.edit().putBoolean("NotificationPermissionGranted", true).apply()
+            } else {
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 }
+
+
 
 sealed class Screen(val title: String, val icon: ImageVector) {
     data object Home : Screen("Home", Icons.Filled.Home)
@@ -84,7 +135,7 @@ sealed class Screen(val title: String, val icon: ImageVector) {
     data object Announcements : Screen("Announcements", Icons.AutoMirrored.Filled.Announcement)
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
@@ -96,16 +147,70 @@ fun MainScreen() {
         Screen.Assignments,
         Screen.Announcements,
     )
+    if (Notification.showAlert.value) {
+        BasicAlertDialog(
+            onDismissRequest = { Notification.showAlert.value = false },
+            modifier = Modifier.background(
+                Color.Transparent, // Remove background here to avoid double backgrounds
+                RoundedCornerShape(10.dp)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(
+                        GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                    )
+                    .padding(24.dp), // Add padding for better visual spacing
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "Enable Notifications", style = CC.titleTextStyle(context).copy(
+                        fontSize = 18.sp, fontWeight = FontWeight.Bold
+                    ), // Make title bolder
+                    modifier = Modifier.padding(bottom = 8.dp) // Add spacing below title
+                )
+                Text(
+                    "Please enable notifications to receive realtime updates.",
+                    style = CC.descriptionTextStyle(context),
+                    modifier = Modifier.padding(bottom = 16.dp) // Add spacing below description
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
+                            // Call the requestNotificationPermission function from the context
+                            (context as MainActivity).requestNotificationPermission()
+                            Notification.showAlert.value = false
+                        }, modifier = Modifier.weight(1f), // Make buttons take equal width
+                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) // Customize button colors
+                    ) {
+                        Text("Enable", color = Color.White) // Set text color for contrast
+                    }
+                    Spacer(modifier = Modifier.width(16.dp)) // Add space between buttons
+                    Button(
+                        onClick = { Notification.showAlert.value = false },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) // Customize button colors
+                    ) {
+                        Text("Cancel", color = Color.Black) // Set text color for contrast
+                    }
+                }
+            }
+        }
+    }
     val navController = rememberNavController()
-
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "settings") {
         composable("login") { LoginScreen(navController, context) }
         composable("dashboard") {Dashboard(navController,pagerState,coroutineScope,screens,context)}
         composable("moredetails") { MoreDetails(context, navController) }
-        composable("settings") { ColorSettings(navController, context) }
+        composable("colors") { ColorSettings(navController, context) }
+        composable("passwordreset") {PasswordReset(navController, context)}
         composable("courses") {
             CoursesScreen(navController = navController, context)
         }
+        composable("settings") { SettingsScreen(navController, context) }
         composable(
             "course/{courseCode}",
             arguments = listOf(navArgument("courseCode") { type = NavType.StringType })
@@ -170,7 +275,7 @@ fun Dashboard(
                                 Spacer(modifier = Modifier.width(5.dp))
                             Text("Profile", style = CC.descriptionTextStyle(context)) }},
                         onClick = {
-                            navController.navigate("moredetails")
+                            navController.navigate("settings")
                             expanded = false
                             }
                     )
@@ -186,7 +291,25 @@ fun Dashboard(
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text("Settings", style = CC.descriptionTextStyle(context)) }},
                         onClick = {
-                            navController.navigate("moredetails")
+                            navController.navigate("settings")
+                            expanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Exit",
+                                    tint = GlobalColors.textColor)
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text("Sign Out", style = CC.descriptionTextStyle(context)) }},
+                        onClick = {
+                            MyDatabase.logout
+                            navController.navigate("login")
                             expanded = false
                         }
                     )
