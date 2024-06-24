@@ -149,7 +149,7 @@ object CommonComponents {
         return "$day/$month/$year"
     }
 
-    val lastDate = calendar.time
+    val lastDate = calendar.time.toString()
 
     fun currentDay(): String {
         return when (dayOfWeek) {
