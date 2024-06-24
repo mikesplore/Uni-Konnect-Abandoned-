@@ -1,6 +1,10 @@
 package com.mike.studentportal
 
 import android.util.Log
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -45,7 +49,8 @@ data class AttendanceRecord(
 data class Feedback(
     val id: String = MyDatabase.generateFeedbackID(),
     val message: String = "",
-    val sender: String = ""
+    val sender: String = "",
+    val admissionNumber: String = ""
 )
 
 data class Assignment(
@@ -97,6 +102,10 @@ data class GridItem(
 
 object MyDatabase {
     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+    private val auth = FirebaseAuth.getInstance()
+    val logout = auth.signOut()
+
+
 
     //initialize the Unique id of the items
     private var userID = 0
@@ -199,6 +208,53 @@ object MyDatabase {
         )
     }
 
+    fun fetchUserDataByEmail(email: String, callback: (User?) -> Unit) {
+         database.child("Users").orderByChild("email").equalTo(email)
+             .addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (userSnapshot in snapshot.children) {
+                    val userEmail = userSnapshot.child("email").getValue(String::class.java)
+                    if (userEmail == email) {
+                        val userId = userSnapshot.child("id").getValue(String::class.java) ?: ""
+                        val userName = userSnapshot.child("name").getValue(String::class.java) ?: ""
+                        callback(User(id = userId, name = userName, email = userEmail))
+                        return
+                    }
+                }
+                callback(null)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(null) // Handle or log the error as needed
+            }
+        })
+    }
+
+
+
+    fun updateUserNameById(userId: String, newName: String, callback: (Boolean) -> Unit) {
+        val database = FirebaseDatabase.getInstance().reference
+        val userRef = database.child("Users").child(userId)
+
+        userRef.child("name").setValue(newName).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                callback(true)
+            } else {
+                callback(false)
+            }
+        }
+    }
+
+
+
+    fun updatePassword(newPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.updatePassword(newPassword)
+            ?.addOnSuccessListener { onSuccess() }
+            ?.addOnFailureListener { exception -> onFailure(exception) }
+    }
+
+
     fun readItems(courseId: String, section: Section, onItemsRead: (List<GridItem>) -> Unit) {
         database.child("Courses").child(courseId).child(section.name).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -214,7 +270,7 @@ object MyDatabase {
 
 
     fun writeFeedback(feedback: Feedback, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
-        val feedbackRef = database.child("Feedback").child(feedback.id)
+        val feedbackRef: DatabaseReference = database.child("Feedback").push()
         feedbackRef.setValue(feedback)
             .addOnSuccessListener {
                 onSuccess() // Callback on successful write
@@ -308,6 +364,29 @@ object MyDatabase {
 
             override fun onCancelled(error: DatabaseError) {
                 onSubjectsFetched(null)
+            }
+        })
+    }
+
+
+    fun saveRating(userName: String, rating: Int, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val userRatingRef = database.child("Ratings").child(userName)
+
+        userRatingRef.setValue(rating)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception -> onFailure(exception) }
+    }
+
+    fun getRating(userName: String, onRatingFetched: (Int) -> Unit, onFailure: (DatabaseError) -> Unit) {
+        val userRatingRef = database.child("Ratings").child(userName)
+        userRatingRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val rating = snapshot.getValue(Int::class.java) ?: 0
+                onRatingFetched(rating)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onFailure(error)
             }
         })
     }
