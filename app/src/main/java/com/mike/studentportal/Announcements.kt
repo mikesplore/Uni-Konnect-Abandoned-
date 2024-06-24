@@ -68,26 +68,11 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
             isLoading = false
         }
     }
-    Scaffold(floatingActionButton = {
-        FloatingActionButton(onClick = {
-            isLoading = true
-            getAnnouncements { fetchedAnnouncements ->
-                announcements.clear()
-                announcements.addAll(fetchedAnnouncements ?: emptyList())
-                isLoading = false
-            }
-        },
-            containerColor = GlobalColors.tertiaryColor,
-            contentColor = GlobalColors.primaryColor,
-            content = {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-            })
-    }) {
+
         Column(
             modifier = Modifier
-                .background(CC.backbrush)
+                .background(GlobalColors.primaryColor)
                 .fillMaxSize()
-                .padding(it)
         ) {
             if (isLoading) {
                 Column(
@@ -97,9 +82,8 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    MyProgress()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Loading Announcements...", style = CC.descriptionTextStyle(context))
+
+                    ColorProgressIndicator(modifier = Modifier.fillMaxSize())
                 }
             } else if (announcements.isEmpty()) {
                 Column(
@@ -130,7 +114,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
             }
         }
     }
-}
+
 
 
 @Composable
@@ -206,18 +190,6 @@ fun AnnouncementCard(
         }
     }
 }
-
-@Composable
-fun MyProgress() {
-    Column(modifier = Modifier.height(70.dp)) { }
-    CircularProgressIndicator(
-        color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
-    )
-    Spacer(modifier = Modifier.height(10.dp))
-    Text("👁️👄👁️", fontSize = 40.sp)
-
-}
-
 
 @Preview
 @Composable
