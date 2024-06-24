@@ -69,7 +69,6 @@ import com.mike.studentportal.CommonComponents as CC
 fun HomeScreen(context: Context, navController: NavController) {
     val courses = remember { mutableStateListOf<Course>() }
     var loading by remember { mutableStateOf(true) }
-
     LaunchedEffect(loading) {
         MyDatabase.fetchCourses { fetchedCourses ->
             courses.clear() // Clear existing courses
@@ -81,7 +80,7 @@ fun HomeScreen(context: Context, navController: NavController) {
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
-            .background(CC.primary)
+            .background(GlobalColors.primaryColor)
             .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
@@ -397,6 +396,7 @@ fun SearchTextField() {
 fun ImageBox(course: Course, context: Context, navController: NavController) {
     Box(
         modifier = Modifier
+
             .padding(8.dp)
             .width(250.dp)
             .height(250.dp)
@@ -407,7 +407,9 @@ fun ImageBox(course: Course, context: Context, navController: NavController) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxSize().padding(10.dp)
+            modifier = Modifier
+                .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
+                .fillMaxSize().padding(10.dp)
         ) {
             AsyncImage(
                 model = "https://tipa.in/wp-content/uploads/2021/05/Online-courses.jpg",
@@ -437,7 +439,7 @@ fun ImageBox(course: Course, context: Context, navController: NavController) {
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CC.tertiary,
+                    containerColor = Color(0xff387ADF),
                     contentColor = Color.White
                 )
             ) {
