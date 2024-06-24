@@ -16,10 +16,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,13 +31,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.automirrored.outlined.Announcement
 import androidx.compose.material.icons.automirrored.outlined.EventNote
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddAlert
@@ -54,14 +48,12 @@ import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Work
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -79,7 +71,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.modifier.modifierLocalMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -151,10 +142,13 @@ class MainActivity : ComponentActivity() {
 
 sealed class Screen(val selectedIcon: ImageVector, val unselectedIcon: ImageVector) {
     data object Home : Screen(Icons.Filled.Home, Icons.Outlined.Home)
-    data object Event :Screen(Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote)
+    data object Event :
+        Screen(Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote)
+
     data object Timetable : Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday)
     data object Assignments : Screen(Icons.Filled.Work, Icons.Outlined.Work)
-    data object Announcements : Screen(Icons.Filled.AddAlert, Icons.Outlined.AddAlert
+    data object Announcements : Screen(
+        Icons.Filled.AddAlert, Icons.Outlined.AddAlert
     )
 }
 
@@ -165,16 +159,11 @@ fun MainScreen() {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
     val screens = listOf(
-        Screen.Home,
-        Screen.Event,
-        Screen.Announcements,
-        Screen.Assignments,
-        Screen.Timetable
+        Screen.Home, Screen.Event, Screen.Announcements, Screen.Assignments, Screen.Timetable
     )
     if (Global.showAlert.value) {
         BasicAlertDialog(
-            onDismissRequest = { Global.showAlert.value = false },
-            modifier = Modifier.background(
+            onDismissRequest = { Global.showAlert.value = false }, modifier = Modifier.background(
                 Color.Transparent, // Remove background here to avoid double backgrounds
                 RoundedCornerShape(10.dp)
             )
@@ -311,169 +300,173 @@ fun Dashboard(
     screens: List<Screen>,
     context: Context
 ) {
-    Scaffold(topBar = {
-        var expanded by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
+    val targetWidth by animateFloatAsState(
+        targetValue = if (isExpanded) 0.6f else 0.2f, animationSpec = tween(durationMillis = 500)
+    )
+    Scaffold(
+        topBar = {
+            var expanded by remember { mutableStateOf(false) }
 
-        TopAppBar(title = {
-            Text(
-                "Hello, ${Details.name.value}", style = CC.descriptionTextStyle(context), fontSize = 20.sp
-            )
+            TopAppBar(title = {
+                Text(
+                    "Hello, ${Details.name.value}",
+                    style = CC.descriptionTextStyle(context),
+                    fontSize = 20.sp
+                )
 
-        }, actions = {
-            IconButton(onClick = { expanded = !expanded }) {
+            }, actions = {
+                IconButton(onClick = { expanded = !expanded }) {
 
-                Icon(
-                    imageVector = Icons.Filled.MoreVert,
-                    contentDescription = "Settings",
-                    tint = Color.White,
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = "Settings",
+                        tint = Color.White,
 
-                    )
-
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .border(
-                        1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
-                    )
-                    .background(CC.primary)
-            ) {
-                DropdownMenuItem(text = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Default.AccountCircle,
-                            contentDescription = "Profile Settings",
-                            tint = GlobalColors.textColor
                         )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text("Profile", style = CC.descriptionTextStyle(context))
-                    }
-                }, onClick = {
-                    navController.navigate("settings")
-                    expanded = false
-                })
-                DropdownMenuItem(text = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Profile",
-                            tint = GlobalColors.textColor
-                        )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text("Settings", style = CC.descriptionTextStyle(context))
-                    }
-                }, onClick = {
-                    navController.navigate("settings")
-                    expanded = false
-                })
-                DropdownMenuItem(text = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Exit",
-                            tint = GlobalColors.textColor
-                        )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text("Sign Out", style = CC.descriptionTextStyle(context))
-                    }
-                }, onClick = {
-                    MyDatabase.logout
-                    navController.navigate("login")
-                    expanded = false
-                })
-            }
-        },
 
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = CC.primary
-            )
-        )
-    }, floatingActionButton = {
-        FloatingActionButton(
-            onClick = { /* Optional action */ },
-            containerColor = Color.Transparent,
-            elevation = FloatingActionButtonDefaults.elevation(0.dp),
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .height(75.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                //navigation row
-                Row(
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
                     modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .align(Alignment.CenterVertically)
-                        .background(
-                            GlobalColors.secondaryColor.copy(0.5f), RoundedCornerShape(40.dp)
+                        .border(
+                            1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
                         )
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .background(CC.primary)
                 ) {
-                    screens.forEachIndexed { index, screen ->
-                        val isSelected = pagerState.currentPage == index
-
-                        // Animate color and size changes
-                        val backgroundColor by animateColorAsState(
-                            targetValue = if (isSelected) CC.style else Color.Transparent,
-                            label = ""
-                        )
-                        val iconColor by animateColorAsState(
-                            targetValue = if (isSelected) CC.secondary else CC.tertiary,
-                            label = ""
-                        )
-                        val iconSize by animateFloatAsState(
-                            targetValue = if (isSelected) 45f else 25f, label = ""
-                        )
-                        val offsetY by animateDpAsState(
-                            targetValue = if (isSelected) (-10).dp else 0.dp, label = ""
-                        )
-
-                        Box(
-                            modifier = Modifier
-
-                                .height(50.dp)
-                                .offset(y = offsetY)
-                                .clickable {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(index)
-                                    }
-                                }, contentAlignment = Alignment.Center
+                    DropdownMenuItem(text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                contentDescription = "screen.title",
-                                tint = iconColor,
-                                modifier = Modifier
-                                    .offset(y = offsetY)
-                                    .padding(5.dp)
-                                    .size(iconSize.dp)
-
+                                Icons.Default.AccountCircle,
+                                contentDescription = "Profile Settings",
+                                tint = GlobalColors.textColor
                             )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Profile", style = CC.descriptionTextStyle(context))
+                        }
+                    }, onClick = {
+                        navController.navigate("settings")
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Settings,
+                                contentDescription = "Profile",
+                                tint = GlobalColors.textColor
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Settings", style = CC.descriptionTextStyle(context))
+                        }
+                    }, onClick = {
+                        navController.navigate("settings")
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "Exit",
+                                tint = GlobalColors.textColor
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Sign Out", style = CC.descriptionTextStyle(context))
+                        }
+                    }, onClick = {
+                        MyDatabase.logout
+                        navController.navigate("login")
+                        expanded = false
+                    })
+                }
+            },
+
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = CC.primary
+                )
+            )
+        },
+
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { /* Optional action */ },
+                containerColor = Color.Transparent,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(75.dp),
+                    contentAlignment = Alignment.Center // Center the inner row
+                ) {
+                    // Navigation row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .background(
+                                GlobalColors.secondaryColor.copy(0.5f), RoundedCornerShape(40.dp)
+                            )
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        screens.forEachIndexed { index, screen ->
+                            val isSelected = pagerState.currentPage == index
+
+                            // Animate color and size changes
+                            val backgroundColor by animateColorAsState(
+                                targetValue = if (isSelected) CC.style else Color.Transparent,
+                                label = ""
+                            )
+                            val iconColor by animateColorAsState(
+                                targetValue = if (isSelected) CC.secondary else CC.tertiary,
+                                label = ""
+                            )
+                            val iconSize by animateFloatAsState(
+                                targetValue = if (isSelected) 45f else 25f, label = ""
+                            )
+                            val offsetY by animateDpAsState(
+                                targetValue = if (isSelected) (-10).dp else 0.dp, label = ""
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .height(50.dp)
+                                    .offset(y = offsetY)
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            pagerState.animateScrollToPage(index)
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                                    contentDescription = "screen.title",
+                                    tint = iconColor,
+                                    modifier = Modifier
+                                        .offset(y = offsetY)
+                                        .padding(5.dp)
+                                        .size(iconSize.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    }, containerColor = CC.primary
+        , containerColor = CC.primary
 
     ) { innerPadding ->
         HorizontalPager(
