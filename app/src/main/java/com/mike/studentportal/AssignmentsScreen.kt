@@ -149,6 +149,15 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 }
 
             } else {
+                if(subjects.isEmpty()){
+                    Row (modifier = Modifier
+                        .fillMaxWidth(0.9f),
+                        horizontalArrangement = Arrangement.Center) {
+                        Text("No subjects found", style = CC.descriptionTextStyle(context))
+                    }
+
+                }else
+                {
 
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
@@ -183,7 +192,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                         }, modifier = Modifier.background(GlobalColors.primaryColor)
                         )
                     }
-                }
+                }}
 
                 when (selectedTabIndex) {
                     in subjects.indices -> {
@@ -393,7 +402,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
     } else {
 
         LazyColumn {
-            if (assignments!!.isEmpty()) {
+            if (assignments!!.isEmpty() || subjectId.isEmpty()) {
                 item {
                     Column(
                         modifier = Modifier.fillMaxSize(),
