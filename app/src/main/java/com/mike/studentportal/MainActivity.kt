@@ -43,14 +43,16 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.Announcement
 import androidx.compose.material.icons.automirrored.outlined.EventNote
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Announcement
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.EventNote
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Work
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
@@ -77,6 +79,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -97,16 +100,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.mike.studentportal.CommonComponents as CC
 
-object Notification {
+object Global {
     val showAlert: MutableState<Boolean> = mutableStateOf(false)
     val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
+    var loading: MutableState<Boolean> = mutableStateOf(true)
 }
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Notification.edgeToEdge.value) {
+        if (Global.edgeToEdge.value) {
             enableEdgeToEdge()
         }
 
@@ -145,11 +149,12 @@ class MainActivity : ComponentActivity() {
 }
 
 
-sealed class Screen( val selectedIcon: ImageVector, val unselectedIcon: ImageVector) {
-    data object Home : Screen( Icons.Filled.Home, Icons.Outlined.Home)
-    data object Event : Screen( Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote)
-    data object Assignments : Screen( Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday)
-    data object Announcements : Screen( Icons.AutoMirrored.Filled.Announcement,Icons.AutoMirrored.Outlined.Announcement
+sealed class Screen(val selectedIcon: ImageVector, val unselectedIcon: ImageVector) {
+    data object Home : Screen(Icons.Filled.Home, Icons.Outlined.Home)
+    data object Event :Screen(Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote)
+    data object Timetable : Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday)
+    data object Assignments : Screen(Icons.Filled.Work, Icons.Outlined.Work)
+    data object Announcements : Screen(Icons.Filled.AddAlert, Icons.Outlined.AddAlert
     )
 }
 
@@ -164,10 +169,11 @@ fun MainScreen() {
         Screen.Event,
         Screen.Announcements,
         Screen.Assignments,
+        Screen.Timetable
     )
-    if (Notification.showAlert.value) {
+    if (Global.showAlert.value) {
         BasicAlertDialog(
-            onDismissRequest = { Notification.showAlert.value = false },
+            onDismissRequest = { Global.showAlert.value = false },
             modifier = Modifier.background(
                 Color.Transparent, // Remove background here to avoid double backgrounds
                 RoundedCornerShape(10.dp)
@@ -200,7 +206,7 @@ fun MainScreen() {
                         onClick = {
                             // Call the requestNotificationPermission function from the context
                             (context as MainActivity).requestNotificationPermission()
-                            Notification.showAlert.value = false
+                            Global.showAlert.value = false
                         }, modifier = Modifier.weight(1f), // Make buttons take equal width
                         colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) // Customize button colors
                     ) {
@@ -208,7 +214,7 @@ fun MainScreen() {
                     }
                     Spacer(modifier = Modifier.width(16.dp)) // Add space between buttons
                     Button(
-                        onClick = { Notification.showAlert.value = false },
+                        onClick = { Global.showAlert.value = false },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) // Customize button colors
                     ) {
@@ -220,86 +226,64 @@ fun MainScreen() {
     }
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController, startDestination = "dashboard") {
 
-        composable(
-            route = "login",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(1000)
-                )
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(10000))
-            }
+        composable(route = "login", enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
+            )
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(10000))
+        }
 
         ) {
             LoginScreen(navController, context)
         }
 
-        composable(
-            route = "passwordreset",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
+        composable(route = "passwordreset", enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+            )
+        }, exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
+            )
+        }) {
             PasswordReset(navController, context)
         }
 
 
         composable("dashboard") {
             Dashboard(
-                navController,
-                pagerState,
-                coroutineScope,
-                screens,
-                context
+                navController, pagerState, coroutineScope, screens, context
             )
         }
-        composable(
-            route = "moredetails",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(1000)
-                )
-            }
-        ) {
+
+        composable("timetable") {
+            TimetableScreen(navController, context)
+        }
+        composable(route = "moredetails", enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+            )
+        }, exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
+            )
+        }) {
             MoreDetails(context, navController)
         }
 
 
-        composable(
-            route = "colors",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
+        composable(route = "colors", enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+            )
+        }, exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
+            )
+        }) {
             ColorSettings(navController, context)
         }
 
@@ -332,7 +316,7 @@ fun Dashboard(
 
         TopAppBar(title = {
             Text(
-                "Hello, Michael", style = CC.descriptionTextStyle(context), fontSize = 20.sp
+                "Hello, ${Details.name.value}", style = CC.descriptionTextStyle(context), fontSize = 20.sp
             )
 
         }, actions = {
@@ -417,77 +401,79 @@ fun Dashboard(
                 containerColor = CC.primary
             )
         )
-    },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* Optional action */ },
-                containerColor = Color.Transparent,
-                elevation = FloatingActionButtonDefaults.elevation(0.dp),
-                shape = RoundedCornerShape(20.dp),
+    }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = { /* Optional action */ },
+            containerColor = Color.Transparent,
+            elevation = FloatingActionButtonDefaults.elevation(0.dp),
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
+                    .height(75.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
+                //navigation row
                 Row(
                     modifier = Modifier
-                        .height(75.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                        .fillMaxWidth(0.6f)
+                        .align(Alignment.CenterVertically)
+                        .background(
+                            GlobalColors.secondaryColor.copy(0.5f), RoundedCornerShape(40.dp)
+                        )
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    //navigation row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(0.5f)
-                            .align(Alignment.CenterVertically)
-                            .background(GlobalColors.secondaryColor, RoundedCornerShape(40.dp))
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        screens.forEachIndexed { index, screen ->
-                            val isSelected = pagerState.currentPage == index
+                    screens.forEachIndexed { index, screen ->
+                        val isSelected = pagerState.currentPage == index
 
-                            // Animate color and size changes
-                            val backgroundColor by animateColorAsState(
-                                targetValue = if (isSelected) CC.style else Color.Transparent, label = ""
-                            )
-                            val iconColor by animateColorAsState(
-                                targetValue = if (isSelected) CC.secondary else CC.tertiary, label = ""
-                            )
-                            val iconSize by animateFloatAsState(
-                                targetValue = if (isSelected) 45f else 25f, label = ""
-                            )
-                            val offsetY by animateDpAsState(
-                                targetValue = if (isSelected) (-10).dp else 0.dp, label = ""
-                            )
+                        // Animate color and size changes
+                        val backgroundColor by animateColorAsState(
+                            targetValue = if (isSelected) CC.style else Color.Transparent,
+                            label = ""
+                        )
+                        val iconColor by animateColorAsState(
+                            targetValue = if (isSelected) CC.secondary else CC.tertiary,
+                            label = ""
+                        )
+                        val iconSize by animateFloatAsState(
+                            targetValue = if (isSelected) 45f else 25f, label = ""
+                        )
+                        val offsetY by animateDpAsState(
+                            targetValue = if (isSelected) (-10).dp else 0.dp, label = ""
+                        )
 
-                            Box(
+                        Box(
+                            modifier = Modifier
+
+                                .height(50.dp)
+                                .offset(y = offsetY)
+                                .clickable {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(index)
+                                    }
+                                }, contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                                contentDescription = "screen.title",
+                                tint = iconColor,
                                 modifier = Modifier
-
-                                    .height(50.dp)
                                     .offset(y = offsetY)
-                                    .clickable {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(index)
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                    contentDescription = "screen.title",
-                                    tint = iconColor,
-                                    modifier = Modifier
-                                        .offset(y = offsetY)
-                                        .padding(5.dp)
-                                        .size(iconSize.dp)
+                                    .padding(5.dp)
+                                    .size(iconSize.dp)
 
-                                )
-                            }
+                            )
                         }
                     }
                 }
             }
-        }, containerColor = CC.primary
+        }
+    }, containerColor = CC.primary
 
     ) { innerPadding ->
         HorizontalPager(
@@ -498,7 +484,7 @@ fun Dashboard(
                 Screen.Event -> EventScreen(navController, context)
                 Screen.Assignments -> AssignmentScreen(navController, context)
                 Screen.Announcements -> AnnouncementsScreen(navController, context)
-
+                Screen.Timetable -> TimetableScreen(navController, context)
             }
         }
     }
