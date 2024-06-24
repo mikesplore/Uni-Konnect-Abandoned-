@@ -76,7 +76,9 @@ data class ColorScheme(
     val primaryColor: String,
     val secondaryColor: String,
     val tertiaryColor: String,
-    val textColor: String
+    val textColor: String,
+    val extraColor1: String,
+    val extraColor2: String
 )
 
 fun parseColor(hex: String): Color {
@@ -92,7 +94,7 @@ object GlobalColors {
     private const val PREFS_NAME = "color_scheme_prefs"
     private const val COLOR_SCHEME_KEY = "color_scheme"
 
-    private val defaultScheme = ColorScheme("000000", "333333", "CCCCCC", "FFFFFF")
+    private val defaultScheme = ColorScheme("000000", "333333", "CCCCCC", "FFFFFF", "7BC9FF","A3FFD6")
 
     var currentScheme by mutableStateOf(defaultScheme)
 
@@ -141,6 +143,8 @@ fun ColorSettings(navController: NavController, context: Context) {
     var primaryColor by remember { mutableStateOf(GlobalColors.currentScheme.primaryColor) }
     var secondaryColor by remember { mutableStateOf(GlobalColors.currentScheme.secondaryColor) }
     var tertiaryColor by remember { mutableStateOf(GlobalColors.currentScheme.tertiaryColor) }
+    var extraColor1 by remember { mutableStateOf(GlobalColors.currentScheme.extraColor1) }
+    var extraColor2 by remember { mutableStateOf(GlobalColors.currentScheme.extraColor2) }
     var textColor by remember { mutableStateOf(GlobalColors.currentScheme.textColor) }
     var currentFont by remember { mutableStateOf<FontFamily?>(null) }
     var fontUpdated by remember { mutableStateOf(false) }
@@ -152,6 +156,8 @@ fun ColorSettings(navController: NavController, context: Context) {
         secondaryColor = scheme.secondaryColor
         tertiaryColor = scheme.tertiaryColor
         textColor = scheme.textColor
+        extraColor1 = scheme.extraColor1
+        extraColor2 = scheme.extraColor2
     }
 
     // Listen to changes in global color scheme and update local states
@@ -160,6 +166,9 @@ fun ColorSettings(navController: NavController, context: Context) {
         secondaryColor = GlobalColors.currentScheme.secondaryColor
         tertiaryColor = GlobalColors.currentScheme.tertiaryColor
         textColor = GlobalColors.currentScheme.textColor
+        extraColor1 = GlobalColors.currentScheme.extraColor1
+        extraColor2 = GlobalColors.currentScheme.extraColor2
+
     }
 
     var visible by remember { mutableStateOf(true) }
@@ -192,7 +201,9 @@ fun ColorSettings(navController: NavController, context: Context) {
                                 primaryColor = primaryColor,
                                 secondaryColor = secondaryColor,
                                 tertiaryColor = tertiaryColor,
-                                textColor = textColor
+                                textColor = textColor,
+                                extraColor1 = extraColor1,
+                                extraColor2 = extraColor2
                             )
                             GlobalColors.saveColorScheme(context, newScheme)
                         }
@@ -227,6 +238,8 @@ fun ColorSettings(navController: NavController, context: Context) {
                 secondaryColor = colors[1].toArgb().toHexString()
                 tertiaryColor = colors[2].toArgb().toHexString()
                 textColor = colors[3].toArgb().toHexString()
+                extraColor1 = colors[4].toArgb().toHexString()
+                extraColor2 = colors[5].toArgb().toHexString()
             }
             Spacer(modifier = Modifier.height(20.dp))
             CustomTextStyle(context = LocalContext.current) { selectedFont ->
@@ -246,14 +259,17 @@ fun ColorPalette(onColorSelected: (List<Color>) -> Unit) {
         Color(0xFF000000), // Black
         Color(0xFF2C3E50), // Dark Blue
         Color(0xFF34495E), // Grayish Blue
-        Color(0xFF1C2833)  // Very Dark Blue
+        Color(0xFF1C2833) , // Very Dark Blue
+                Color(0xFF000000), // Black
+        Color(0xFF2C3E50),
+
     ))
 
     val galaxyTheme = Theme("Galaxy", listOf(
         Color(0xFF2C3E50), // Dark Blue
         Color(0xFF4A235A), // Dark Purple
         Color(0xFF1B2631), // Very Dark Blue
-        Color(0xFF212F3D)  // Very Dark Grayish Blue
+        Color(0xFF212F3D)  // Very Dark Grayish
     ))
 
     val forestNightTheme = Theme("Forest Night", listOf(
