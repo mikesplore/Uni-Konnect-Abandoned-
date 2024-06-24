@@ -1,6 +1,13 @@
 package com.mike.studentportal
 
 import android.content.Context
+import android.icu.text.ListFormatter.Width
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +41,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -49,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -57,6 +66,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -68,6 +78,7 @@ import com.mike.studentportal.CommonComponents as CC
 @Composable
 fun HomeScreen(context: Context, navController: NavController) {
     val courses = remember { mutableStateListOf<Course>() }
+    val announcements by remember { mutableStateOf(emptyList<Announcement>()) }
     var loading by remember { mutableStateOf(true) }
     LaunchedEffect(loading) {
         MyDatabase.fetchCourses { fetchedCourses ->
@@ -92,19 +103,18 @@ fun HomeScreen(context: Context, navController: NavController) {
             SearchTextField()
         }
         Spacer(modifier = Modifier.height(10.dp))
-        if (loading) {
-            Column(
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator(
-                    color = CC.secondary, trackColor = CC.primary
-                )
-
+        if (Global.loading.value) {
+            Row (modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())){
+                LoadingIconBox()
+                LoadingIconBox()
+                LoadingIconBox()
+                LoadingIconBox()
+                LoadingIconBox()
+                LoadingIconBox()
             }
+
 
         } else {
             if (courses.isEmpty()) {
@@ -140,40 +150,23 @@ fun HomeScreen(context: Context, navController: NavController) {
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (loading) {
-                Column(
-                    modifier = Modifier
-                        .height(200.dp)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+            if(Global.loading.value){
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
                 ) {
-                    CircularProgressIndicator(
-                        color = CC.secondary, trackColor = CC.primary
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Loading...", color = CC.textColor
-                    )
+                    LoadingImageBox()
+                    LoadingImageBox()
+                    LoadingImageBox()
+                    LoadingImageBox()
+                    LoadingImageBox()
+                    LoadingImageBox()
                 }
+            }else {
 
-            } else {
-                if (courses.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .height(200.dp)
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "No courses found", style = CC.descriptionTextStyle(context)
-                        )
-                    }
-                } else {
-                    ImageList(courses, context, navController)
-                }
+                ImageList(courses, context, navController)
             }
+
+
         }
         Spacer(modifier = Modifier.height(10.dp))
         Row(
@@ -202,6 +195,17 @@ fun HomeScreen(context: Context, navController: NavController) {
                 context
             )
         }
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(
+            modifier = Modifier
+                .padding(15.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+            Text("${CC.currentDay()} Timetable", style = CC.titleTextStyle(context), fontSize = 20.sp)
+            Text("View All", style = CC.descriptionTextStyle(context), fontSize = 15.sp)
+        }
+        TodayTimetable( context )
     }
 }
 
@@ -210,8 +214,8 @@ fun HomeScreen(context: Context, navController: NavController) {
 fun IconBox(course: Course, navController: NavController, context: Context) {
     val brush = Brush.linearGradient(
         listOf(
-        Color(0xff3572EF),
-        Color(0xffFF76CE),
+        GlobalColors.extraColor2,
+        GlobalColors.extraColor1
     ))
 
 
@@ -245,6 +249,29 @@ fun IconBox(course: Course, navController: NavController, context: Context) {
     }
 }
 
+
+@Composable
+fun LoadingIconBox() {
+    Column(
+        modifier = Modifier.padding(start = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .background(Color.Transparent, RoundedCornerShape(8.dp))
+                .size(60.dp)
+                .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp))
+        ) {
+            ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+
+        }
+        Spacer(modifier = Modifier.height(5.dp))
+        Row(modifier = Modifier.width(60.dp).height(15.dp)) {
+            ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+        }
+    }
+}
+
 @Composable
 fun IconList(courses: List<Course>, navController: NavController, context: Context) {
     LazyRow(
@@ -268,7 +295,6 @@ fun EventCard(
     context: Context
 
 ) {
-    var isLoading by remember { mutableStateOf(true) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -286,12 +312,10 @@ fun EventCard(
                     .fillMaxSize()
                     .blur(radius = 8.dp), // Apply blur effect
                 contentScale = ContentScale.Crop,
-                onLoading = { isLoading = true },
-                onSuccess = { isLoading = false })
-            if (isLoading) {
-                CircularProgressIndicator(
-                    color = CC.secondary, trackColor = CC.primary
-                )
+                onLoading = { },
+                onSuccess = {  })
+            if (Global.loading.value) {
+                ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp)))
             } else {
                 Column(
                     modifier = Modifier
@@ -355,6 +379,114 @@ fun EventCard(
     }
 }
 
+@Composable
+fun TodayTimetable(context: Context) {
+    var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        MyDatabase.getCurrentDayTimetable(
+            CC.currentDay(),
+            onTimetableFetched = {
+                timetables = it
+                isLoading = false
+            }
+        )
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .padding(5.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .shadow(8.dp, RoundedCornerShape(16.dp)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = CC.secondary,
+                    trackColor = CC.primary
+                )
+            }
+        } else {
+            val timetable = timetables?.firstOrNull()
+
+            if (timetable == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No events", style = CC.titleTextStyle(context))
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .border(
+                            1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                        )
+                        .background(GlobalColors.primaryColor)
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = timetable.unitName,
+                        style = CC.titleTextStyle(context),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = "Event Date and Time",
+                            tint = CC.secondary
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = "${timetable.startTime} - ${timetable.endTime}",
+                            style = CC.descriptionTextStyle(context)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Place,
+                            contentDescription = "Event Location",
+                            tint = CC.secondary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = timetable.venue,
+                            style = CC.descriptionTextStyle(context)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(
+                        text = timetable.lecturer,
+                        style = CC.descriptionTextStyle(context),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+
+
 
 @Composable
 fun SearchTextField() {
@@ -408,7 +540,7 @@ fun ImageBox(course: Course, context: Context, navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
-                .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
+                .background(GlobalColors.extraColor2, RoundedCornerShape(16.dp))
                 .fillMaxSize().padding(10.dp)
         ) {
             AsyncImage(
@@ -439,7 +571,7 @@ fun ImageBox(course: Course, context: Context, navController: NavController) {
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xff387ADF),
+                    containerColor = GlobalColors.extraColor1,
                     contentColor = Color.White
                 )
             ) {
@@ -448,6 +580,49 @@ fun ImageBox(course: Course, context: Context, navController: NavController) {
         }
     }
 }
+
+
+@Composable
+fun LoadingImageBox() {
+    Box(
+        modifier = Modifier
+            .padding(8.dp)
+            .width(250.dp)
+            .height(250.dp)
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
+                .fillMaxSize().padding(10.dp)
+        ) {
+            ColorProgressIndicator(modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .fillMaxWidth()
+                .height(100.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(5.dp)))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent)
+                    .height(50.dp),
+
+                ) {
+                ColorProgressIndicator(modifier=Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+            }
+        }
+    }
+}
+
+
 
 
 @Composable
@@ -466,9 +641,35 @@ fun ImageList(courses: List<Course>, context: Context, navController: NavControl
 }
 
 
+@Composable
+fun ColorProgressIndicator(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+    val offsetX by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = ""
+    )
+
+    Box(
+        modifier
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(GlobalColors.secondaryColor, GlobalColors.primaryColor, GlobalColors.secondaryColor),
+                    start = Offset(offsetX * 1000f - 500f, 0f), // Adjust offset for movement
+                    end = Offset(offsetX * 1000f + 500f, 0f)
+                )
+            )
+    )
+}
+
+
 @Preview
 @Composable
 fun PreviewHomeScreen() {
-    HomeScreen(LocalContext.current, navController = rememberNavController())
+    HomeScreen(LocalContext.current, rememberNavController())
+
 
 }
