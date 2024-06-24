@@ -3,6 +3,7 @@ package com.mike.studentportal
 
 import android.content.Context
 import android.icu.util.Calendar
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.mike.studentportal.MyDatabase.getEvents
 import com.mike.studentportal.CommonComponents as CC
 
@@ -62,6 +64,7 @@ fun EventScreen(navController: NavController, context: Context) {
             isLoading = false
         }
     }
+
 
     val showNotification = remember { mutableStateOf(false) }
     val calendar = Calendar.getInstance()
