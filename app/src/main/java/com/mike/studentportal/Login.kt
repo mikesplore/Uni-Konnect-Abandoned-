@@ -272,6 +272,12 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     "Sign In successful!",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
+                                                MyDatabase.writeUsers(
+                                                    User(
+                                                        name = name,
+                                                        email = email
+                                                    )
+                                                )
                                                 navController.navigate("dashboard")
                                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(
                                                     OnCompleteListener { task ->
