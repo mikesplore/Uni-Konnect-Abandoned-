@@ -302,7 +302,8 @@ fun Dashboard(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val targetWidth by animateFloatAsState(
-        targetValue = if (isExpanded) 0.6f else 0.2f, animationSpec = tween(durationMillis = 500)
+        targetValue = if (isExpanded) 0.6f else 0.2f, animationSpec = tween(durationMillis = 500),
+        label = ""
     )
     Scaffold(
         topBar = {
