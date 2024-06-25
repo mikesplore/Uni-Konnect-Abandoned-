@@ -1,7 +1,6 @@
 package com.mike.studentportal
 
 import android.content.Context
-import android.icu.text.ListFormatter.Width
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -25,23 +24,34 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.BorderColor
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.School
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -54,19 +64,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -79,19 +88,29 @@ import com.mike.studentportal.CommonComponents as CC
 fun HomeScreen(context: Context, navController: NavController) {
     val courses = remember { mutableStateListOf<Course>() }
     val announcements by remember { mutableStateOf(emptyList<Announcement>()) }
-    LaunchedEffect(Global.loading.value) {
+    var loading by remember { mutableStateOf(true) }
+    val events by remember { mutableStateOf<List<Event>?>(null) }
+
+
+    LaunchedEffect(loading) {
         MyDatabase.fetchCourses { fetchedCourses ->
             courses.clear() // Clear existing courses
             courses.addAll(fetchedCourses) // Add fetched courses
-            Global.loading.value = false // Set loading to false after fetching
+            loading = false // Set loading to false after fetching
         }
-    }
 
+
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ){
+        Background()
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
-            .background(GlobalColors.primaryColor)
-            .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             modifier = Modifier
@@ -102,10 +121,12 @@ fun HomeScreen(context: Context, navController: NavController) {
             SearchTextField()
         }
         Spacer(modifier = Modifier.height(10.dp))
-        if (Global.loading.value) {
-            Row (modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())){
+        if (loading) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+            ) {
                 LoadingIconBox()
                 LoadingIconBox()
                 LoadingIconBox()
@@ -149,9 +170,11 @@ fun HomeScreen(context: Context, navController: NavController) {
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
-            if(Global.loading.value){
+            if (loading) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
                 ) {
                     LoadingImageBox()
                     LoadingImageBox()
@@ -160,7 +183,7 @@ fun HomeScreen(context: Context, navController: NavController) {
                     LoadingImageBox()
                     LoadingImageBox()
                 }
-            }else {
+            } else {
 
                 ImageList(courses, context, navController)
             }
@@ -200,12 +223,17 @@ fun HomeScreen(context: Context, navController: NavController) {
                 .padding(15.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-            Text("${CC.currentDay()} Timetable", style = CC.titleTextStyle(context), fontSize = 20.sp)
+        ) {
+            Text(
+                "${CC.currentDay()} Timetable",
+                style = CC.titleTextStyle(context),
+                fontSize = 20.sp
+            )
             Text("View All", style = CC.descriptionTextStyle(context), fontSize = 15.sp)
         }
-        TodayTimetable( context )
+        TodayTimetable(context)
     }
+}
 }
 
 
@@ -213,9 +241,9 @@ fun HomeScreen(context: Context, navController: NavController) {
 fun IconBox(course: Course, navController: NavController, context: Context) {
     val brush = Brush.linearGradient(
         listOf(
-        GlobalColors.extraColor2,
-        GlobalColors.extraColor1
-    ))
+            GlobalColors.extraColor2, GlobalColors.extraColor1
+        )
+    )
 
 
     Column(
@@ -230,8 +258,7 @@ fun IconBox(course: Course, navController: NavController, context: Context) {
                 .clickable {
                     CourseName.name.value = course.courseName
                     navController.navigate("course/${course.courseCode}")
-                },
-            contentAlignment = Alignment.Center
+                }, contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.School,
@@ -261,12 +288,22 @@ fun LoadingIconBox() {
                 .size(60.dp)
                 .border(1.dp, CC.tertiary, shape = RoundedCornerShape(8.dp))
         ) {
-            ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+            ColorProgressIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(10.dp))
+            )
 
         }
         Spacer(modifier = Modifier.height(5.dp))
-        Row(modifier = Modifier.width(60.dp).height(15.dp)) {
-            ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+        Row(modifier = Modifier
+            .width(60.dp)
+            .height(15.dp)) {
+            ColorProgressIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(10.dp))
+            )
         }
     }
 }
@@ -306,57 +343,59 @@ fun EventCard(
         )
     ) {
 
-            if (Global.loading.value) {
-                ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp)))
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+        if (Global.loading.value) {
+            ColorProgressIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp))
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = title, style = CC.titleTextStyle(context), textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = title,
-                        style = CC.titleTextStyle(context),
-                        textAlign = TextAlign.Center
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "Event Date and Time",
+                        tint = CC.secondary
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = "Event Date and Time",
-                            tint = CC.secondary
-                        )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            text = dateTime, style = CC.descriptionTextStyle(context)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Place,
-                            contentDescription = "Event Location",
-                            tint = CC.secondary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = location, style = CC.descriptionTextStyle(context)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(5.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = description,
-                        style = CC.descriptionTextStyle(context),
-                        textAlign = TextAlign.Center
+                        text = dateTime, style = CC.descriptionTextStyle(context)
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
                 }
+                Spacer(modifier = Modifier.height(5.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Event Location",
+                        tint = CC.secondary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = location, style = CC.descriptionTextStyle(context)
+                    )
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = description,
+                    style = CC.descriptionTextStyle(context),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(10.dp))
             }
+        }
 
     }
 }
@@ -366,13 +405,10 @@ fun TodayTimetable(context: Context) {
     var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
 
     LaunchedEffect(Global.loading.value) {
-        MyDatabase.getCurrentDayTimetable(
-            CC.currentDay(),
-            onTimetableFetched = {
-                timetables = it
-                Global.loading.value = false
-            }
-        )
+        MyDatabase.getCurrentDayTimetable(CC.currentDay(), onTimetableFetched = {
+            timetables = it
+            Global.loading.value = false
+        })
     }
 
     Card(
@@ -384,7 +420,9 @@ fun TodayTimetable(context: Context) {
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         if (Global.loading.value) {
-            ColorProgressIndicator(modifier = Modifier.fillMaxSize().height(100.dp))
+            ColorProgressIndicator(modifier = Modifier
+                .fillMaxSize()
+                .height(100.dp))
 
         } else {
             val timetable = timetables?.firstOrNull()
@@ -440,8 +478,7 @@ fun TodayTimetable(context: Context) {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = timetable.venue,
-                            style = CC.descriptionTextStyle(context)
+                            text = timetable.venue, style = CC.descriptionTextStyle(context)
                         )
                     }
                     Spacer(modifier = Modifier.height(5.dp))
@@ -455,9 +492,6 @@ fun TodayTimetable(context: Context) {
         }
     }
 }
-
-
-
 
 
 @Composable
@@ -513,7 +547,8 @@ fun ImageBox(course: Course, context: Context, navController: NavController) {
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .background(GlobalColors.extraColor2, RoundedCornerShape(16.dp))
-                .fillMaxSize().padding(10.dp)
+                .fillMaxSize()
+                .padding(10.dp)
         ) {
             AsyncImage(
                 model = "https://tipa.in/wp-content/uploads/2021/05/Online-courses.jpg",
@@ -543,8 +578,7 @@ fun ImageBox(course: Course, context: Context, navController: NavController) {
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = GlobalColors.extraColor1,
-                    contentColor = Color.White
+                    containerColor = GlobalColors.extraColor1, contentColor = Color.White
                 )
             ) {
                 Text("Open Course", style = CC.descriptionTextStyle(context))
@@ -568,17 +602,26 @@ fun LoadingImageBox() {
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
-                .fillMaxSize().padding(10.dp)
+                .fillMaxSize()
+                .padding(10.dp)
         ) {
-            ColorProgressIndicator(modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .fillMaxWidth()
-                .height(100.dp))
+            ColorProgressIndicator(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .fillMaxWidth()
+                    .height(100.dp)
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
-                modifier = Modifier.fillMaxWidth().height(50.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             ) {
-                ColorProgressIndicator(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(5.dp)))
+                ColorProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(5.dp))
+                )
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -588,13 +631,15 @@ fun LoadingImageBox() {
                     .height(50.dp),
 
                 ) {
-                ColorProgressIndicator(modifier=Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)))
+                ColorProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(10.dp))
+                )
             }
         }
     }
 }
-
-
 
 
 @Composable
@@ -617,24 +662,64 @@ fun ImageList(courses: List<Course>, context: Context, navController: NavControl
 fun ColorProgressIndicator(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val offsetX by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
+        initialValue = 0f, targetValue = 1f, animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 2000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
 
     Box(
-        modifier
-            .background(
+        modifier.background(
                 brush = Brush.linearGradient(
-                    colors = listOf(GlobalColors.secondaryColor, GlobalColors.primaryColor, GlobalColors.secondaryColor),
-                    start = Offset(offsetX * 1000f - 500f, 0f), // Adjust offset for movement
+                    colors = listOf(
+                        GlobalColors.secondaryColor,
+                        GlobalColors.primaryColor,
+                        GlobalColors.secondaryColor
+                    ), start = Offset(offsetX * 1000f - 500f, 0f), // Adjust offset for movement
                     end = Offset(offsetX * 1000f + 500f, 0f)
                 )
             )
     )
+}
+
+
+@Composable
+fun Background() {
+    val icons = listOf(
+        Icons.Outlined.Home,
+        Icons.AutoMirrored.Outlined.Assignment,
+        Icons.Outlined.School,
+        Icons.Outlined.AccountCircle,
+        Icons.Outlined.BorderColor,
+        Icons.Outlined.Book,
+    )
+
+    // Calculate the number of repetitions needed to fill the screen
+    val repetitions = 1000 // Adjust this value as needed
+
+    val repeatedIcons = mutableListOf<ImageVector>()
+    repeat(repetitions) {
+        repeatedIcons.addAll(icons.shuffled())
+    }
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(10),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .padding(10.dp),
+        contentPadding = PaddingValues(8.dp)
+    ) {
+        items(repeatedIcons) { icon ->
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = GlobalColors.secondaryColor.copy(0.7f),
+                modifier = Modifier
+                    .padding(8.dp)
+            )
+        }
+    }
 }
 
 
