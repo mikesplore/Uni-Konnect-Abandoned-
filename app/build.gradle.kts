@@ -30,6 +30,15 @@ android {
             )
         }
     }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = "release"
+            keyPassword = "mikemike"
+            storeFile = file("C:\\Users\\Mike\\Documents\\studentPortal.jks")
+            storePassword = "mikemike"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -53,8 +62,9 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.fragment)
     implementation(libs.kotlinx.serialization.json)
-    implementation ("com.google.code.gson:gson:2.9.1")
+    implementation (libs.gson)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation (libs.accompanist.pager)
     implementation (libs.accompanist.pager.indicators)
