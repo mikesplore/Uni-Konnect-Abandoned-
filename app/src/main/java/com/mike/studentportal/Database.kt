@@ -463,16 +463,16 @@ object MyDatabase {
     }
 
 
-    fun getEvents(onUsersFetched: (List<Event>?) -> Unit) {
+    fun getEvents(onEventsFetched: (List<Event>?) -> Unit) {
         database.child("Events").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val event =
                     snapshot.children.mapNotNull { it.getValue(Event::class.java) }
-                onUsersFetched(event)
+                onEventsFetched(event)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                onUsersFetched(null)
+                onEventsFetched(null)
             }
         })
     }
