@@ -29,6 +29,7 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.SafetyCheck
@@ -74,6 +75,16 @@ import com.google.firebase.auth.FirebaseAuth
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import com.mike.studentportal.MyDatabase.getRating
 import com.mike.studentportal.MyDatabase.saveRating
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import com.mike.studentportal.MyDatabase.updatePassword
 import com.mike.studentportal.CommonComponents as CC
 
@@ -91,6 +102,8 @@ fun SettingsScreen(navController: NavController, context: Context) {
             )
         }, containerColor = GlobalColors.primaryColor
     ) {
+        Box(modifier = Modifier.fillMaxSize()){
+            Background(context)
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -100,7 +113,7 @@ fun SettingsScreen(navController: NavController, context: Context) {
                 .padding(16.dp), // Added padding to the column
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SectionTitle(context, Icons.Default.AccountCircle,"Profile")
+            SectionTitle(context, Icons.Default.AccountCircle, "Profile")
             ProfileCard(context = context)
             Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
 
@@ -108,29 +121,30 @@ fun SettingsScreen(navController: NavController, context: Context) {
                 title = "Appearance",
                 description = "Change the appearance of the app",
                 navController = navController,
-                route = "colors",
+                route = "appearance",
                 context = context
             )
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before system settings section
-            SectionTitle(context, Icons.Default.SafetyCheck,"System")
+            SectionTitle(context, Icons.Default.SafetyCheck, "System")
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before system settings section
             SystemSettings(context)
             Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
-            SectionTitle(context, Icons.Default.Security,"Security")
+            SectionTitle(context, Icons.Default.Security, "Security")
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before password section
             Text("Change Password", style = CC.descriptionTextStyle(context))
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before password section
             PasswordUpdateSection(context)
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
-            SectionTitle(context, Icons.Default.Feedback,"We value your Feedback")
+            SectionTitle(context, Icons.AutoMirrored.Filled.Message, "We value your Feedback")
             RatingAndFeedbackScreen(context)
 
+        }
         }
     }
 }
 
 @Composable
-fun SectionTitle(context: Context,icon: ImageVector, title: String) {
+fun SectionTitle(context: Context, icon: ImageVector, title: String) {
     LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
     }
@@ -325,8 +339,8 @@ fun ProfileCard(
                         Button(
                             onClick = { isEditing = !isEditing },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isEditing) GlobalColors.secondaryColor else GlobalColors.extraColor1
-                                , contentColor = Color.White
+                                containerColor = if (isEditing) GlobalColors.secondaryColor else GlobalColors.extraColor1,
+                                contentColor = Color.White
                             ),
                             shape = RoundedCornerShape(10.dp)
                         ) {
@@ -344,8 +358,7 @@ fun ProfileCard(
                         ) {
                             Button(
                                 onClick = {
-                                    MyDatabase.updateUserNameById(
-                                        currentAdmissionNumber,
+                                    MyDatabase.updateUserNameById(currentAdmissionNumber,
                                         currentName,
                                         callback = {
                                             Toast.makeText(
@@ -478,9 +491,7 @@ fun PasswordUpdateSection(context: Context) {
                                     // Handle success (e.g., show a success message)
                                     loading = false
                                     Toast.makeText(
-                                        context,
-                                        "Password updated successfully",
-                                        Toast.LENGTH_SHORT
+                                        context, "Password updated successfully", Toast.LENGTH_SHORT
                                     ).show()
                                     currentPassword = ""
                                     newPassword = ""
@@ -535,6 +546,78 @@ fun PasswordUpdateSection(context: Context) {
 
 
 @OptIn(ExperimentalMaterial3Api::class)
+
+@Composable
+fun StarRating(
+    currentRating: Int,
+    onRatingChanged: (Int) -> Unit,
+    context: Context,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (i in 1..5) {
+            val color = when {
+                i <= currentRating -> when (i) {
+                    in 1..2 -> Color.Red
+                    3 -> GlobalColors.extraColor2
+                    else -> Color.Green
+                }
+
+                else -> GlobalColors.secondaryColor
+            }
+            val animatedScale by animateFloatAsState(
+                targetValue = if (i <= currentRating) 1.2f else 1.0f,
+                animationSpec = tween(durationMillis = 300),
+                label = ""
+            )
+            Star(filled = i <= currentRating,
+                color = color,
+                scale = animatedScale,
+                onClick = { onRatingChanged(i) })
+            Spacer(modifier = Modifier.width(4.dp))
+        }
+    }
+}
+
+@Composable
+fun Star(
+    filled: Boolean, color: Color, scale: Float, onClick: () -> Unit, modifier: Modifier = Modifier
+) {
+    val path = Path().apply {
+        moveTo(50f, 0f)
+        lineTo(61f, 35f)
+        lineTo(98f, 35f)
+        lineTo(68f, 57f)
+        lineTo(79f, 91f)
+        lineTo(50f, 70f)
+        lineTo(21f, 91f)
+        lineTo(32f, 57f)
+        lineTo(2f, 35f)
+        lineTo(39f, 35f)
+        close()
+    }
+
+    Canvas(
+        modifier = modifier
+            .size((40 * scale).dp)
+            .clickable(onClick = onClick)
+    ) {
+        drawPath(
+            path = path,
+            color = if (filled) color else Color.Gray,
+            style = if (filled) Stroke(width = 8f) else Stroke(
+                width = 8f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+    }
+}
+
 @Composable
 fun RatingAndFeedbackScreen(context: Context) {
     val auth = FirebaseAuth.getInstance()
@@ -556,9 +639,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                         onRatingFetched = { rating -> currentRating = rating },
                         onFailure = {
                             Toast.makeText(
-                                context,
-                                "Failed to fetch rating: ${it.message}",
-                                Toast.LENGTH_SHORT
+                                context, "Failed to fetch rating: ${it.message}", Toast.LENGTH_SHORT
                             ).show()
                         })
                 }
@@ -599,8 +680,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                     onValueChange = { feedbackText = it },
                     label = {
                         Text(
-                            "Enter your feedback",
-                            style = CC.descriptionTextStyle(context)
+                            "Enter your feedback", style = CC.descriptionTextStyle(context)
                         )
                     },
                     modifier = Modifier
@@ -624,9 +704,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                                 ), onSuccess = {
                                     loading = false
                                     Toast.makeText(
-                                        context,
-                                        "Thanks for your feedback",
-                                        Toast.LENGTH_SHORT
+                                        context, "Thanks for your feedback", Toast.LENGTH_SHORT
                                     ).show()
                                     feedbackText = ""
                                     showFeedbackForm = false
@@ -652,7 +730,8 @@ fun RatingAndFeedbackScreen(context: Context) {
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.extraColor1, contentColor = GlobalColors.secondaryColor
+                        containerColor = GlobalColors.extraColor1,
+                        contentColor = GlobalColors.secondaryColor
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -675,33 +754,6 @@ fun RatingAndFeedbackScreen(context: Context) {
 
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun StarRating(
-    currentRating: Int, onRatingChanged: (Int) -> Unit, maxRating: Int = 5, context: Context
-) {
-    var selectedRating by remember { mutableStateOf(currentRating) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        for (i in 1..maxRating) {
-            Icon(imageVector = if (i <= selectedRating) Icons.Filled.Star else Icons.Outlined.Star,
-                contentDescription = if (i <= selectedRating) "Selected Star" else "Unselected Star",
-                tint = if (i <= selectedRating) Color.Yellow else GlobalColors.tertiaryColor,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(4.dp)
-                    .clickable {
-                        selectedRating = i
-                        onRatingChanged(selectedRating)
-                    })
         }
     }
 }
