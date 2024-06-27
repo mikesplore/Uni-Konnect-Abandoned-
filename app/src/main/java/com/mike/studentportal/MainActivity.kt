@@ -233,8 +233,7 @@ fun MainScreen() {
         }
     }
     val navController = rememberNavController()
-
-    NavHost(navController, startDestination = "colors") {
+    NavHost(navController, startDestination = "appearance") {
 
         composable(route = "login", enterTransition = {
             slideIntoContainer(
@@ -285,7 +284,7 @@ fun MainScreen() {
             SignAttendanceScreen(navController, context)
         }
 
-        composable(route = "colors", enterTransition = {
+        composable(route = "appearance", enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
             )
@@ -294,7 +293,7 @@ fun MainScreen() {
                 AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
             )
         }) {
-            ColorSettings(navController, context)
+            Appearance(navController, context)
         }
 
         composable("courses") {
@@ -411,7 +410,7 @@ fun Dashboard(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .background(
-                                GlobalColors.extraColor1.copy(0.8f), RoundedCornerShape(40.dp)
+                                GlobalColors.extraColor1.copy(), RoundedCornerShape(40.dp)
                             )
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
