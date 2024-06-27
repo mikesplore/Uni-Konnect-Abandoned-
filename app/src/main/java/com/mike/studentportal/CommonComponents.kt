@@ -22,7 +22,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
 import java.time.LocalTime
+import java.util.Date
+import java.util.Locale
 
 
 object CommonComponents {
@@ -149,8 +152,7 @@ object CommonComponents {
         return "$day/$month/$year"
     }
 
-    val lastDate = calendar.time.toString()
-
+    val lastDate: String = SimpleDateFormat("EEE dd-yyyy", Locale.getDefault()).format(Date())
     fun currentDay(): String {
         return when (dayOfWeek) {
             Calendar.SUNDAY -> "Sunday"
