@@ -59,7 +59,6 @@ fun PasswordReset(navController: NavController,context: Context) {
 
         Scaffold(
             topBar = {
-
                 TopAppBar(
                     title = { Text("Password Reset", style = CC.titleTextStyle(context), fontSize = 20.sp) },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -102,6 +101,7 @@ fun PasswordReset(navController: NavController,context: Context) {
                                             "Password reset email sent to $email",
                                             Toast.LENGTH_SHORT
                                         ).show()
+                                        email = ""
                                         navController.navigate("login")
                                     } else {
                                         Toast.makeText(
