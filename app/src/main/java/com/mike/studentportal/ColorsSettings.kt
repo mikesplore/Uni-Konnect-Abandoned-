@@ -86,7 +86,7 @@ object GlobalColors {
     private const val COLOR_SCHEME_KEY = "color_scheme"
 
     private val defaultScheme =
-        ColorScheme("000000", "333333", "CCCCCC", "FFFFFF", "7BC9FF", "8576FF")
+        ColorScheme("000000", "333333", "CCCCCC", "FFFFFF", "7BC9FF", "3572EF")
 
     var currentScheme by mutableStateOf(defaultScheme)
 
