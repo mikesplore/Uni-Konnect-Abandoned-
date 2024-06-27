@@ -82,7 +82,7 @@ fun CourseScreen(courseCode: String, context: Context) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(CourseName.name.value, style = CC.titleTextStyle(context)) },
+                title = { Text(CourseName.name.value, style = CC.descriptionTextStyle(context)) },
                 actions = {
                     IconButton(onClick = { isLoading = true }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Refresh Icon", tint = GlobalColors.textColor)
