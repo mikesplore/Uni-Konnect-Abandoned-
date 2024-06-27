@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,12 @@ fun LoginScreen(navController: NavController, context: Context) {
     LaunchedEffect(Unit) {
         visible = true
     }
+    val backbrush = Brush.verticalGradient(
+        colors = listOf(
+            GlobalColors.primaryColor,
+            GlobalColors.secondaryColor
+        )
+    )
 
     AnimatedVisibility(
         visible = visible,
@@ -61,15 +68,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                             style = CC.titleTextStyle(context)
                         )
                     },
-                    navigationIcon = {
-                        IconButton(onClick = { /* Handle back button click */ }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBackIosNew,
-                                contentDescription = "Back",
-                                tint = GlobalColors.textColor
-                            )
-                        }
-                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = GlobalColors.primaryColor
                     )
@@ -80,7 +78,7 @@ fun LoginScreen(navController: NavController, context: Context) {
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .background(CC.backbrush)
+                    .background(backbrush)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -93,7 +91,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (isSigningUp) "Sign up with one of the following options" else "Sign in with one of the following options",
+                        text = "Continue with one of the following",
                         style = CC.descriptionTextStyle(context)
                     )
 
@@ -246,6 +244,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     )
                                                 )
                                                 Details.name.value = name
+                                                name = ""
+                                                email = ""
+                                                password = ""
                                                 navController.navigate("dashboard")
                                             } else {
                                                 loading = false
@@ -274,16 +275,19 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                                 Details.name.value = name
+                                                name = ""
+                                                email = ""
+                                                password = ""
                                                 navController.navigate("dashboard")
                                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(
-                                                    OnCompleteListener { task ->
-                                                    if (!task.isSuccessful) {
+                                                    OnCompleteListener { taask ->
+                                                    if (!taask.isSuccessful) {
 
-                                                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                                        Log.w("FCM", "Fetching FCM registration token failed", taask.exception)
                                                         return@OnCompleteListener
                                                     }
                                                     // retrieve device token and send to database
-                                                    val token = task.result
+                                                    val token = taask.result
                                                     MyDatabase.writeFcmToken(token = Fcm(token = token))
                                                 })
                                             } else {
@@ -336,8 +340,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
-                    modifier = Modifier
-                        .clickable { isSigningUp = !isSigningUp },
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -351,7 +353,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Text(
                         text = if (isSigningUp) "Sign In" else "Sign Up",
                         style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold),
-                        color = GlobalColors.tertiaryColor
+                        color = GlobalColors.tertiaryColor,
+                        modifier = Modifier.clickable { isSigningUp = !isSigningUp }
                     )
                 }
             }
