@@ -198,7 +198,7 @@ object CommonComponents {
             focusedContainerColor = GlobalColors.primaryColor,
             unfocusedContainerColor = GlobalColors.primaryColor,
             focusedIndicatorColor = GlobalColors.tertiaryColor,
-            unfocusedIndicatorColor = GlobalColors.primaryColor,
+            unfocusedIndicatorColor = GlobalColors.secondaryColor,
             focusedLabelColor = GlobalColors.textColor,
             cursorColor = GlobalColors.textColor,
             unfocusedLabelColor = GlobalColors.textColor,
