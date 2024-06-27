@@ -20,55 +20,53 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.automirrored.outlined.EventNote
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.outlined.AddAlert
-import androidx.compose.material.icons.outlined.Assignment
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.BorderColor
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Colorize
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Work
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -148,15 +146,26 @@ class MainActivity : ComponentActivity() {
 }
 
 
-sealed class Screen(val selectedIcon: ImageVector, val unselectedIcon: ImageVector, val name: String) {
+sealed class Screen(
+    val selectedIcon: ImageVector, val unselectedIcon: ImageVector, val name: String
+) {
     data object Home : Screen(Icons.Filled.Home, Icons.Outlined.Home, "Home")
     data object Event :
         Screen(Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote, "Events")
 
-    data object Timetable : Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday, "Timetable")
-    data object Assignments : Screen(Icons.AutoMirrored.Filled.Assignment, Icons.AutoMirrored.Outlined.Assignment, "Assignments")
+    data object Timetable :
+        Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday, "Timetable")
+
+    data object Assignments : Screen(
+        Icons.AutoMirrored.Filled.Assignment, Icons.AutoMirrored.Outlined.Assignment, "Assignments"
+    )
+
     data object Announcements : Screen(
-        Icons.Filled.AddAlert, Icons.Outlined.AddAlert, "Announcements")
+        Icons.Filled.AddAlert, Icons.Outlined.AddAlert, "Announcements"
+    )
+    data object Attendance : Screen(
+        Icons.Filled.Book, Icons.Outlined.Book, "Attendance"
+    )
 }
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
@@ -165,8 +174,11 @@ fun MainScreen() {
     val context = LocalContext.current
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+    }
     val screens = listOf(
-        Screen.Home, Screen.Event, Screen.Announcements, Screen.Assignments, Screen.Timetable
+        Screen.Home, Screen.Event, Screen.Announcements, Screen.Assignments, Screen.Timetable, Screen.Attendance
     )
     if (Global.showAlert.value) {
         BasicAlertDialog(
@@ -206,7 +218,7 @@ fun MainScreen() {
                         }, modifier = Modifier.weight(1f), // Make buttons take equal width
                         colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) // Customize button colors
                     ) {
-                        Text("Enable", color = Color.White) // Set text color for contrast
+                        Text("Enable", style = CC.descriptionTextStyle(context)) // Set text color for contrast
                     }
                     Spacer(modifier = Modifier.width(16.dp)) // Add space between buttons
                     Button(
@@ -214,7 +226,7 @@ fun MainScreen() {
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) // Customize button colors
                     ) {
-                        Text("Cancel", color = Color.Black) // Set text color for contrast
+                        Text("Cancel", color = GlobalColors.primaryColor) // Set text color for contrast
                     }
                 }
             }
@@ -222,7 +234,7 @@ fun MainScreen() {
     }
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "colors") {
 
         composable(route = "login", enterTransition = {
             slideIntoContainer(
@@ -250,13 +262,10 @@ fun MainScreen() {
 
 
         composable(
-            route = "dashboard") {
+            route = "dashboard"
+        ) {
             Dashboard(
-                navController,
-                pagerState,
-                coroutineScope,
-                screens,
-                context
+                navController, pagerState, coroutineScope, screens, context
             )
         }
 
@@ -272,6 +281,9 @@ fun MainScreen() {
             MoreDetails(context, navController)
         }
 
+        composable("attendance"){
+            SignAttendanceScreen(navController, context)
+        }
 
         composable(route = "colors", enterTransition = {
             slideIntoContainer(
@@ -309,99 +321,101 @@ fun Dashboard(
     screens: List<Screen>,
     context: Context
 ) {
-var expanded by remember { mutableStateOf(false)}
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("Hello, ${Details.name.value}👋", style = CC.titleTextStyle(context))
-                },
-                actions = {
-                    IconButton(onClick = { expanded = !expanded }) {
+    var expanded by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+    }
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text(
+                "${CC.getGreetingMessage()}, ${Details.name.value} 👋",
+                style = CC.titleTextStyle(context),
+                fontSize = 20.sp
+            )
+        }, actions = {
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = "More Details",
+                    tint = GlobalColors.textColor
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .border(
+                        1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                    )
+                    .background(GlobalColors.primaryColor)
+            ) {
+                DropdownMenuItem(text = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
                         Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "More Details",
+                            Icons.Default.Settings,
+                            contentDescription = "Profile",
                             tint = GlobalColors.textColor
                         )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text("Settings", style = CC.descriptionTextStyle(context))
                     }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier
-                            .border(1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp))
-                            .background(CC.primary)
+                }, onClick = {
+                    navController.navigate("settings")
+                    expanded = false
+                })
+                DropdownMenuItem(text = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        DropdownMenuItem(
-                            text = {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        Icons.Default.Settings,
-                                        contentDescription = "Profile",
-                                        tint = GlobalColors.textColor
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text("Settings", style = CC.descriptionTextStyle(context))
-                                }
-                            },
-                            onClick = {
-                                navController.navigate("settings")
-                                expanded = false
-                            }
+                        Icon(
+                            Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "Exit",
+                            tint = GlobalColors.textColor
                         )
-                        DropdownMenuItem(
-                            text = {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        Icons.AutoMirrored.Filled.ExitToApp,
-                                        contentDescription = "Exit",
-                                        tint = GlobalColors.textColor
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text("Sign Out", style = CC.descriptionTextStyle(context))
-                                }
-                            },
-                            onClick = {
-                                MyDatabase.logout
-                                navController.navigate("login")
-                                expanded = false
-                            }
-                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text("Sign Out", style = CC.descriptionTextStyle(context))
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor
-                )
-            )
-        },
+                }, onClick = {
+                    MyDatabase.logout
+                    navController.navigate("login")
+                    expanded = false
+                })
+            }
+        }, colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = GlobalColors.primaryColor
+        )
+        )
+    },
 
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* Optional action */ },
-                containerColor = Color.Transparent,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Transparent,
+                contentColor = Color.Transparent,
+
+                ) {
                 Box(
                     modifier = Modifier
+                        .padding(start = 30.dp)
                         .fillMaxWidth()
                         .height(75.dp),
-                    contentAlignment = Alignment.Center // Center the inner row
+                    contentAlignment = Alignment.Center
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(0.6f)
+                            .align(Alignment.BottomCenter)
                             .background(
                                 GlobalColors.extraColor1.copy(0.8f), RoundedCornerShape(40.dp)
                             )
                             .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         screens.forEachIndexed { index, screen ->
                             val isSelected = pagerState.currentPage == index
@@ -413,8 +427,7 @@ var expanded by remember { mutableStateOf(false)}
                             )
                             val iconColor by animateColorAsState(
                                 targetValue = if (isSelected) GlobalColors.extraColor2
-                                else GlobalColors.primaryColor,
-                                label = ""
+                                else GlobalColors.primaryColor, label = ""
                             )
                             val iconSize by animateFloatAsState(
                                 targetValue = if (isSelected) 45f else 25f, label = ""
@@ -426,30 +439,27 @@ var expanded by remember { mutableStateOf(false)}
                             Box(
                                 modifier = Modifier
                                     .height(50.dp)
-                                    .offset(y = offsetY)
-                                    .clickable {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(index)
-                                        }
-                                    },
+                                    .offset(y = offsetY),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                                Icon(imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
                                     contentDescription = "screen.title",
                                     tint = iconColor,
                                     modifier = Modifier
+                                        .clickable {
+                                            coroutineScope.launch {
+                                                pagerState.animateScrollToPage(index)
+                                            }
+                                        }
                                         .offset(y = offsetY)
                                         .padding(5.dp)
-                                        .size(iconSize.dp)
-                                )
+                                        .size(iconSize.dp))
                             }
                         }
                     }
                 }
             }
-        }
-        , containerColor = CC.primary
+        }, containerColor = CC.primary
 
     ) { innerPadding ->
 
@@ -462,7 +472,7 @@ var expanded by remember { mutableStateOf(false)}
                 Screen.Assignments -> AssignmentScreen(navController, context)
                 Screen.Announcements -> AnnouncementsScreen(navController, context)
                 Screen.Timetable -> TimetableScreen(navController, context)
-                else -> {}
+                Screen.Attendance -> SignAttendanceScreen(navController,context)
             }
         }
     }
