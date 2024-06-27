@@ -20,30 +20,38 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.automirrored.outlined.EventNote
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.outlined.AddAlert
+import androidx.compose.material.icons.outlined.Assignment
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Work
@@ -140,16 +148,15 @@ class MainActivity : ComponentActivity() {
 }
 
 
-sealed class Screen(val selectedIcon: ImageVector, val unselectedIcon: ImageVector) {
-    data object Home : Screen(Icons.Filled.Home, Icons.Outlined.Home)
+sealed class Screen(val selectedIcon: ImageVector, val unselectedIcon: ImageVector, val name: String) {
+    data object Home : Screen(Icons.Filled.Home, Icons.Outlined.Home, "Home")
     data object Event :
-        Screen(Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote)
+        Screen(Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote, "Events")
 
-    data object Timetable : Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday)
-    data object Assignments : Screen(Icons.Filled.Work, Icons.Outlined.Work)
+    data object Timetable : Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday, "Timetable")
+    data object Assignments : Screen(Icons.AutoMirrored.Filled.Assignment, Icons.AutoMirrored.Outlined.Assignment, "Assignments")
     data object Announcements : Screen(
-        Icons.Filled.AddAlert, Icons.Outlined.AddAlert
-    )
+        Icons.Filled.AddAlert, Icons.Outlined.AddAlert, "Announcements")
 }
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
@@ -242,15 +249,17 @@ fun MainScreen() {
         }
 
 
-        composable("dashboard") {
+        composable(
+            route = "dashboard") {
             Dashboard(
-                navController, pagerState, coroutineScope, screens, context
+                navController,
+                pagerState,
+                coroutineScope,
+                screens,
+                context
             )
         }
 
-        composable("timetable") {
-            TimetableScreen(navController, context)
-        }
         composable(route = "moredetails", enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
@@ -300,102 +309,75 @@ fun Dashboard(
     screens: List<Screen>,
     context: Context
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
-    val targetWidth by animateFloatAsState(
-        targetValue = if (isExpanded) 0.6f else 0.2f, animationSpec = tween(durationMillis = 500),
-        label = ""
-    )
+var expanded by remember { mutableStateOf(false)}
     Scaffold(
         topBar = {
-            var expanded by remember { mutableStateOf(false) }
-
-            TopAppBar(title = {
-                Text(
-                    "Hello, ${Details.name.value}",
-                    style = CC.descriptionTextStyle(context),
-                    fontSize = 20.sp
-                )
-
-            }, actions = {
-                IconButton(onClick = { expanded = !expanded }) {
-
-                    Icon(
-                        imageVector = Icons.Filled.MoreVert,
-                        contentDescription = "Settings",
-                        tint = Color.White,
-
+            TopAppBar(
+                title = {
+                    Text("Hello, ${Details.name.value}👋", style = CC.titleTextStyle(context))
+                },
+                actions = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = "More Details",
+                            tint = GlobalColors.textColor
                         )
-
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .border(
-                            1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier
+                            .border(1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp))
+                            .background(CC.primary)
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        Icons.Default.Settings,
+                                        contentDescription = "Profile",
+                                        tint = GlobalColors.textColor
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Settings", style = CC.descriptionTextStyle(context))
+                                }
+                            },
+                            onClick = {
+                                navController.navigate("settings")
+                                expanded = false
+                            }
                         )
-                        .background(CC.primary)
-                ) {
-                    DropdownMenuItem(text = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.Default.AccountCircle,
-                                contentDescription = "Profile Settings",
-                                tint = GlobalColors.textColor
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Profile", style = CC.descriptionTextStyle(context))
-                        }
-                    }, onClick = {
-                        navController.navigate("settings")
-                        expanded = false
-                    })
-                    DropdownMenuItem(text = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Settings,
-                                contentDescription = "Profile",
-                                tint = GlobalColors.textColor
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Settings", style = CC.descriptionTextStyle(context))
-                        }
-                    }, onClick = {
-                        navController.navigate("settings")
-                        expanded = false
-                    })
-                    DropdownMenuItem(text = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ExitToApp,
-                                contentDescription = "Exit",
-                                tint = GlobalColors.textColor
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Sign Out", style = CC.descriptionTextStyle(context))
-                        }
-                    }, onClick = {
-                        MyDatabase.logout
-                        navController.navigate("login")
-                        expanded = false
-                    })
-                }
-            },
-
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ExitToApp,
+                                        contentDescription = "Exit",
+                                        tint = GlobalColors.textColor
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Sign Out", style = CC.descriptionTextStyle(context))
+                                }
+                            },
+                            onClick = {
+                                MyDatabase.logout
+                                navController.navigate("login")
+                                expanded = false
+                            }
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CC.primary
+                    containerColor = GlobalColors.primaryColor
                 )
             )
         },
@@ -412,12 +394,11 @@ fun Dashboard(
                         .height(75.dp),
                     contentAlignment = Alignment.Center // Center the inner row
                 ) {
-                    // Navigation row
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
                             .background(
-                                GlobalColors.secondaryColor.copy(0.5f), RoundedCornerShape(40.dp)
+                                GlobalColors.extraColor1.copy(0.8f), RoundedCornerShape(40.dp)
                             )
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -431,7 +412,8 @@ fun Dashboard(
                                 label = ""
                             )
                             val iconColor by animateColorAsState(
-                                targetValue = if (isSelected) CC.secondary else CC.tertiary,
+                                targetValue = if (isSelected) GlobalColors.extraColor2
+                                else GlobalColors.primaryColor,
                                 label = ""
                             )
                             val iconSize by animateFloatAsState(
@@ -470,6 +452,7 @@ fun Dashboard(
         , containerColor = CC.primary
 
     ) { innerPadding ->
+
         HorizontalPager(
             state = pagerState, count = screens.size, modifier = Modifier.padding(innerPadding)
         ) { page ->
@@ -479,6 +462,7 @@ fun Dashboard(
                 Screen.Assignments -> AssignmentScreen(navController, context)
                 Screen.Announcements -> AnnouncementsScreen(navController, context)
                 Screen.Timetable -> TimetableScreen(navController, context)
+                else -> {}
             }
         }
     }
