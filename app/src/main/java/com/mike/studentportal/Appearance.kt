@@ -1,20 +1,44 @@
 package com.mike.studentportal
 
 import android.content.Context
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Replay
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,9 +49,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.gson.Gson
-import com.mike.studentportal.ui.theme.*
-
+import com.mike.studentportal.ui.theme.Amatic
+import com.mike.studentportal.ui.theme.Caveat
+import com.mike.studentportal.ui.theme.Crimson
+import com.mike.studentportal.ui.theme.Lora
+import com.mike.studentportal.ui.theme.Segoe
+import com.mike.studentportal.ui.theme.Zeyada
 import com.mike.studentportal.CommonComponents as CC
 
 data class ColorScheme(
@@ -49,7 +76,6 @@ fun parseColor(hex: String): Color {
 
 object GlobalColors {
     private const val PREFS_NAME = "color_scheme_prefs"
-    private const val COLOR_SCHEME_KEY = "color_scheme"
     private const val THEME_MODE_KEY = "theme_mode"
 
     private val lightScheme = ColorScheme(
@@ -57,8 +83,8 @@ object GlobalColors {
         secondaryColor = "#EEEEEE",
         tertiaryColor = "#DDDDDD",
         textColor = "#000000",
-        extraColor1 = "#007AFF",
-        extraColor2 = "#34C759"
+        extraColor1 = "#135D66",
+        extraColor2 = "#77B0AA"
     )
 
     private val darkScheme = ColorScheme(
@@ -66,16 +92,15 @@ object GlobalColors {
         secondaryColor = "#333333",
         tertiaryColor = "#666666",
         textColor = "#FFFFFF",
-        extraColor1 = "#007AFF",
-        extraColor2 = "#34C759"
+        extraColor1 = "#164863",
+        extraColor2 = "#427D9D"
     )
 
     private var currentScheme by mutableStateOf(lightScheme)
-    var isDarkMode by mutableStateOf(false)
+    var isDarkMode by mutableStateOf(true)
 
     fun loadColorScheme(context: Context): ColorScheme {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val json = sharedPreferences.getString(COLOR_SCHEME_KEY, null)
         val isDark = sharedPreferences.getBoolean(THEME_MODE_KEY, false)
         isDarkMode = isDark
         currentScheme = if (isDark) darkScheme else lightScheme
@@ -89,10 +114,6 @@ object GlobalColors {
         editor.apply()
         isDarkMode = isDark
         currentScheme = if (isDark) darkScheme else lightScheme
-    }
-
-    fun resetToDefaultColors(context: Context) {
-        saveColorScheme(context, false)
     }
 
     val primaryColor: Color
@@ -116,12 +137,13 @@ object GlobalColors {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColorSettings(navController: NavController, context: Context) {
+fun Appearance(navController: NavController, context: Context) {
     var isDarkMode by remember { mutableStateOf(GlobalColors.isDarkMode) }
     var currentFont by remember { mutableStateOf<FontFamily?>(null) }
     var fontUpdated by remember { mutableStateOf(false) }
+    val isSystemInDarkTheme = isSystemInDarkTheme()
 
-    // Load color scheme from SharedPreferences
+    // Load color scheme from SharedPreferences and update dark mode based on system settings
     LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
         isDarkMode = GlobalColors.isDarkMode
@@ -145,6 +167,8 @@ fun ColorSettings(navController: NavController, context: Context) {
         },
         containerColor = GlobalColors.primaryColor,
     ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()){
+            Background(context)
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -154,56 +178,56 @@ fun ColorSettings(navController: NavController, context: Context) {
             verticalArrangement = Arrangement.SpaceEvenly,
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+                modifier = Modifier
+                    .fillMaxWidth(), horizontalArrangement = Arrangement.Center
             ) {
                 Text("Theme Settings", style = CC.titleTextStyle(context))
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Use Dark Theme", style = CC.descriptionTextStyle(context))
-                Switch(
-                    checked = isDarkMode,
-                    onCheckedChange = {
-                        isDarkMode = it
-                        GlobalColors.saveColorScheme(context, it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = GlobalColors.extraColor1,
-                        uncheckedThumbColor = GlobalColors.extraColor2
+
+            Column(
+                modifier = Modifier
+                    .height(100.dp)
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.secondaryColor,
+                        shape = RoundedCornerShape(10.dp)
                     )
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Use System Settings", style = CC.descriptionTextStyle(context))
-                Switch(
-                    checked = !isDarkMode,
-                    onCheckedChange = {
-                        isDarkMode = !it
-                        GlobalColors.saveColorScheme(context, !it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = GlobalColors.extraColor1,
-                        uncheckedThumbColor = GlobalColors.extraColor2
+                Row(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Use Dark Theme", style = CC.descriptionTextStyle(context))
+                    Switch(
+                        checked = isDarkMode, onCheckedChange = {
+                            isDarkMode = it
+                            GlobalColors.saveColorScheme(context, it)
+                        }, colors = SwitchDefaults.colors(
+                            checkedThumbColor = GlobalColors.primaryColor,
+                            checkedTrackColor = GlobalColors.secondaryColor,
+                            uncheckedThumbColor = GlobalColors.primaryColor,
+                            uncheckedTrackColor = GlobalColors.secondaryColor
+                        )
                     )
-                )
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             CustomTextStyle(context = LocalContext.current) { selectedFont ->
                 currentFont = selectedFont
                 fontUpdated = !fontUpdated // Toggle the state to trigger recomposition
             }
         }
     }
+    }
 }
+
 
 
 @Composable
@@ -221,6 +245,7 @@ fun currentFontFamily(context: Context): FontFamily {
         else -> FontFamily.Default // Use system font if no preference is saved
     }
 }
+
 @Composable
 fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
     val fontPrefs = remember { FontPreferences(context) }
@@ -242,19 +267,19 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
             .height(40.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        Text("Font Styles", style = CC.titleTextStyle(context)) // Assuming CC.descriptionTextStyle(context) is defined elsewhere
+        Text(
+            "Font Styles",
+            style = CC.titleTextStyle(context)
+        )
     }
     Column(
         modifier = Modifier
             .background(GlobalColors.primaryColor)
             .fillMaxWidth()
             .border(
-                width = 1.dp,
-                color = GlobalColors.textColor,
-                shape = RoundedCornerShape(10.dp)
+                width = 1.dp, color = GlobalColors.secondaryColor, shape = RoundedCornerShape(10.dp)
             )
     ) {
-
 
         fontFamilies.forEach { (fontName, fontFamily) ->
             Row(
@@ -271,7 +296,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "$fontName - Michael Odhiambo",
+                    "$fontName - Click to preview",
                     fontFamily = fontFamily,
                     fontSize = 16.sp,
                     color = GlobalColors.textColor,
@@ -289,9 +314,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                "Selected Font Preview:",
-                style = CC.titleTextStyle(context),
-                fontSize = 18.sp
+                "Selected Font Preview:", style = CC.titleTextStyle(context), fontSize = 18.sp
             )
         }
 
@@ -304,8 +327,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                     shape = RoundedCornerShape(10.dp)
                 )
                 .fillMaxWidth()
-                .height(40.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .height(40.dp), verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 "This is a preview of the selected font.",
@@ -335,6 +357,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
             Text("Save", style = CC.descriptionTextStyle(context))
         }
     }
+
 }
 
 
@@ -349,15 +372,12 @@ class FontPreferences(context: Context) {
         return prefs.getString("selected_font", null) // Default to null (system font)
     }
 
-    fun resetToSystemFont() {
-        prefs.edit().remove("selected_font").apply()
-    }
 }
 
 @Preview
 @Composable
 fun ColorSettingsPreview() {
     val context = LocalContext.current
-    GlobalColors.loadColorScheme(context) // Ensure the color scheme is loaded for the preview
-    ColorSettings(rememberNavController(), context)
+    GlobalColors.loadColorScheme(context)
+    Appearance(rememberNavController(), context)
 }
