@@ -48,6 +48,7 @@ import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -126,20 +127,15 @@ fun HomeScreen(context: Context, navController: NavController) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        Background()
-        //MyBackground()
+        Background(context)
         Column(
             modifier = Modifier
+                
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(10.dp)
-                    .fillMaxWidth()
-            ) {}
+
             if (loading) {
                 Row(
                     modifier = Modifier
@@ -472,12 +468,15 @@ fun TodayTimetable(context: Context) {
                                 .width(300.dp) // Set a fixed width for each timetable card
                                 .clip(RoundedCornerShape(16.dp))
                                 .shadow(4.dp, RoundedCornerShape(16.dp)),
+                            colors = CardDefaults.cardColors(
+                                containerColor = GlobalColors.extraColor2.copy(0.5f)
+                            ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .background(GlobalColors.primaryColor)
-                                    .padding(16.dp),
+                                    .background(GlobalColors.extraColor2.copy(0.5f))
+                                    .padding(10.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
@@ -511,7 +510,8 @@ fun TodayTimetable(context: Context) {
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = timetable.venue, style = CC.descriptionTextStyle(context)
+                                        text = timetable.venue,
+                                        style = CC.descriptionTextStyle(context)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(5.dp))
@@ -530,7 +530,6 @@ fun TodayTimetable(context: Context) {
 }
 
 
-
 @Composable
 fun ImageBox(course: Course, image: Images, context: Context, navController: NavController) {
     Box(
@@ -538,7 +537,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
             .padding(8.dp)
             .width(250.dp)
             .height(250.dp)
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
+            .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -608,7 +607,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = "Visit",
-                            tint = CC.secondary
+                            tint = GlobalColors.extraColor1
                         )
                     }
 
@@ -642,7 +641,7 @@ fun ImageList(
                         .padding(8.dp)
                         .width(250.dp)
                         .height(250.dp)
-                        .border(1.dp, Color.Gray, shape = RoundedCornerShape(16.dp)),
+                        .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("No image available")
@@ -660,7 +659,7 @@ fun LoadingImageBox() {
             .padding(8.dp)
             .width(250.dp)
             .height(250.dp)
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
+            .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -750,7 +749,7 @@ fun MyBackground(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Background() {
+fun Background(context: Context) {
     val icons = listOf(
         Icons.Outlined.Home,
         Icons.AutoMirrored.Outlined.Assignment,
@@ -759,10 +758,12 @@ fun Background() {
         Icons.Outlined.BorderColor,
         Icons.Outlined.Book,
     )
+    LaunchedEffect (Unit){
+        GlobalColors.loadColorScheme(context)
 
+    }
     // Calculate the number of repetitions needed to fill the screen
     val repetitions = 1000 // Adjust this value as needed
-
     val repeatedIcons = mutableListOf<ImageVector>()
     repeat(repetitions) {
         repeatedIcons.addAll(icons.shuffled())
@@ -772,7 +773,7 @@ fun Background() {
         columns = GridCells.Fixed(10),
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(GlobalColors.primaryColor)
             .padding(10.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
@@ -780,7 +781,7 @@ fun Background() {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = GlobalColors.secondaryColor.copy(0.7f),
+                tint = GlobalColors.secondaryColor.copy(0.1f),
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -792,6 +793,7 @@ fun AnnouncementItem(context: Context) {
     var loading by remember { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
     LaunchedEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
         getAnnouncements { fetchedAnnouncements ->
             announcements.addAll(fetchedAnnouncements ?: emptyList())
             loading = false
@@ -799,23 +801,25 @@ fun AnnouncementItem(context: Context) {
     }
     Column(
         modifier = Modifier
-            .background(Color.Transparent, RoundedCornerShape(10.dp))
+            .background(Color.Transparent, RoundedCornerShape(16.dp))
             .height(200.dp)
             .fillMaxWidth(0.9f)
             .border(
-                width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(10.dp)
+                width = 1.dp, color = GlobalColors.tertiaryColor, shape = RoundedCornerShape(10.dp)
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (loading) {
             Column(
                 modifier = Modifier
-                    .background(Color.Transparent, RoundedCornerShape(10.dp))
+                    .background(Color.Transparent, RoundedCornerShape(16.dp))
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                ColorProgressIndicator(modifier = Modifier.fillMaxSize())
+                ColorProgressIndicator(modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .fillMaxSize())
             }
 
         } else if (announcements.isNotEmpty()) {
@@ -911,7 +915,7 @@ fun AnnouncementItem(context: Context) {
 @Composable
 fun BottomEnd(context: Context) {
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-    val versionName = packageInfo.versionName
+    val versionName = "1.9.0"//packageInfo.versionName
 
     Column(
         modifier = Modifier
@@ -921,7 +925,7 @@ fun BottomEnd(context: Context) {
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Divider(color = Color.LightGray, thickness = 1.dp)
+        HorizontalDivider(thickness = 1.dp, color = GlobalColors.tertiaryColor)
         Spacer(modifier = Modifier.height(8.dp))
         Text("All rights reserved © 2024", style = CC.descriptionTextStyle(context))
         Text("Version $versionName", style = CC.descriptionTextStyle(context))
