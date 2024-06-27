@@ -3,7 +3,7 @@
 
     <font
         android:fontStyle="normal"
-        android:fontWeight="400"
+        android:fontWeight="300"
         android:font="@font/segoe" />
     <font
         android:fontStyle="normal"
