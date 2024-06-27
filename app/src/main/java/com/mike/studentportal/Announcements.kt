@@ -37,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,7 +53,8 @@ import com.mike.studentportal.CommonComponents as CC
 
 object Details {
     var email: MutableState<String> = mutableStateOf("")
-    var name: MutableState<String> = mutableStateOf("Mike")
+    var name: MutableState<String> = mutableStateOf("Anonymous")
+
 }
 
 
@@ -77,13 +79,15 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
             if (isLoading) {
                 Column(
                     modifier = Modifier
-                        .background(GlobalColors.primaryColor)
+                        .padding(10.dp)
+                        .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
                         .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-                    ColorProgressIndicator(modifier = Modifier.fillMaxSize())
+                    ColorProgressIndicator(modifier = Modifier
+                        .height(100.dp)
+                        .fillMaxWidth(0.9f)
+                        .clip(RoundedCornerShape(10.dp)))
                 }
             } else if (announcements.isEmpty()) {
                 Column(
