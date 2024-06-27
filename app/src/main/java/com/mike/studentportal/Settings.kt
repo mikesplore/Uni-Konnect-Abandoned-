@@ -131,13 +131,16 @@ fun SettingsScreen(navController: NavController, context: Context) {
 
 @Composable
 fun SectionTitle(context: Context,icon: ImageVector, title: String) {
+    LaunchedEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+    }
     Row(
         modifier = Modifier
             .height(40.dp)
             .border(
                 1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
             )
-            .background(Color(0xFF2E2E2E), RoundedCornerShape(10.dp))
+            .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
             .fillMaxWidth()
             .padding(start = 20.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically
     ) {
@@ -157,7 +160,7 @@ fun SectionWithRow(
 ) {
     Row(
         modifier = Modifier
-            .background(Color(0xFF2E2E2E), RoundedCornerShape(10.dp))
+            .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
             .border(
                 1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
 
@@ -322,9 +325,8 @@ fun ProfileCard(
                         Button(
                             onClick = { isEditing = !isEditing },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isEditing) GlobalColors.secondaryColor else Color(
-                                    0xFF007BFF
-                                ), contentColor = Color.White
+                                containerColor = if (isEditing) GlobalColors.secondaryColor else GlobalColors.extraColor1
+                                , contentColor = Color.White
                             ),
                             shape = RoundedCornerShape(10.dp)
                         ) {
@@ -356,7 +358,7 @@ fun ProfileCard(
                                     isEditing = false
 
                                 }, colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF007BFF),
+                                    containerColor = GlobalColors.extraColor1,
                                     contentColor = GlobalColors.textColor
                                 ), shape = RoundedCornerShape(10.dp)
                             ) {
@@ -382,11 +384,11 @@ fun ProfileTextField(
         textStyle = CC.descriptionTextStyle(context),
         colors = TextFieldDefaults.colors(
             focusedTextColor = CC.textColor,
-            disabledContainerColor = Color.DarkGray,
-            focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedContainerColor = GlobalColors.primaryColor,
-            disabledTextColor = LocalContentColor.current.copy(LocalContentAlpha.current),
-            disabledLabelColor = LocalContentColor.current.copy(ContentAlpha.medium)
+            disabledContainerColor = GlobalColors.tertiaryColor,
+            focusedContainerColor = GlobalColors.tertiaryColor,
+            unfocusedContainerColor = GlobalColors.tertiaryColor,
+            disabledTextColor = GlobalColors.textColor,
+            disabledLabelColor = GlobalColors.textColor
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -411,7 +413,7 @@ fun PasswordTextField(
         textStyle = CC.descriptionTextStyle(context),
         colors = TextFieldDefaults.colors(
             focusedTextColor = CC.textColor,
-            disabledContainerColor = Color.DarkGray,
+            disabledContainerColor = GlobalColors.secondaryColor,
             focusedContainerColor = GlobalColors.primaryColor,
             unfocusedContainerColor = GlobalColors.primaryColor,
             disabledTextColor = LocalContentColor.current.copy(LocalContentAlpha.current),
@@ -510,7 +512,7 @@ fun PasswordUpdateSection(context: Context) {
                     Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
             }, modifier = Modifier.padding(top = 16.dp), colors = ButtonDefaults.buttonColors(
-                containerColor = GlobalColors.secondaryColor, contentColor = Color.White
+                containerColor = GlobalColors.tertiaryColor, contentColor = Color.White
             ), shape = RoundedCornerShape(10.dp)
         ) {
             Row(
@@ -650,7 +652,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF007BFF), contentColor = Color.White
+                        containerColor = GlobalColors.extraColor1, contentColor = GlobalColors.secondaryColor
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -692,7 +694,7 @@ fun StarRating(
         for (i in 1..maxRating) {
             Icon(imageVector = if (i <= selectedRating) Icons.Filled.Star else Icons.Outlined.Star,
                 contentDescription = if (i <= selectedRating) "Selected Star" else "Unselected Star",
-                tint = if (i <= selectedRating) Color.Yellow else Color.Gray,
+                tint = if (i <= selectedRating) Color.Yellow else GlobalColors.tertiaryColor,
                 modifier = Modifier
                     .size(48.dp)
                     .padding(4.dp)
