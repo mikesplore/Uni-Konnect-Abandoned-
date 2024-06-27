@@ -3,22 +3,48 @@ package com.mike.studentportal
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.database.*
-import com.mike.studentportal.MyDatabase.getAnnouncements
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,51 +68,14 @@ fun MoreDetails(context: Context, navController: NavController) {
         })
     }
 
-    var mloading by remember { mutableStateOf(true) }
-    val subjects = remember { mutableStateListOf<Course>() }
-    val subjectId by remember { mutableStateOf("") }
-    val announcements = remember { mutableStateListOf<Announcement>() }
-    var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
-    val timetables = remember { mutableStateListOf<Timetable>() }
-    val days = remember { mutableStateListOf<Day>() }
-
-    LaunchedEffect(mloading) {
-        getAnnouncements { fetchedAnnouncements ->
-            announcements.addAll(fetchedAnnouncements ?: emptyList())
-        }
-        MyDatabase.getAssignments(subjectId) { fetchedAssignments ->
-            assignments = fetchedAssignments
-        }
-        MyDatabase.fetchCourses { fetchedCourses ->
-            subjects.addAll(fetchedCourses ?: emptyList())
-        }
-        MyDatabase.getUsers { fetchedUsers ->
-            users = fetchedUsers
-        }
-        MyDatabase.getDays { fetchedDays ->
-            days.clear()
-            days.addAll(fetchedDays ?: emptyList())
-        }
-        mloading = false
-
-    }
-    if(mloading){
-        BasicAlertDialog(onDismissRequest = {}) {
-            Column(modifier = Modifier.height(200.dp)) {
-                CircularProgressIndicator(
-                    color = GlobalColors.primaryColor,
-                    trackColor = GlobalColors.textColor
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text("Loading Data...Please wait", style = CC.descriptionTextStyle(LocalContext.current))
-            }
-        }
-    }
-
     var emailFound by remember { mutableStateOf(false) }
-    var loading by remember {  mutableStateOf(true)}
+    var loading by remember { mutableStateOf(true) }
     var addloading by remember { mutableStateOf(false) }
-
+    val backbrush = Brush.verticalGradient(
+        colors = listOf(
+            GlobalColors.primaryColor, GlobalColors.secondaryColor
+        )
+    )
     LaunchedEffect(Unit) {
         MyDatabase.getUsers { fetchedUsers ->
             users = fetchedUsers
@@ -99,14 +88,20 @@ fun MoreDetails(context: Context, navController: NavController) {
                     if (existingUser != null) {
                         Details.name.value = existingUser.name
 
-                        val userName = existingUser.name // Assuming your User class has a 'name' property
+                        val userName =
+                            existingUser.name // Assuming your User class has a 'name' property
                         loading = false
-                        Toast.makeText(context, "Welcome back, $userName!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Welcome back, $userName!", Toast.LENGTH_SHORT)
+                            .show()
                         navController.navigate("dashboard")
                     } else {
                         // Handle the case where the user is not found (shouldn't happen if email exists)
                         loading = false
-                        Toast.makeText(context, "Unexpected error: User not found", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Unexpected error: User not found",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 } else {
                     loading = false
@@ -121,7 +116,7 @@ fun MoreDetails(context: Context, navController: NavController) {
             title = { Text(text = "More Details", style = CC.titleTextStyle(context)) },
             navigationIcon = {
                 IconButton(
-                    onClick = { navController.navigate("dashboard") },
+                    onClick = { },
                     modifier = Modifier.absolutePadding(left = 10.dp)
                 ) {
                     Icon(
@@ -136,7 +131,7 @@ fun MoreDetails(context: Context, navController: NavController) {
     }) { innerPadding ->
         Column(
             modifier = Modifier
-                .background(CC.backbrush)
+                .background(backbrush)
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
@@ -144,7 +139,7 @@ fun MoreDetails(context: Context, navController: NavController) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(CC.backbrush)
+                    .background(backbrush)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -174,27 +169,26 @@ fun MoreDetails(context: Context, navController: NavController) {
 
                     Button(
                         onClick = {
-                                    MyDatabase.writeUsers(
-                                        User(
-                                            name = Details.name.value,
-                                            email = Details.email.value
-                                        )
-                                    )
+                            MyDatabase.writeUsers(
+                                User(
+                                    name = Details.name.value, email = Details.email.value
+                                )
+                            )
 
                             navController.navigate("dashboard")
 
 
-                        },
-                        modifier = Modifier
+                        }, modifier = Modifier
                             .width(275.dp)
                             .background(
-                                CC.backbrush, RoundedCornerShape(10.dp)
+                                backbrush, RoundedCornerShape(10.dp)
                             ), // Background moved to outer Modifier
                         colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
-                        Row(modifier = Modifier,
-                            verticalAlignment = Alignment.CenterVertically) {
-                            if(loading || addloading){
+                        Row(
+                            modifier = Modifier, verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (loading || addloading) {
                                 CircularProgressIndicator(
                                     color = GlobalColors.primaryColor,
                                     trackColor = GlobalColors.textColor,
@@ -202,10 +196,13 @@ fun MoreDetails(context: Context, navController: NavController) {
                                 )
                                 Spacer(modifier = Modifier.width(20.dp))
                             }
-                            if(loading){
+                            if (loading) {
                                 Text("Checking Database", style = CC.descriptionTextStyle(context))
-                            }else{
-                                Text(if(addloading)"Adding" else "Add", style = CC.descriptionTextStyle(context))
+                            } else {
+                                Text(
+                                    if (addloading) "Adding" else "Add",
+                                    style = CC.descriptionTextStyle(context)
+                                )
                             }
                         }
                     }
