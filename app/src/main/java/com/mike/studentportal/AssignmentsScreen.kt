@@ -59,16 +59,16 @@ fun AssignmentScreen(navController: NavController, context: Context) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
-    val subjects = remember { mutableStateListOf<Subjects>() }
+    val courses = remember { mutableStateListOf<Course>() }
 
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
 
         LaunchedEffect(Unit) {
-            MyDatabase.getSubjects { fetchedSubjects ->
-                subjects.clear()
-                subjects.addAll(fetchedSubjects ?: emptyList())
+            MyDatabase.fetchCourses { fetchedCourses ->
+                courses.clear()
+                courses.addAll(fetchedCourses)
                 loading = false
             }
         }
@@ -79,7 +79,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 modifier = Modifier
                     .tabIndicatorOffset(tabPositions[selectedTabIndex])
                     .height(4.dp)
-                    .width(screenWidth / (subjects.size.coerceAtLeast(1))) // Avoid division by zero
+                    .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
                     .background(GlobalColors.secondaryColor, CircleShape)
             )
         }
@@ -90,23 +90,20 @@ fun AssignmentScreen(navController: NavController, context: Context) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
             ) {
-                CircularProgressIndicator(
-                    color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
-                )
+                ColorProgressIndicator(modifier = Modifier.fillMaxWidth().height(50.dp))
                 Spacer(modifier = Modifier.width(10.dp))
                 Text("Loading Units", style = CC.descriptionTextStyle(context))
 
             }
 
         } else {
-            if (subjects.isEmpty()) {
+            if (courses.isEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(0.9f),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("No subjects found", style = CC.descriptionTextStyle(context))
+                    Text("No courses found", style = CC.descriptionTextStyle(context))
                 }
 
             } else {
@@ -119,12 +116,12 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     edgePadding = 0.dp,
                     containerColor = GlobalColors.primaryColor
                 ) {
-                    subjects.forEachIndexed { index, subject ->
+                    courses.forEachIndexed { index, course ->
 
                         Tab(selected = selectedTabIndex == index, onClick = {
                             selectedTabIndex = index
                             coroutineScope.launch {
-                                // Load assignments for the selected subject
+                                // Load assignments for the selected course
                             }
                         }, text = {
 
@@ -137,7 +134,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                                     .padding(8.dp), contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = subject.name,
+                                    text = course.courseName,
                                     color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
                                 )
                             }
@@ -148,8 +145,8 @@ fun AssignmentScreen(navController: NavController, context: Context) {
             }
 
             when (selectedTabIndex) {
-                in subjects.indices -> {
-                    AssignmentsList(subjectId = subjects[selectedTabIndex].id, context)
+                in courses.indices -> {
+                    AssignmentsList(courseCode = courses[selectedTabIndex].courseCode, context)
                 }
             }
         }
@@ -160,10 +157,10 @@ fun AssignmentScreen(navController: NavController, context: Context) {
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AssignmentsList(subjectId: String, context: Context) {
+fun AssignmentsList(courseCode: String, context: Context) {
     var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
-    LaunchedEffect(subjectId) {
-        MyDatabase.getAssignments(subjectId) { fetchedAssignments ->
+    LaunchedEffect(courseCode) {
+        MyDatabase.getAssignments(courseCode) { fetchedAssignments ->
             assignments = fetchedAssignments
         }
     }
@@ -171,18 +168,17 @@ fun AssignmentsList(subjectId: String, context: Context) {
     if (assignments == null) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
-            CircularProgressIndicator(
-                color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
-            )
-            Text("Loading Assignments...Please wait", style = CC.descriptionTextStyle(context))
+            LoadingAssignmentCard()
+            LoadingAssignmentCard()
+            LoadingAssignmentCard()
         }
     } else {
 
         LazyColumn {
-            if (assignments!!.isEmpty() || subjectId.isEmpty()) {
+            if (assignments!!.isEmpty() || courseCode.isEmpty()) {
                 item {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -261,9 +257,52 @@ fun AssignmentCard(
     }
 }
 
+@Composable
+fun LoadingAssignmentCard() {
+    AnimatedVisibility(
+        visible = true,
+        enter = slideInVertically(tween(1000)),
+        exit = slideOutVertically(tween(1000))
+    ) {
+
+
+        Card(
+            modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth()
+                .padding(8.dp), colors = CardDefaults.cardColors(
+                containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
+            ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.textColor,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    ColorProgressIndicator(modifier = Modifier.fillMaxSize())
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+            }
+        }
+    }
+}
+
 
 @Preview
 @Composable
 fun AssignmentScreenPreview() {
-    AssignmentScreen(rememberNavController(), LocalContext.current)
+    //AssignmentScreen(rememberNavController(), LocalContext.current)
+    LoadingAssignmentCard()
 }
