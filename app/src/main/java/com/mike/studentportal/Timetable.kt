@@ -62,7 +62,7 @@ import com.mike.studentportal.CommonComponents as CC
 
 @Composable
 fun TimetableScreen(navController: NavController, context: Context) {
-    var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID() - 1) }
+    var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID()) }
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
