@@ -466,8 +466,7 @@ fun TodayTimetable(context: Context) {
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .width(300.dp) // Set a fixed width for each timetable card
-                                .clip(RoundedCornerShape(16.dp))
-                                .shadow(4.dp, RoundedCornerShape(16.dp)),
+                                .clip(RoundedCornerShape(16.dp)),
                             colors = CardDefaults.cardColors(
                                 containerColor = GlobalColors.extraColor2.copy(0.5f)
                             ),
@@ -781,7 +780,7 @@ fun Background(context: Context) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = GlobalColors.secondaryColor.copy(0.1f),
+                tint = GlobalColors.secondaryColor.copy(0.5f),
                 modifier = Modifier.padding(8.dp)
             )
         }
