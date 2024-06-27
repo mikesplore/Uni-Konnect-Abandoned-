@@ -43,7 +43,7 @@ fun MoreDetails(context: Context, navController: NavController) {
     }
 
     var mloading by remember { mutableStateOf(true) }
-    val subjects = remember { mutableStateListOf<Subjects>() }
+    val subjects = remember { mutableStateListOf<Course>() }
     val subjectId by remember { mutableStateOf("") }
     val announcements = remember { mutableStateListOf<Announcement>() }
     var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
@@ -57,8 +57,8 @@ fun MoreDetails(context: Context, navController: NavController) {
         MyDatabase.getAssignments(subjectId) { fetchedAssignments ->
             assignments = fetchedAssignments
         }
-        MyDatabase.getSubjects { fetchedSubjects ->
-            subjects.addAll(fetchedSubjects ?: emptyList())
+        MyDatabase.fetchCourses { fetchedCourses ->
+            subjects.addAll(fetchedCourses ?: emptyList())
         }
         MyDatabase.getUsers { fetchedUsers ->
             users = fetchedUsers
@@ -98,6 +98,7 @@ fun MoreDetails(context: Context, navController: NavController) {
 
                     if (existingUser != null) {
                         Details.name.value = existingUser.name
+
                         val userName = existingUser.name // Assuming your User class has a 'name' property
                         loading = false
                         Toast.makeText(context, "Welcome back, $userName!", Toast.LENGTH_SHORT).show()
