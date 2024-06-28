@@ -47,8 +47,8 @@ val Lora = FontFamily(
     Font(R.font.lora, FontWeight.Normal)
 )
 
-val Amatic = FontFamily(
-    Font(R.font.amatic, FontWeight.Normal)
+val Robotomono = FontFamily(
+    Font(R.font.robotomono, FontWeight.Normal)
 )
 
 val Crimson = FontFamily(
