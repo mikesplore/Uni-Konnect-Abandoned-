@@ -339,81 +339,6 @@ fun IconList(courses: List<Course>, navController: NavController, context: Conte
 
 }
 
-
-@Composable
-fun EventCard(
-    title: String, dateTime: String, location: String, description: String, context: Context
-
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .shadow(8.dp, RoundedCornerShape(16.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = GlobalColors.primaryColor
-        )
-    ) {
-
-        if (Global.loading.value) {
-            ColorProgressIndicator(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(16.dp))
-            )
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = title, style = CC.titleTextStyle(context), textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = "Event Date and Time",
-                        tint = GlobalColors.secondaryColor
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = dateTime, style = CC.descriptionTextStyle(context)
-                    )
-                }
-                Spacer(modifier = Modifier.height(5.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = "Event Location",
-                        tint = GlobalColors.secondaryColor
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = location, style = CC.descriptionTextStyle(context)
-                    )
-                }
-                Spacer(modifier = Modifier.height(5.dp))
-                Text(
-                    text = description,
-                    style = CC.descriptionTextStyle(context),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-        }
-
-    }
-}
-
 @Composable
 fun TodayTimetable(context: Context) {
     var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
@@ -462,19 +387,15 @@ fun TodayTimetable(context: Context) {
                         .padding(16.dp)
                 ) {
                     items(timetables!!) { timetable ->
-                        Card(
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .width(300.dp) // Set a fixed width for each timetable card
-                                .clip(RoundedCornerShape(16.dp)),
-                            colors = CardDefaults.cardColors(
-                                containerColor = GlobalColors.extraColor2.copy(0.5f)
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                        ) {
+
                             Column(
                                 modifier = Modifier
-                                    .background(GlobalColors.extraColor2.copy(0.5f))
+                                    .border(
+                                        1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
+                                    )
+                                    .width(300.dp)
+                                    .height(200.dp)
+                                    .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
                                     .padding(10.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -520,7 +441,8 @@ fun TodayTimetable(context: Context) {
                                     textAlign = TextAlign.Center
                                 )
                             }
-                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+
                     }
                 }
             }
@@ -535,7 +457,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
         modifier = Modifier
             .padding(8.dp)
             .width(250.dp)
-            .height(250.dp)
+            .height(260.dp)
             .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp))
     ) {
         Column(
@@ -559,6 +481,8 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                     contentScale = ContentScale.Crop
                 )
             }
+
+
             Column(
                 modifier = Modifier
                     .background(
@@ -584,7 +508,6 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                     textAlign = TextAlign.Left,
                     modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = 5.dp)
                 )
-                Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
