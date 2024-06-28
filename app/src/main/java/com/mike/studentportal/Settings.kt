@@ -73,14 +73,12 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
-import com.mike.studentportal.MyDatabase.getRating
-import com.mike.studentportal.MyDatabase.saveRating
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -620,30 +618,16 @@ fun Star(
 
 @Composable
 fun RatingAndFeedbackScreen(context: Context) {
-    val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
-    var currentRating by remember { mutableStateOf(0) }
+    var currentRating by remember { mutableIntStateOf(0) }
     var feedbackText by remember { mutableStateOf("") }
-    var admissionNumber by remember { mutableStateOf("") }
-    var user by remember { mutableStateOf(User()) }
+    var averageRatings by remember { mutableStateOf("") }
+    val user by remember { mutableStateOf(User()) }
     var showFeedbackForm by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(currentUser?.email) {
-        currentUser?.email?.let { email ->
-            fetchUserDataByEmail(email) { fetchedUser ->
-                fetchedUser?.let {
-                    user = it
-                    admissionNumber = it.id
-                    getRating(admissionNumber,
-                        onRatingFetched = { rating -> currentRating = rating },
-                        onFailure = {
-                            Toast.makeText(
-                                context, "Failed to fetch rating: ${it.message}", Toast.LENGTH_SHORT
-                            ).show()
-                        })
-                }
-            }
+    LaunchedEffect(Unit) {
+        MyDatabase.fetchAverageRating { averageRating ->
+            averageRatings = averageRating
         }
     }
 
@@ -655,7 +639,7 @@ fun RatingAndFeedbackScreen(context: Context) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Rate Us",
+            text = if (averageRatings.isEmpty()) "No ratings yet" else "Average Rating: $averageRatings",
             style = CC.descriptionTextStyle(context),
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -680,7 +664,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                     onValueChange = { feedbackText = it },
                     label = {
                         Text(
-                            "Enter your feedback", style = CC.descriptionTextStyle(context)
+                            "Enter your feedback (optional)", style = CC.descriptionTextStyle(context)
                         )
                     },
                     modifier = Modifier
@@ -695,36 +679,30 @@ fun RatingAndFeedbackScreen(context: Context) {
                 Button(
                     onClick = {
                         loading = true
-                        currentUser?.uid?.let { userId ->
-                            saveRating(userId, currentRating, onSuccess = {
-                                MyDatabase.writeFeedback(Feedback(
-                                    sender = user.name,
-                                    message = feedbackText,
-                                    admissionNumber = user.id
-                                ), onSuccess = {
-                                    loading = false
-                                    Toast.makeText(
-                                        context, "Thanks for your feedback", Toast.LENGTH_SHORT
-                                    ).show()
-                                    feedbackText = ""
-                                    showFeedbackForm = false
-                                }, onFailure = {
-                                    loading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Failed to send feedback: ${it?.message}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                })
-                            }, onFailure = {
-                                loading = false
-                                Toast.makeText(
-                                    context,
-                                    "Failed to save rating: ${it.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            })
+                        MyDatabase.writeFeedback(Feedback(
+                            rating = currentRating,
+                            sender = user.name,
+                            message = feedbackText,
+                            admissionNumber = user.id
+                        ), onSuccess = {
+                            loading = false
+                            Toast.makeText(
+                                context, "Thanks for your feedback", Toast.LENGTH_SHORT
+                            ).show()
+                            feedbackText = ""
+                            MyDatabase.fetchAverageRating { averageRating ->
+                                averageRatings = averageRating
+                            }
+                            showFeedbackForm = false
+                        }, onFailure = {
+                            loading = false
+                            Toast.makeText(
+                                context,
+                                "Failed to send feedback: ${it?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -749,9 +727,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                         } else {
                             Text("Submit Feedback", style = CC.descriptionTextStyle(context))
                         }
-
                     }
-
                 }
             }
         }
