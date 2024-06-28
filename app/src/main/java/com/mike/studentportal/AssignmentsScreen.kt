@@ -110,8 +110,8 @@ fun AssignmentScreen(navController: NavController, context: Context) {
 
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier.background(Color.LightGray),
-                    contentColor = Color.Black,
+                    modifier = Modifier.background(GlobalColors.primaryColor),
+                    contentColor = GlobalColors.primaryColor,
                     indicator = indicator,
                     edgePadding = 0.dp,
                     containerColor = GlobalColors.primaryColor
@@ -181,7 +181,8 @@ fun AssignmentsList(courseCode: String, context: Context) {
             if (assignments!!.isEmpty() || courseCode.isEmpty()) {
                 item {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
