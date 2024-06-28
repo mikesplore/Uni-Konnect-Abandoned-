@@ -200,7 +200,10 @@ fun AttendanceCard(attendance: Attendance, context: Context) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp), elevation = CardDefaults.elevatedCardElevation(4.dp)
+            .padding(vertical = 8.dp), elevation = CardDefaults.elevatedCardElevation(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (attendance.status == "Present") GlobalColors.extraColor1 else GlobalColors.extraColor2
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Date: ${attendance.date}", style = CC.descriptionTextStyle(context))
