@@ -30,10 +30,6 @@ import java.util.Locale
 
 object CommonComponents {
     private val calendar: Calendar = Calendar.getInstance()
-    private val day = calendar.get(Calendar.DAY_OF_MONTH)
-    private val currentday = calendar.get(Calendar.DAY_OF_WEEK)
-    private val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed, so add 1
-    private val year = calendar.get(Calendar.YEAR)
     val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
     @Composable
     fun PasswordTextField(
@@ -88,11 +84,6 @@ object CommonComponents {
             else -> "Good Night"
         }
     }
-    val primary = Color(0xff000000)
-    val secondary = Color(0xffFFFFFF)
-    val tertiary = Color(0xff636363)
-    val textColor = Color(0xffDCDCDC)
-    val style = Color(0xffAA14F0)
 
     @Composable
     fun SingleLinedTextField(
@@ -137,19 +128,6 @@ object CommonComponents {
             color = GlobalColors.textColor,
             fontSize = 15.sp
         )
-    }
-
-
-    val backbrush = Brush.verticalGradient(
-        listOf(
-            GlobalColors.primaryColor,
-            GlobalColors.secondaryColor,
-        )
-    )
-
-    @Composable
-    fun currentDate(): String {
-        return "$day/$month/$year"
     }
 
     val lastDate: String = SimpleDateFormat("EEE dd-yyyy", Locale.getDefault()).format(Date())
