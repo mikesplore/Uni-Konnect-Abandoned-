@@ -1,7 +1,6 @@
 package com.mike.studentportal
 
 import android.content.Context
-import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,10 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.mike.studentportal.ui.theme.Amatic
 import com.mike.studentportal.ui.theme.Caveat
 import com.mike.studentportal.ui.theme.Crimson
 import com.mike.studentportal.ui.theme.Lora
+import com.mike.studentportal.ui.theme.Robotomono
 import com.mike.studentportal.ui.theme.Segoe
 import com.mike.studentportal.ui.theme.Zeyada
 import com.mike.studentportal.CommonComponents as CC
@@ -238,7 +237,7 @@ fun currentFontFamily(context: Context): FontFamily {
     return when (selectedFontName) {
         "Segoe" -> Segoe
         "Lora" -> Lora
-        "Amatic" -> Amatic
+        "Roboto mono" -> Robotomono
         "Crimson" -> Crimson
         "Zeyada" -> Zeyada
         "Caveat" -> Caveat
@@ -253,7 +252,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
     var selectedFontFamily by remember { mutableStateOf<FontFamily?>(null) }
     val fontFamilies = mapOf(
         "Segoe" to Segoe,
-        "Amatic" to Amatic,
+        "Roboto mono" to Robotomono,
         "Lora" to Lora,
         "Crimson" to Crimson,
         "Zeyada" to Zeyada,
@@ -296,7 +295,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "$fontName - Click to preview",
+                    "$fontName - Michael Odhiambo",
                     fontFamily = fontFamily,
                     fontSize = 16.sp,
                     color = GlobalColors.textColor,
