@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.util.Calendar
+import java.util.Locale
 import com.mike.studentportal.CommonComponents as CC
 
 open class User(
@@ -29,6 +30,7 @@ data class Course(
 
 data class Feedback(
     val id: String = MyDatabase.generateFeedbackID(),
+    val rating: Int = 0,
     val message: String = "",
     val sender: String = "",
     val admissionNumber: String = ""
@@ -76,6 +78,7 @@ data class GridItem(
     val link: String = "",
     var fileType: String = "image"
 )
+
 
 
 object MyDatabase {
@@ -267,11 +270,33 @@ object MyDatabase {
 
     // Feedback functions
     fun writeFeedback(feedback: Feedback, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
-        val feedbackRef: DatabaseReference = database.child("Feedback").push()
+        val feedbackRef: DatabaseReference = database.child("Feedback").child(feedback.id)
         feedbackRef.setValue(feedback).addOnSuccessListener {
-            onSuccess() // Callback on successful write
+            onSuccess()
         }.addOnFailureListener { exception ->
-            onFailure(exception) // Callback on failure with exception
+            onFailure(exception)
+        }
+    }
+
+    fun fetchAverageRating(onAverageRatingFetched: (String) -> Unit) {
+        val feedbackRef = database.child("Feedback")
+        feedbackRef.get().addOnSuccessListener { snapshot ->
+            var totalRating = 0.0
+            var count = 0
+
+            for (childSnapshot in snapshot.children) {
+                val feedback = childSnapshot.getValue(Feedback::class.java)
+                feedback?.rating?.let {
+                    totalRating += it
+                    count++
+                }
+            }
+
+            val averageRating = if (count > 0) totalRating / count else 0.0
+            val formattedAverage = String.format(Locale.US, "%.1f", averageRating)
+            onAverageRatingFetched(formattedAverage)
+        }.addOnFailureListener {
+            onAverageRatingFetched(String.format(Locale.US, "%.1f", 0.0))
         }
     }
 
@@ -327,32 +352,6 @@ object MyDatabase {
                     onTimetableFetched(null)
                 }
             })
-    }
-
-    // Rating functions
-    fun saveRating(
-        userName: String, rating: Int, onSuccess: () -> Unit, onFailure: (Exception) -> Unit
-    ) {
-        val userRatingRef = database.child("Ratings").child(userName)
-
-        userRatingRef.setValue(rating).addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { exception -> onFailure(exception) }
-    }
-
-    fun getRating(
-        userName: String, onRatingFetched: (Int) -> Unit, onFailure: (DatabaseError) -> Unit
-    ) {
-        val userRatingRef = database.child("Ratings").child(userName)
-        userRatingRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val rating = snapshot.getValue(Int::class.java) ?: 0
-                onRatingFetched(rating)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                onFailure(error)
-            }
-        })
     }
 
     // Days functions
