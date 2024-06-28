@@ -156,7 +156,7 @@ fun HomeScreen(context: Context, navController: NavController) {
                     Column(
                         modifier = Modifier
                             .border(
-                                1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                                1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
                             )
                             .height(90.dp)
                             .fillMaxWidth(),
@@ -260,7 +260,7 @@ fun IconBox(course: Course, navController: NavController, context: Context) {
             modifier = Modifier
                 .background(Color.Transparent, CircleShape)
                 .size(60.dp)
-                .border(1.dp, CC.tertiary, shape = CircleShape)
+                .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape)
                 .clickable {
                     CourseName.name.value = course.courseName
                     navController.navigate("course/${course.courseCode}")
@@ -301,7 +301,7 @@ fun LoadingIconBox() {
             modifier = Modifier
                 .background(Color.Transparent, CircleShape)
                 .size(60.dp)
-                .border(1.dp, CC.tertiary, shape = CircleShape)
+                .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape)
         ) {
             ColorProgressIndicator(
                 modifier = Modifier
@@ -380,7 +380,7 @@ fun EventCard(
                     Icon(
                         imageVector = Icons.Default.CalendarToday,
                         contentDescription = "Event Date and Time",
-                        tint = CC.secondary
+                        tint = GlobalColors.secondaryColor
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
@@ -394,7 +394,7 @@ fun EventCard(
                     Icon(
                         imageVector = Icons.Default.Place,
                         contentDescription = "Event Location",
-                        tint = CC.secondary
+                        tint = GlobalColors.secondaryColor
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -444,7 +444,7 @@ fun TodayTimetable(context: Context) {
                     modifier = Modifier
                         .background(GlobalColors.primaryColor)
                         .border(
-                            1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                            1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
                         )
                         .fillMaxSize()
                         .padding(16.dp), contentAlignment = Alignment.Center
@@ -455,7 +455,7 @@ fun TodayTimetable(context: Context) {
                 LazyRow(
                     modifier = Modifier
                         .border(
-                            1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                            1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
                         )
                         .background(GlobalColors.primaryColor)
                         .fillMaxSize()
@@ -490,7 +490,7 @@ fun TodayTimetable(context: Context) {
                                     Icon(
                                         imageVector = Icons.Default.CalendarToday,
                                         contentDescription = "Event Date and Time",
-                                        tint = CC.secondary
+                                        tint = GlobalColors.secondaryColor
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
@@ -505,7 +505,7 @@ fun TodayTimetable(context: Context) {
                                     Icon(
                                         imageVector = Icons.Default.Place,
                                         contentDescription = "Event Location",
-                                        tint = CC.secondary
+                                        tint = GlobalColors.secondaryColor
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
