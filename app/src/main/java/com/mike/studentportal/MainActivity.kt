@@ -233,7 +233,7 @@ fun MainScreen() {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "appearance") {
+    NavHost(navController, startDestination = "login") {
 
         composable(route = "login", enterTransition = {
             slideIntoContainer(
@@ -344,9 +344,9 @@ fun Dashboard(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier
                     .border(
-                        1.dp, CC.tertiary, shape = RoundedCornerShape(16.dp)
+                        1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(10.dp)
                     )
-                    .background(GlobalColors.primaryColor)
+                    .background(GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp))
             ) {
                 DropdownMenuItem(text = {
                     Row(
@@ -420,10 +420,7 @@ fun Dashboard(
                             val isSelected = pagerState.currentPage == index
 
                             // Animate color and size changes
-                            val backgroundColor by animateColorAsState(
-                                targetValue = if (isSelected) CC.style else Color.Transparent,
-                                label = ""
-                            )
+
                             val iconColor by animateColorAsState(
                                 targetValue = if (isSelected) GlobalColors.extraColor2
                                 else GlobalColors.primaryColor, label = ""
@@ -458,7 +455,7 @@ fun Dashboard(
                     }
                 }
             }
-        }, containerColor = CC.primary
+        }, containerColor = GlobalColors.primaryColor
 
     ) { innerPadding ->
 
