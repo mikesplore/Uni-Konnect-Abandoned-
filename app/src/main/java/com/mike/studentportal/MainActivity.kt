@@ -34,23 +34,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.Assignment
-import androidx.compose.material.icons.automirrored.outlined.EventNote
 import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.Book
-import androidx.compose.material.icons.outlined.BorderColor
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.Colorize
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -149,9 +143,9 @@ class MainActivity : ComponentActivity() {
 sealed class Screen(
     val selectedIcon: ImageVector, val unselectedIcon: ImageVector, val name: String
 ) {
-    data object Home : Screen(Icons.Filled.Home, Icons.Outlined.Home, "Home")
-    data object Event :
-        Screen(Icons.AutoMirrored.Filled.EventNote, Icons.AutoMirrored.Outlined.EventNote, "Events")
+    data object Home : Screen(
+        Icons.Filled.Home, Icons.Outlined.Home, "Home"
+    )
 
     data object Timetable :
         Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday, "Timetable")
@@ -163,6 +157,7 @@ sealed class Screen(
     data object Announcements : Screen(
         Icons.Filled.AddAlert, Icons.Outlined.AddAlert, "Announcements"
     )
+
     data object Attendance : Screen(
         Icons.Filled.Book, Icons.Outlined.Book, "Attendance"
     )
@@ -178,7 +173,7 @@ fun MainScreen() {
         GlobalColors.loadColorScheme(context)
     }
     val screens = listOf(
-        Screen.Home, Screen.Event, Screen.Announcements, Screen.Assignments, Screen.Timetable, Screen.Attendance
+        Screen.Home, Screen.Announcements, Screen.Assignments, Screen.Timetable, Screen.Attendance
     )
     if (Global.showAlert.value) {
         BasicAlertDialog(
@@ -218,7 +213,10 @@ fun MainScreen() {
                         }, modifier = Modifier.weight(1f), // Make buttons take equal width
                         colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) // Customize button colors
                     ) {
-                        Text("Enable", style = CC.descriptionTextStyle(context)) // Set text color for contrast
+                        Text(
+                            "Enable",
+                            style = CC.descriptionTextStyle(context)
+                        ) // Set text color for contrast
                     }
                     Spacer(modifier = Modifier.width(16.dp)) // Add space between buttons
                     Button(
@@ -226,14 +224,17 @@ fun MainScreen() {
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) // Customize button colors
                     ) {
-                        Text("Cancel", color = GlobalColors.primaryColor) // Set text color for contrast
+                        Text(
+                            "Cancel",
+                            color = GlobalColors.primaryColor
+                        ) // Set text color for contrast
                     }
                 }
             }
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController, startDestination = "dashboard") {
 
         composable(route = "login", enterTransition = {
             slideIntoContainer(
@@ -280,7 +281,7 @@ fun MainScreen() {
             MoreDetails(context, navController)
         }
 
-        composable("attendance"){
+        composable("attendance") {
             SignAttendanceScreen(navController, context)
         }
 
@@ -324,73 +325,76 @@ fun Dashboard(
     LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
     }
-    Scaffold(topBar = {
-        TopAppBar(title = {
-            Text(
-                "${CC.getGreetingMessage()}, ${Details.name.value} 👋",
-                style = CC.titleTextStyle(context),
-                fontSize = 20.sp
-            )
-        }, actions = {
-            IconButton(onClick = { expanded = !expanded }) {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "More Details",
-                    tint = GlobalColors.textColor
+    Scaffold(
+        topBar = {
+            TopAppBar(title = {
+                Text(
+                    "${CC.getGreetingMessage()}, ${Details.name.value} 👋",
+                    style = CC.titleTextStyle(context),
+                    fontSize = 20.sp
                 )
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .border(
-                        1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(10.dp)
+            }, actions = {
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(
+                        imageVector = Icons.Filled.Menu,
+                        contentDescription = "More Details",
+                        tint = GlobalColors.textColor
                     )
-                    .background(GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp))
-            ) {
-                DropdownMenuItem(text = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Profile",
-                            tint = GlobalColors.textColor
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .border(
+                            1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(10.dp)
                         )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text("Settings", style = CC.descriptionTextStyle(context))
-                    }
-                }, onClick = {
-                    navController.navigate("settings")
-                    expanded = false
-                })
-                DropdownMenuItem(text = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Exit",
-                            tint = GlobalColors.textColor
+                        .background(
+                            GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
                         )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text("Sign Out", style = CC.descriptionTextStyle(context))
-                    }
-                }, onClick = {
-                    MyDatabase.logout
-                    navController.navigate("login")
-                    expanded = false
-                })
-            }
-        }, colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = GlobalColors.primaryColor
-        )
-        )
-    },
+                ) {
+                    DropdownMenuItem(text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Settings,
+                                contentDescription = "Profile",
+                                tint = GlobalColors.textColor
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Settings", style = CC.descriptionTextStyle(context))
+                        }
+                    }, onClick = {
+                        navController.navigate("settings")
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "Exit",
+                                tint = GlobalColors.textColor
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Sign Out", style = CC.descriptionTextStyle(context))
+                        }
+                    }, onClick = {
+                        MyDatabase.logout
+                        navController.navigate("login")
+                        expanded = false
+                    })
+                }
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = GlobalColors.primaryColor
+            )
+            )
+        },
 
         floatingActionButton = {
             Surface(
@@ -464,11 +468,10 @@ fun Dashboard(
         ) { page ->
             when (screens[page]) {
                 Screen.Home -> HomeScreen(context, navController)
-                Screen.Event -> EventScreen(navController, context)
                 Screen.Assignments -> AssignmentScreen(navController, context)
                 Screen.Announcements -> AnnouncementsScreen(navController, context)
                 Screen.Timetable -> TimetableScreen(navController, context)
-                Screen.Attendance -> SignAttendanceScreen(navController,context)
+                Screen.Attendance -> SignAttendanceScreen(navController, context)
             }
         }
     }
