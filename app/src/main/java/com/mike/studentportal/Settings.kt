@@ -396,7 +396,7 @@ fun ProfileTextField(
         enabled = isEditing,
         textStyle = CC.descriptionTextStyle(context),
         colors = TextFieldDefaults.colors(
-            focusedTextColor = CC.textColor,
+            focusedTextColor = GlobalColors.textColor,
             disabledContainerColor = GlobalColors.tertiaryColor,
             focusedContainerColor = GlobalColors.tertiaryColor,
             unfocusedContainerColor = GlobalColors.tertiaryColor,
@@ -425,7 +425,7 @@ fun PasswordTextField(
         enabled = isEditing,
         textStyle = CC.descriptionTextStyle(context),
         colors = TextFieldDefaults.colors(
-            focusedTextColor = CC.textColor,
+            focusedTextColor = GlobalColors.textColor,
             disabledContainerColor = GlobalColors.secondaryColor,
             focusedContainerColor = GlobalColors.primaryColor,
             unfocusedContainerColor = GlobalColors.primaryColor,
