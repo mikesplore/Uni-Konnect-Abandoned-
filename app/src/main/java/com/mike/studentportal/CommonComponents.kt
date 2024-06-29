@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.util.Date
@@ -142,6 +143,11 @@ object CommonComponents {
             Calendar.SATURDAY -> "Saturday"
             else -> "Invalid Day" // This should never happen
         }
+    }
+
+    fun getCurrentUser(): String {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        return currentUser?.email ?: "" // Return email if available, otherwise an empty string
     }
 
     fun currentDayID(): Int {
