@@ -3,11 +3,11 @@
     <font
         android:fontStyle="normal"
         android:fontWeight="300"
-        android:font="@font/segoe" />
+        android:font="@font/indieflower" />
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
-        android:font="@font/robotomono" />
+        android:font="@font/shadowintolight" />
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
