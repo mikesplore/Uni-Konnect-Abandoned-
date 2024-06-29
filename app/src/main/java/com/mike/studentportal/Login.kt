@@ -28,12 +28,16 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
+import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(navController: NavController, context: Context) {
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    var user by remember { mutableStateOf<User?>(null) }
+    var currentName by remember { mutableStateOf("") }
+    var currentEmail by remember { mutableStateOf("") }
+    var currentAdmissionNumber by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -74,7 +78,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                 )
             },
             containerColor = GlobalColors.primaryColor
-        ) {
+        ) { it ->
             Column(
                 modifier = Modifier
                     .padding(it)
@@ -105,9 +109,16 @@ fun LoginScreen(navController: NavController, context: Context) {
                         GoogleAuth(
                             firebaseAuth = firebaseAuth,
                             onSignInSuccess = {
-                                val user = firebaseAuth.currentUser
-                                Details.email.value = user?.email.toString()
-                                Details.name.value = user?.displayName.toString()
+                                Details.email.value = CC.getCurrentUser()
+                                fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
+                                    fetchedUser?.let {
+                                        user = it
+                                        currentName = it.name
+                                        currentEmail = it.email
+                                        currentAdmissionNumber = it.id
+                                    }
+                                }
+                                Details.name.value = currentName
 
                                 Toast.makeText(
                                     context,
@@ -138,8 +149,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                             onSignInSuccess = {
                                 Toast.makeText(context, "Sign-in successful", Toast.LENGTH_SHORT)
                                     .show()
-                                val user = firebaseAuth.currentUser
-                                Details.email.value = user?.email.toString()
+
+                                Details.email.value = CC.getCurrentUser()
                                 navController.navigate("moredetails")
                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
                                     if (!task.isSuccessful) {
