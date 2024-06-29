@@ -1,6 +1,5 @@
 package com.mike.studentportal.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.mike.studentportal.R
 
@@ -38,8 +36,8 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
-val Segoe = FontFamily(
-    Font(R.font.segoe, FontWeight.Normal),
+val IndieFlower = FontFamily(
+    Font(R.font.indieflower, FontWeight.Normal),
 
     )
 
@@ -47,8 +45,8 @@ val Lora = FontFamily(
     Font(R.font.lora, FontWeight.Normal)
 )
 
-val Robotomono = FontFamily(
-    Font(R.font.robotomono, FontWeight.Normal)
+val ShadowIntoLight = FontFamily(
+    Font(R.font.shadowintolight, FontWeight.Normal)
 )
 
 val Crimson = FontFamily(
