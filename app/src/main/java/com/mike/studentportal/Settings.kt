@@ -77,12 +77,13 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import com.mike.studentportal.MyDatabase.updatePassword
 import com.mike.studentportal.CommonComponents as CC
 
@@ -96,7 +97,16 @@ fun SettingsScreen(navController: NavController, context: Context) {
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = GlobalColors.primaryColor,
                     titleContentColor = GlobalColors.textColor
-                )
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBackIos,
+                            contentDescription = "Back",
+                            tint = GlobalColors.textColor
+                        )
+                    }
+                }
             )
         }, containerColor = GlobalColors.primaryColor
     ) {
@@ -112,6 +122,7 @@ fun SettingsScreen(navController: NavController, context: Context) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SectionTitle(context, Icons.Default.AccountCircle, "Profile")
+            Spacer(modifier = Modifier.height(8.dp))
             ProfileCard(context = context)
             Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
 
@@ -135,6 +146,8 @@ fun SettingsScreen(navController: NavController, context: Context) {
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
             SectionTitle(context, Icons.AutoMirrored.Filled.Message, "We value your Feedback")
             RatingAndFeedbackScreen(context)
+            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
+            BottomEnd(context)
 
         }
         }
@@ -251,63 +264,71 @@ fun SettingSwitch(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileCard(
     context: Context
 ) {
-    val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
     var user by remember { mutableStateOf(User()) }
-    var isEditing by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
     var currentName by remember { mutableStateOf("") }
     var currentEmail by remember { mutableStateOf("") }
     var currentAdmissionNumber by remember { mutableStateOf("") }
 
     // Fetch user data when the composable is launched
-    LaunchedEffect(currentUser?.email) {
-        currentUser?.email?.let { email ->
-            fetchUserDataByEmail(email) { fetchedUser ->
-                fetchedUser?.let {
-                    user = it
-                    currentName = it.name
-                    currentEmail = it.email
-                    currentAdmissionNumber = it.id
-                }
+    LaunchedEffect(CC.getCurrentUser()) {
+        fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
+            fetchedUser?.let {
+                user = it
+                currentName = it.name
+                currentEmail = it.email
+                currentAdmissionNumber = it.id
             }
         }
     }
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp)
             .border(
-                1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                    1.dp,GlobalColors.secondaryColor,RoundedCornerShape(10.dp)
             )
+            .fillMaxWidth()
+            .padding(16.dp)
             .clickable { isExpanded = !isExpanded },
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = GlobalColors.primaryColor
         ),
-        elevation = CardDefaults.elevatedCardElevation(
-            8.dp
-        ),
+        elevation = CardDefaults.elevatedCardElevation(8.dp)
     ) {
         Column(
             modifier = Modifier
                 .background(GlobalColors.primaryColor)
-                .padding(10.dp)
+                .padding(16.dp)
         ) {
             // Only show the name field initially
-            ProfileTextField(
-                value = currentName,
-                isEditing = isEditing,
-                onValueChange = { currentName = it },
-                context = context
-            )
-
+            Row(modifier = Modifier
+                .padding(vertical = 8.dp)
+                .border(
+                    1.dp,
+                    GlobalColors.secondaryColor,
+                    RoundedCornerShape(10.dp)
+                )
+                .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start) {
+                Text(
+                    text = currentName,
+                    style = CC.descriptionTextStyle(context).copy(
+                        fontSize = 14.sp,
+                        color = Color.White
+                    ),
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .fillMaxWidth()
+                        .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
+                        .padding(8.dp)
+                )
+            }
             // Animated visibility for other fields
             AnimatedVisibility(
                 visible = isExpanded,
@@ -315,67 +336,51 @@ fun ProfileCard(
                 exit = fadeOut() + shrinkVertically()
             ) {
                 Column {
-                    ProfileTextField(
-                        value = currentEmail,
-                        isEditing = false,
-                        onValueChange = { currentEmail = it },
-                        context = context
-                    )
-
-                    ProfileTextField(
-                        value = currentAdmissionNumber,
-                        isEditing = false,
-                        onValueChange = { currentAdmissionNumber = it },
-                        context = context
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-
-                        Button(
-                            onClick = { isEditing = !isEditing },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isEditing) GlobalColors.secondaryColor else GlobalColors.extraColor1,
-                                contentColor = Color.White
+                    Row(modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .border(
+                            1.dp,
+                            GlobalColors.secondaryColor,
+                            RoundedCornerShape(10.dp)
+                        )
+                        .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start) {
+                        Text(
+                            text = "Email: $currentEmail",
+                            style = CC.descriptionTextStyle(context).copy(
+                                fontSize = 14.sp,
+                                color = Color.White
                             ),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text(
-                                if (isEditing) "Cancel" else "Edit",
-                                style = CC.descriptionTextStyle(context)
-                            )
-                        }
-
-                        // AnimatedVisibility for the "Save" button
-                        AnimatedVisibility(
-                            visible = isEditing,
-                            enter = fadeIn() + slideInHorizontally(), // Enter animation
-                            exit = fadeOut() + slideOutHorizontally()  // Exit animation
-                        ) {
-                            Button(
-                                onClick = {
-                                    MyDatabase.updateUserNameById(currentAdmissionNumber,
-                                        currentName,
-                                        callback = {
-                                            Toast.makeText(
-                                                context,
-                                                "Profile updated successfully",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            Details.name.value = currentName
-                                        })
-                                    isEditing = false
-
-                                }, colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.extraColor1,
-                                    contentColor = GlobalColors.textColor
-                                ), shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text("Save", style = CC.descriptionTextStyle(context))
-                            }
-                        }
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .fillMaxWidth()
+                                .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
+                                .padding(8.dp)
+                        )
+                    }
+                    Row(modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .border(
+                            1.dp,
+                            GlobalColors.secondaryColor,
+                            RoundedCornerShape(10.dp)
+                        )
+                        .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start) {
+                    Text(
+                        text = "Admission Number: $currentAdmissionNumber",
+                        style = CC.descriptionTextStyle(context).copy(
+                            fontSize = 14.sp,
+                            color = Color.White
+                        ),
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .fillMaxWidth()
+                            .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
+                            .padding(8.dp)
+                    )
                     }
                 }
             }
@@ -384,29 +389,9 @@ fun ProfileCard(
 }
 
 
-@Composable
-fun ProfileTextField(
-    value: String, isEditing: Boolean, onValueChange: (String) -> Unit, context: Context
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        enabled = isEditing,
-        textStyle = CC.descriptionTextStyle(context),
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = GlobalColors.textColor,
-            disabledContainerColor = GlobalColors.tertiaryColor,
-            focusedContainerColor = GlobalColors.tertiaryColor,
-            unfocusedContainerColor = GlobalColors.tertiaryColor,
-            disabledTextColor = GlobalColors.textColor,
-            disabledLabelColor = GlobalColors.textColor
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp)
-    )
-}
+
+
+
 
 @Composable
 fun PasswordTextField(
