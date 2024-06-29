@@ -51,8 +51,8 @@ import androidx.navigation.compose.rememberNavController
 import com.mike.studentportal.ui.theme.Caveat
 import com.mike.studentportal.ui.theme.Crimson
 import com.mike.studentportal.ui.theme.Lora
-import com.mike.studentportal.ui.theme.Robotomono
-import com.mike.studentportal.ui.theme.Segoe
+import com.mike.studentportal.ui.theme.ShadowIntoLight
+import com.mike.studentportal.ui.theme.IndieFlower
 import com.mike.studentportal.ui.theme.Zeyada
 import com.mike.studentportal.CommonComponents as CC
 
@@ -100,7 +100,7 @@ object GlobalColors {
 
     fun loadColorScheme(context: Context): ColorScheme {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val isDark = sharedPreferences.getBoolean(THEME_MODE_KEY, false)
+        val isDark = sharedPreferences.getBoolean(THEME_MODE_KEY, true)
         isDarkMode = isDark
         currentScheme = if (isDark) darkScheme else lightScheme
         return currentScheme
@@ -235,9 +235,9 @@ fun currentFontFamily(context: Context): FontFamily {
     val selectedFontName = fontPrefs.getSelectedFont()
 
     return when (selectedFontName) {
-        "Segoe" -> Segoe
+        "Indie Flower" -> IndieFlower
         "Lora" -> Lora
-        "Roboto mono" -> Robotomono
+        "Shadow Into Light" -> ShadowIntoLight
         "Crimson" -> Crimson
         "Zeyada" -> Zeyada
         "Caveat" -> Caveat
@@ -251,8 +251,8 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
     var fontUpdated by remember { mutableStateOf(false) }
     var selectedFontFamily by remember { mutableStateOf<FontFamily?>(null) }
     val fontFamilies = mapOf(
-        "Segoe" to Segoe,
-        "Roboto mono" to Robotomono,
+        "Indie Flower" to IndieFlower,
+        "Shadow Into Light" to ShadowIntoLight,
         "Lora" to Lora,
         "Crimson" to Crimson,
         "Zeyada" to Zeyada,
