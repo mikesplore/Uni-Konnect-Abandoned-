@@ -1,7 +1,5 @@
 package com.mike.studentportal
 
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -10,7 +8,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,10 +20,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import kotlinx.coroutines.launch
 import com.mike.studentportal.CommonComponents as CC
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 @Composable
 fun SignAttendanceScreen(navController: NavController, context: Context) {
@@ -31,10 +34,9 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
     val courses = remember { mutableStateListOf<Course>() }
+    val attendanceStates = remember { mutableStateListOf<AttendanceState>() }
     val attendanceRecords = remember { mutableStateListOf<Attendance>() }
     val coroutineScope = rememberCoroutineScope()
-    val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
     var user by remember { mutableStateOf(User()) }
     var currentName by remember { mutableStateOf("") }
     var currentEmail by remember { mutableStateOf("") }
@@ -49,19 +51,26 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                 courses.clear()
                 courses.addAll(fetchedCourses)
                 loading = false
+
+                // Fetch attendance states for each course
+                fetchedCourses.forEach { course ->
+                    MyDatabase.fetchAttendanceState(course.courseCode) { fetchedState ->
+                        if (fetchedState != null) {
+                            attendanceStates.add(fetchedState)
+                        }
+                    }
+                }
             }
         }
 
         // Fetch user data when the composable is launched
-        LaunchedEffect(currentUser?.email) {
-            currentUser?.email?.let { email ->
-                fetchUserDataByEmail(email) { fetchedUser ->
-                    fetchedUser?.let {
-                        user = it
-                        currentName = it.name
-                        currentEmail = it.email
-                        currentAdmissionNumber = it.id
-                    }
+        LaunchedEffect(CC.getCurrentUser()) {
+            fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
+                fetchedUser?.let {
+                    user = it
+                    currentName = it.name
+                    currentEmail = it.email
+                    currentAdmissionNumber = it.id
                 }
             }
         }
@@ -132,12 +141,13 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                     }
                 }
 
-                if (selectedTabIndex in courses.indices) {
+                if (selectedTabIndex in courses.indices && selectedTabIndex in attendanceStates.indices) {
                     AttendanceList(
                         studentID = currentAdmissionNumber,
                         courseCode = courses[selectedTabIndex].courseCode,
                         context,
-                        attendanceRecords
+                        attendanceRecords,
+                        attendanceStates[selectedTabIndex] // Pass the attendance state for the selected tab
                     )
                 }
             }
@@ -146,14 +156,19 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
 }
 
 @Composable
-fun AttendanceList(studentID: String, courseCode: String, context: Context, attendanceRecords: List<Attendance>) {
+fun AttendanceList(
+    studentID: String,
+    courseCode: String,
+    context: Context,
+    attendanceRecords: List<Attendance>,
+    attendanceState: AttendanceState
+) {
     val coroutineScope = rememberCoroutineScope()
     val today = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-    var loading by remember { mutableStateOf(false) }
-    val hasSignedToday by remember {
+    var hasSignedToday by remember {
         mutableStateOf(attendanceRecords.any { it.date == today })
     }
-
+    var clickCount by remember { mutableIntStateOf(0) }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -174,23 +189,36 @@ fun AttendanceList(studentID: String, courseCode: String, context: Context, atte
         Button(
             onClick = {
                 coroutineScope.launch {
-                    MyDatabase.signAttendance(studentID, courseCode) { success ->
+                    if (attendanceState.state){
+                    MyDatabase.signAttendance(studentID, courseCode,"Present") { success ->
                         if (success) {
                             MyDatabase.fetchAttendances(studentID, courseCode) { fetchedAttendance ->
-
+                                // Do something with fetched attendance
                             }
                             Toast.makeText(context, "Attendance signed successfully", Toast.LENGTH_SHORT).show()
+                            hasSignedToday = true
+                            clickCount++
                         } else {
                             Toast.makeText(context, "Failed to sign attendance", Toast.LENGTH_SHORT).show()
                         }
+                    }}else{
+                        Toast.makeText(context,"Attendance closed for this Course", Toast.LENGTH_SHORT).show()
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.secondaryColor),
-            enabled = !hasSignedToday // Disable the button if attendance has been signed today
+            enabled = attendanceState.state && clickCount == 0 // Enable the button based on attendance state and click count
         ) {
-            Text("Sign Attendance", style = CC.descriptionTextStyle(context))
+            if (attendanceState.state) {
+                Text("Sign Attendance", style = CC.descriptionTextStyle(context))
+            } else {
+                Icon(
+                    Icons.Default.Lock,
+                    contentDescription = "Locked",
+                    tint = GlobalColors.tertiaryColor
+                )
+            }
         }
     }
 }
@@ -211,5 +239,3 @@ fun AttendanceCard(attendance: Attendance, context: Context) {
         }
     }
 }
-
-
