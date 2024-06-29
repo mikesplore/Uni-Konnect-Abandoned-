@@ -16,9 +16,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.filled.AddAlert
@@ -100,6 +101,7 @@ object Global {
 class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_StudentPortal)
         super.onCreate(savedInstanceState)
         if (Global.edgeToEdge.value) {
             enableEdgeToEdge()
@@ -161,6 +163,7 @@ sealed class Screen(
     data object Attendance : Screen(
         Icons.Filled.Book, Icons.Outlined.Book, "Attendance"
     )
+
 }
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
@@ -178,8 +181,7 @@ fun MainScreen() {
     if (Global.showAlert.value) {
         BasicAlertDialog(
             onDismissRequest = { Global.showAlert.value = false }, modifier = Modifier.background(
-                Color.Transparent, // Remove background here to avoid double backgrounds
-                RoundedCornerShape(10.dp)
+                Color.Transparent, RoundedCornerShape(10.dp)
             )
         ) {
             Column(
@@ -214,8 +216,7 @@ fun MainScreen() {
                         colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) // Customize button colors
                     ) {
                         Text(
-                            "Enable",
-                            style = CC.descriptionTextStyle(context)
+                            "Enable", style = CC.descriptionTextStyle(context)
                         ) // Set text color for contrast
                     }
                     Spacer(modifier = Modifier.width(16.dp)) // Add space between buttons
@@ -225,8 +226,7 @@ fun MainScreen() {
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) // Customize button colors
                     ) {
                         Text(
-                            "Cancel",
-                            color = GlobalColors.primaryColor
+                            "Cancel", color = GlobalColors.primaryColor
                         ) // Set text color for contrast
                     }
                 }
@@ -234,50 +234,68 @@ fun MainScreen() {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "settings") {
 
-        composable(route = "login", enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
-            )
-        }, exitTransition = {
-            fadeOut(animationSpec = tween(10000))
-        }
-
+        composable(
+            route = "login",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }
         ) {
             LoginScreen(navController, context)
         }
 
-        composable(route = "passwordreset", enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-            )
-        }, exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
-            )
-        }) {
+        composable(
+            route = "passwordreset",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }
+        ) {
             PasswordReset(navController, context)
         }
 
-
         composable(
-            route = "dashboard"
+            route = "splashscreen",
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
+                )
+            }
         ) {
-            Dashboard(
-                navController, pagerState, coroutineScope, screens, context
-            )
+            SplashScreen(navController, context)
         }
 
-        composable(route = "moredetails", enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-            )
-        }, exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
-            )
-        }) {
+        composable(
+            route = "dashboard",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }
+        ) {
+            Dashboard(navController, pagerState, coroutineScope, screens, context)
+        }
+
+        composable(
+            route = "moredetails",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
+                )
+            }
+        ) {
             MoreDetails(context, navController)
         }
 
@@ -285,22 +303,48 @@ fun MainScreen() {
             SignAttendanceScreen(navController, context)
         }
 
-        composable(route = "appearance", enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-            )
-        }, exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
-            )
-        }) {
+        composable(
+            route = "appearance",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }
+        ) {
             Appearance(navController, context)
         }
 
-        composable("courses") {
+        composable("chat") {
+            ChatArea(navController, context)
+        }
+
+        composable("courses",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Up, animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down, animationSpec = tween(500)
+                )
+            }
+
+            ) {
             CoursesScreen(navController = navController, context)
         }
-        composable("settings") { SettingsScreen(navController, context) }
+
+        composable("settings",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }) {
+            SettingsScreen(navController, context)
+        }
+
         composable(
             "course/{courseCode}",
             arguments = listOf(navArgument("courseCode") { type = NavType.StringType })
@@ -309,6 +353,7 @@ fun MainScreen() {
             CourseScreen(courseCode = courseCode, context)
         }
     }
+
 }
 
 
@@ -344,12 +389,8 @@ fun Dashboard(
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .border(
-                            1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(10.dp)
-                        )
-                        .background(
-                            GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
+                    modifier = Modifier.background(
+                            GlobalColors.primaryColor
                         )
                 ) {
                     DropdownMenuItem(text = {
@@ -370,6 +411,26 @@ fun Dashboard(
                         navController.navigate("settings")
                         expanded = false
                     })
+
+                    DropdownMenuItem(text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Chat,
+                                contentDescription = "Chat",
+                                tint = GlobalColors.textColor
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Discussion", style = CC.descriptionTextStyle(context))
+                        }
+                    }, onClick = {
+                        navController.navigate("chat")
+                        expanded = false
+                    })
+
                     DropdownMenuItem(text = {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -470,8 +531,9 @@ fun Dashboard(
                 Screen.Home -> HomeScreen(context, navController)
                 Screen.Assignments -> AssignmentScreen(navController, context)
                 Screen.Announcements -> AnnouncementsScreen(navController, context)
-                Screen.Timetable -> TimetableScreen(navController, context)
+                Screen.Timetable -> TimetableScreen(context)
                 Screen.Attendance -> SignAttendanceScreen(navController, context)
+
             }
         }
     }
