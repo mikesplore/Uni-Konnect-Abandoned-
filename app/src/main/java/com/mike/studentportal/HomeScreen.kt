@@ -238,8 +238,8 @@ fun HomeScreen(context: Context, navController: NavController) {
                 )
             }
             TodayTimetable(context)
-            Spacer(modifier = Modifier.height(10.dp))
-            BottomEnd(context)
+            Spacer(modifier = Modifier.height(50.dp))
+
         }
     }
 }
@@ -837,7 +837,7 @@ fun AnnouncementItem(context: Context) {
 @Composable
 fun BottomEnd(context: Context) {
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-    val versionName = "1.9.0"//packageInfo.versionName
+    val versionName = packageInfo.versionName
 
     Column(
         modifier = Modifier
