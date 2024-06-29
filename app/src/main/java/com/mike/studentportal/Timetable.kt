@@ -61,12 +61,22 @@ import com.mike.studentportal.CommonComponents as CC
 
 
 @Composable
-fun TimetableScreen(navController: NavController, context: Context) {
+fun TimetableScreen(context: Context) {
     var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID()) }
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
     val days = remember { mutableStateListOf<Day>() }
+    val indicator = @Composable { tabPositions: List<TabPosition> ->
+        Box(
+            modifier = Modifier
+                .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                .height(4.dp)
+                .width(screenWidth / (days.size.coerceAtLeast(1))) // Avoid division by zero
+                .background(GlobalColors.secondaryColor, CircleShape)
+        )
+    }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -79,19 +89,6 @@ fun TimetableScreen(navController: NavController, context: Context) {
                 loading = false
             }
         }
-
-
-        val indicator = @Composable { tabPositions: List<TabPosition> ->
-            Box(
-                modifier = Modifier
-                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                    .height(4.dp)
-                    .width(screenWidth / (days.size.coerceAtLeast(1))) // Avoid division by zero
-                    .background(GlobalColors.secondaryColor, CircleShape)
-            )
-        }
-
-        val coroutineScope = rememberCoroutineScope()
 
         if (loading) {
             Row(
@@ -124,9 +121,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
 
                         Tab(selected = selectedTabIndex == index, onClick = {
                             selectedTabIndex = index
-                            coroutineScope.launch {
-                                //load days
-                            }
+
                         }, text = {
 
                             Box(
@@ -295,6 +290,6 @@ fun TimetableCard(
 @Preview
 @Composable
 fun TimetableScreenPreview() {
-    TimetableScreen(rememberNavController(), LocalContext.current)
+    TimetableScreen(LocalContext.current)
 
 }
