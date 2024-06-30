@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import com.mike.studentportal.CommonComponents as CC
 
@@ -50,11 +51,16 @@ fun SplashScreen(navController: NavController, context: Context) {
             easing = { OvershootInterpolator(2f).getInterpolation(it) }
         ), label = ""
     )
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    val destination = if (currentUser != null) "dashboard" else "login"
 
     LaunchedEffect(Unit) {
-        startAnimation = true
-        delay(3000) // Keep the splash screen for 3 seconds
-        navController.navigate("login")
+        startAnimation = true // Assuming you have animation logic
+        delay(3000)
+        navController.navigate(destination) {
+            popUpTo("splash") { inclusive = true } // Optional: Clear splash from back stack
+        }
     }
 
     Box(
