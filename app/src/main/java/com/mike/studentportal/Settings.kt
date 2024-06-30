@@ -1,6 +1,7 @@
 package com.mike.studentportal
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -271,20 +272,25 @@ fun ProfileCard(
     var user by remember { mutableStateOf(User()) }
     var isExpanded by remember { mutableStateOf(false) }
     var currentName by remember { mutableStateOf("") }
+    var auth = FirebaseAuth.getInstance()
     var currentEmail by remember { mutableStateOf("") }
     var currentAdmissionNumber by remember { mutableStateOf("") }
 
     // Fetch user data when the composable is launched
-    LaunchedEffect(CC.getCurrentUser()) {
-        fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
-            fetchedUser?.let {
-                user = it
-                currentName = it.name
-                currentEmail = it.email
-                currentAdmissionNumber = it.id
+    LaunchedEffect(auth.currentUser?.email) {
+        auth.currentUser?.email?.let {
+            fetchUserDataByEmail(it) { fetchedUser ->
+                fetchedUser?.let {
+                    user = it
+                    currentName = it.name
+                    currentEmail = it.email
+                    currentAdmissionNumber = it.id
+                }
+                Log.e("ProfileCard", "Fetched user: $user")
             }
         }
     }
+
 
     Card(
         modifier = Modifier
