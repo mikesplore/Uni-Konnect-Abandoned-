@@ -16,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -28,16 +27,12 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
-import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(navController: NavController, context: Context) {
-    var user by remember { mutableStateOf<User?>(null) }
-    var currentName by remember { mutableStateOf("") }
-    var currentEmail by remember { mutableStateOf("") }
-    var currentAdmissionNumber by remember { mutableStateOf("") }
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -49,14 +44,9 @@ fun LoginScreen(navController: NavController, context: Context) {
     var loading by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        auth.signOut()
         visible = true
     }
-    val backbrush = Brush.verticalGradient(
-        colors = listOf(
-            GlobalColors.primaryColor,
-            GlobalColors.secondaryColor
-        )
-    )
 
     AnimatedVisibility(
         visible = visible,
@@ -72,17 +62,26 @@ fun LoginScreen(navController: NavController, context: Context) {
                             style = CC.titleTextStyle(context)
                         )
                     },
+                    navigationIcon = {
+                        IconButton(onClick = { /* Handle back button click */ }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBackIosNew,
+                                contentDescription = "Back",
+                                tint = GlobalColors.textColor
+                            )
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = GlobalColors.primaryColor
                     )
                 )
             },
             containerColor = GlobalColors.primaryColor
-        ) { it ->
+        ) {
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .background(backbrush)
+                    .background(GlobalColors.primaryColor)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -95,7 +94,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Continue with one of the following",
+                        text ="Continue with one of the following",
                         style = CC.descriptionTextStyle(context)
                     )
 
@@ -109,16 +108,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                         GoogleAuth(
                             firebaseAuth = firebaseAuth,
                             onSignInSuccess = {
-                                Details.email.value = CC.getCurrentUser()
-                                fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
-                                    fetchedUser?.let {
-                                        user = it
-                                        currentName = it.name
-                                        currentEmail = it.email
-                                        currentAdmissionNumber = it.id
-                                    }
-                                }
-                                Details.name.value = currentName
+                                val user = firebaseAuth.currentUser
+                                Details.email.value = user?.email.toString()
+                                Details.name.value = user?.displayName.toString()
 
                                 Toast.makeText(
                                     context,
@@ -149,8 +141,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                             onSignInSuccess = {
                                 Toast.makeText(context, "Sign-in successful", Toast.LENGTH_SHORT)
                                     .show()
-
-                                Details.email.value = CC.getCurrentUser()
+                                val user = firebaseAuth.currentUser
+                                Details.email.value = user?.email.toString()
                                 navController.navigate("moredetails")
                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
                                     if (!task.isSuccessful) {
@@ -254,10 +246,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                         email = email
                                                     )
                                                 )
-                                                Details.name.value = name
-                                                name = ""
-                                                email = ""
-                                                password = ""
                                                 navController.navigate("dashboard")
                                             } else {
                                                 loading = false
@@ -285,22 +273,18 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     "Sign In successful!",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
-                                                Details.name.value = name
-                                                name = ""
-                                                email = ""
-                                                password = ""
                                                 navController.navigate("dashboard")
                                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(
-                                                    OnCompleteListener { taask ->
-                                                    if (!taask.isSuccessful) {
+                                                    OnCompleteListener { task ->
+                                                        if (!task.isSuccessful) {
 
-                                                        Log.w("FCM", "Fetching FCM registration token failed", taask.exception)
-                                                        return@OnCompleteListener
-                                                    }
-                                                    // retrieve device token and send to database
-                                                    val token = taask.result
-                                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
-                                                })
+                                                            Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                                            return@OnCompleteListener
+                                                        }
+                                                        // retrieve device token and send to database
+                                                        val token = task.result
+                                                        MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                                    })
                                             } else {
                                                 loading = false
                                                 Toast.makeText(
@@ -351,6 +335,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
+                    modifier = Modifier
+                        .clickable { isSigningUp = !isSigningUp },
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -364,8 +350,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Text(
                         text = if (isSigningUp) "Sign In" else "Sign Up",
                         style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold),
-                        color = GlobalColors.tertiaryColor,
-                        modifier = Modifier.clickable { isSigningUp = !isSigningUp }
+                        color = GlobalColors.tertiaryColor
                     )
                 }
             }
