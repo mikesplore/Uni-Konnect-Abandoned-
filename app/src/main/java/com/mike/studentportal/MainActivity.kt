@@ -88,10 +88,12 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.mike.studentportal.CommonComponents as CC
-
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 object Global {
     val showAlert: MutableState<Boolean> = mutableStateOf(false)
     val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
@@ -99,6 +101,7 @@ object Global {
 }
 
 class MainActivity : ComponentActivity() {
+
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_StudentPortal)
@@ -109,7 +112,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
-            MainScreen()
+           MainScreen()
 
         }
         createNotificationChannel(this)
@@ -169,6 +172,7 @@ sealed class Screen(
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
+
     val context = LocalContext.current
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
@@ -234,7 +238,8 @@ fun MainScreen() {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "settings") {
+
+    NavHost(navController, startDestination = "splashscreen") {
 
         composable(
             route = "login",
@@ -291,9 +296,7 @@ fun MainScreen() {
                 )
             },
             exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
-                )
+                fadeOut(animationSpec = tween(1000))
             }
         ) {
             MoreDetails(context, navController)
@@ -316,7 +319,7 @@ fun MainScreen() {
         }
 
         composable("chat") {
-            ChatArea(navController, context)
+            ChatScreen(navController, context)
         }
 
         composable("courses",
@@ -337,7 +340,7 @@ fun MainScreen() {
 
         composable("settings",
             enterTransition = {
-                fadeIn(animationSpec = tween(1000))
+                fadeIn(animationSpec = tween(500))
             },
             exitTransition = {
                 fadeOut(animationSpec = tween(1000))
