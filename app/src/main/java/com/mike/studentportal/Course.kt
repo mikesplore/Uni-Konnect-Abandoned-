@@ -16,14 +16,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -48,13 +44,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.mike.studentportal.MyDatabase.readItems
 import com.mike.studentportal.CommonComponents as CC
 
-object CourseName{
-    var name: MutableState<String> = mutableStateOf("Course Name")
+object CourseName {
+    var name: MutableState<String> = mutableStateOf("")
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,8 +61,11 @@ fun CourseScreen(courseCode: String, context: Context) {
     val pastPapers = remember { mutableStateListOf<GridItem>() }
     val resources = remember { mutableStateListOf<GridItem>() }
     var isLoading by remember { mutableStateOf(true) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var addItemToSection by remember { mutableStateOf<Section?>(null) }
 
-    LaunchedEffect(isLoading) {
+    LaunchedEffect(courseCode) {
+        isLoading = true
         readItems(courseCode, Section.NOTES) { fetchedNotes ->
             notes.addAll(fetchedNotes)
             isLoading = false
@@ -82,13 +83,13 @@ fun CourseScreen(courseCode: String, context: Context) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(CourseName.name.value, style = CC.descriptionTextStyle(context)) },
-                actions = {
-                    IconButton(onClick = { isLoading = true }) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh Icon", tint = GlobalColors.textColor)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
+                title = {
+                    Text(
+                        CourseName.name.value,
+                        style = CC.titleTextStyle(context),
+                        fontSize = 20.sp
+                    )
+                }, colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = GlobalColors.primaryColor,
                     titleContentColor = GlobalColors.textColor
                 )
@@ -203,7 +204,7 @@ fun GridItemCard(item: GridItem, context: Context) {
             Button(
                 onClick = { uriHandler.openUri(item.link) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007BFF)),
+                colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.secondaryColor),
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text("Open", style = CC.descriptionTextStyle(context))
@@ -211,12 +212,8 @@ fun GridItemCard(item: GridItem, context: Context) {
         }
     }
 }
-
-
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun CourseScreenPreview() {
-    CourseScreen(
-        courseCode = "CP123456", context = LocalContext.current
-    )
+fun CoursePreview(){
+    CoursesScreen(rememberNavController(), LocalContext.current)
 }
