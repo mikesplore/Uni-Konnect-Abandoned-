@@ -302,18 +302,6 @@ object MyDatabase {
             })
     }
 
-    fun updateUserNameById(userId: String, newName: String, callback: (Boolean) -> Unit) {
-        val database = FirebaseDatabase.getInstance().reference
-        val userRef = database.child("Users").child(userId)
-
-        userRef.child("name").setValue(newName).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                callback(true)
-            } else {
-                callback(false)
-            }
-        }
-    }
 
     // Authentication functions
     fun updatePassword(newPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
