@@ -31,6 +31,7 @@ import java.util.*
 fun SignAttendanceScreen(navController: NavController, context: Context) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val configuration = LocalConfiguration.current
+    var auth = FirebaseAuth.getInstance()
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
     val courses = remember { mutableStateListOf<Course>() }
@@ -64,13 +65,15 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
         }
 
         // Fetch user data when the composable is launched
-        LaunchedEffect(CC.getCurrentUser()) {
-            fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
-                fetchedUser?.let {
-                    user = it
-                    currentName = it.name
-                    currentEmail = it.email
-                    currentAdmissionNumber = it.id
+        LaunchedEffect(auth.currentUser) {
+            auth.currentUser?.email?.let {
+                fetchUserDataByEmail(it) { fetchedUser ->
+                    fetchedUser?.let {
+                        user = it
+                        currentName = it.name
+                        currentEmail = it.email
+                        currentAdmissionNumber = it.id
+                    }
                 }
             }
         }
