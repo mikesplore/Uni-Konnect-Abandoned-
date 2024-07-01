@@ -31,7 +31,7 @@ import java.util.*
 fun SignAttendanceScreen(navController: NavController, context: Context) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val configuration = LocalConfiguration.current
-    var auth = FirebaseAuth.getInstance()
+    val auth = FirebaseAuth.getInstance()
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
     val courses = remember { mutableStateListOf<Course>() }
