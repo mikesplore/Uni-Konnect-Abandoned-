@@ -124,8 +124,12 @@ fun LoginScreen(navController: NavController, context: Context) {
                                         return@OnCompleteListener
                                     }
                                     // retrieve device token and send to database
-                                    val token = task.result
-                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
+
+                                    MyDatabase.generateFCMID {  fcmID ->
+                                        val token = task.result
+                                        val fCM = Fcm(id = fcmID, token = token)
+                                    MyDatabase.writeFcmToken(token = fCM)
+                                    }
                                 })
                             },
                             onSignInFailure = {
@@ -150,8 +154,11 @@ fun LoginScreen(navController: NavController, context: Context) {
                                         return@OnCompleteListener
                                     }
                                     // retrieve device token and send to database
-                                    val token = task.result
-                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                    MyDatabase.generateFCMID {  fcmID ->
+                                        val token = task.result
+                                        val fCM = Fcm(id = fcmID, token = token)
+                                        MyDatabase.writeFcmToken(token = fCM)
+                                    }
                                 })
                             },
                             onSignInFailure = {
@@ -239,13 +246,16 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     "Registration successful!",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
-                                                MyDatabase.writeUsers(
-                                                    User(
-                                                        name = name,
-                                                        email = email
-                                                    )
-                                                )
-                                                navController.navigate("dashboard")
+                                                MyDatabase.generateIndexNumber { indexNumber ->
+                                                    val user = User(id = indexNumber, name = name, email = email)
+                                                    MyDatabase.writeUsers(user) { success ->
+                                                        if (success) {
+                                                           isSigningUp = false
+                                                        } else {
+                                                            Toast.makeText(context,"Failed to write user to database", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    }
+                                                }
                                             } else {
                                                 loading = false
                                                 Toast.makeText(
@@ -281,8 +291,11 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                             return@OnCompleteListener
                                                         }
                                                         // retrieve device token and send to database
-                                                        val token = task.result
-                                                        MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                                        MyDatabase.generateFCMID {  fcmID ->
+                                                            val token = task.result
+                                                            val fCM = Fcm(id = fcmID, token = token)
+                                                            MyDatabase.writeFcmToken(token = fCM)
+                                                        }
                                                     })
                                             } else {
                                                 loading = false
