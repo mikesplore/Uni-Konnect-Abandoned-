@@ -70,7 +70,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                 fetchUserDataByEmail(it) { fetchedUser ->
                     fetchedUser?.let {
                         user = it
-                        currentName = it.name
+                        currentName = it.firstName + " " + it.lastName
                         currentEmail = it.email
                         currentAdmissionNumber = it.id
                     }
