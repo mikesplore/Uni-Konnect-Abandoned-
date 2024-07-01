@@ -106,7 +106,10 @@ fun TimetableScreen(context: Context) {
 
         } else {
             if (days.isEmpty()) {
-                Text("No days found")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Text("No days found", style = CC.descriptionTextStyle(context))
+                }
+
             } else {
 
                 ScrollableTabRow(
