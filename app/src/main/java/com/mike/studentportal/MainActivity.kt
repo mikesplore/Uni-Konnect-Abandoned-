@@ -261,7 +261,7 @@ fun MainScreen() {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "splashscreen") {
+    NavHost(navController, startDestination = "dashboard") {
 
         composable(
             route = "login",
