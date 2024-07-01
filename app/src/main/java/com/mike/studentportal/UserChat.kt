@@ -307,8 +307,9 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(value = message,
+                        textStyle = CC.descriptionTextStyle(context),
                         onValueChange = { message = it },
-                        label = { Text("Message") },
+                        label = { Text("Message", style = CC.descriptionTextStyle(context)) },
                         modifier = Modifier.weight(1f),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = GlobalColors.primaryColor,
