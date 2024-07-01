@@ -54,7 +54,10 @@ import com.mike.studentportal.CommonComponents as CC
 
 object Details {
     var email: MutableState<String> = mutableStateOf("")
-    var name: MutableState<String> = mutableStateOf("Anonymous")
+    var firstName: MutableState<String> = mutableStateOf("null")
+    var lastName: MutableState<String> = mutableStateOf("null")
+    var phoneNumber: MutableState<String> = mutableStateOf("null")
+
 
 }
 
