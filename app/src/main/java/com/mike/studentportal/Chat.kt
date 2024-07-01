@@ -153,11 +153,13 @@ fun ChatScreen(
 
     fun sendMessage(message: String) {
         try {
+            MyDatabase.generateChatID {  chatId ->
             val newChat = Chat(
+                id = chatId,
                 message = message,
                 senderName = currentName,
                 senderID = currentAdmissionNumber,
-                time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
+                time = SimpleDateFormat("hh:mm A", Locale.getDefault()).format(Date()),
                 date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
             )
             MyDatabase.sendMessage(newChat) { success ->
@@ -168,7 +170,7 @@ fun ChatScreen(
                         snackbarHostState.showSnackbar("Failed to send message")
                     }
                 }
-            }
+            }}
         } catch (e: Exception) {
             errorMessage = e.message
             scope.launch {
