@@ -14,8 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -308,13 +310,16 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                         onValueChange = { message = it },
                         label = { Text("Message") },
                         modifier = Modifier.weight(1f),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = GlobalColors.primaryColor,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = GlobalColors.primaryColor,
+                            unfocusedContainerColor = GlobalColors.primaryColor,
                             cursorColor = GlobalColors.textColor,
+                            focusedTextColor = GlobalColors.textColor,
+                            unfocusedTextColor = GlobalColors.textColor,
                             focusedLabelColor = GlobalColors.textColor,
                             unfocusedLabelColor = GlobalColors.textColor,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
+                            focusedIndicatorColor = GlobalColors.secondaryColor,
+                            unfocusedIndicatorColor = GlobalColors.secondaryColor
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
@@ -329,7 +334,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                         colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Send")
+                        Icon(Icons.AutoMirrored.Filled.Send,"Send")
                     }
                 }
             }
