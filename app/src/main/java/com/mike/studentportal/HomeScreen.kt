@@ -1,6 +1,7 @@
 package com.mike.studentportal
 
 import android.content.Context
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -80,6 +81,8 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.mike.studentportal.MyDatabase.getAnnouncements
+import kotlinx.coroutines.delay
+import kotlin.time.Duration
 import com.mike.studentportal.CommonComponents as CC
 
 data class Images(val link: String, val description: String)
@@ -153,19 +156,22 @@ fun HomeScreen(context: Context, navController: NavController) {
 
             } else {
                 if (courses.isEmpty()) {
-                    Column(
+                    Row(
                         modifier = Modifier
-                            .border(
-                                1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
-                            )
+                            .horizontalScroll(rememberScrollState())
                             .height(90.dp)
                             .fillMaxWidth(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "No courses found", style = CC.descriptionTextStyle(context)
-                        )
+                        EmptyIconBox(context)
+                        EmptyIconBox(context)
+                        EmptyIconBox(context)
+                        EmptyIconBox(context)
+                        EmptyIconBox(context)
+                        EmptyIconBox(context)
+                        EmptyIconBox(context)
+
+
                     }
                 } else {
                     IconList(courses, navController, context)
@@ -204,7 +210,16 @@ fun HomeScreen(context: Context, navController: NavController) {
                         LoadingImageBox()
                         LoadingImageBox()
                     }
-                } else {
+                } else if (courses.isEmpty()){
+                    Row(modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .fillMaxWidth()) {
+                    EmptyImageBox(context)
+                    EmptyImageBox(context)
+                    EmptyImageBox(context)
+                    EmptyImageBox(context)
+                    EmptyImageBox(context)}}
+                else{
 
                     ImageList(courses, context, images.value, navController)
                 }
@@ -317,10 +332,39 @@ fun LoadingIconBox() {
                 .height(15.dp)
         ) {
             ColorProgressIndicator(
+                delayMillis = 100L,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(10.dp))
             )
+        }
+    }
+}
+
+@Composable
+fun EmptyIconBox(context: Context) {
+    Column(
+        modifier = Modifier.padding(start = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .background(Color.Transparent, CircleShape)
+                .size(60.dp)
+                .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Empty", style = CC.descriptionTextStyle(context))
+        }
+        Spacer(modifier = Modifier.height(5.dp))
+        Row(
+            modifier = Modifier
+                .width(60.dp)
+                .height(15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text("Empty", style = CC.descriptionTextStyle(context))
         }
     }
 }
@@ -589,6 +633,7 @@ fun LoadingImageBox() {
             modifier = Modifier.fillMaxSize()
         ) {
             ColorProgressIndicator(
+                delayMillis = 150L,
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp, 16.dp))
                     .fillMaxWidth()
@@ -600,6 +645,7 @@ fun LoadingImageBox() {
                     .fillMaxHeight(1f)
             ) {
                 ColorProgressIndicator(
+                    delayMillis = 150L,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp))
@@ -612,13 +658,36 @@ fun LoadingImageBox() {
 
 
 @Composable
-fun ColorProgressIndicator(modifier: Modifier = Modifier) {
+fun EmptyImageBox(context: Context) {
+    Box(
+        modifier = Modifier
+            .padding(8.dp)
+            .width(250.dp)
+            .height(250.dp)
+            .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+
+            Text("Empty", style = CC.descriptionTextStyle(context))
+
+    }
+}
+
+@Composable
+fun ColorProgressIndicator(modifier: Modifier = Modifier, delayMillis: Long = 0L) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val offsetX by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f, animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = ""
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                delayMillis = delayMillis.toInt(), // Add delay here
+                durationMillis = 3000,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
     )
 
     Box(
@@ -627,9 +696,11 @@ fun ColorProgressIndicator(modifier: Modifier = Modifier) {
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
+                        GlobalColors.primaryColor,
+                        GlobalColors.primaryColor,
                         GlobalColors.secondaryColor,
                         GlobalColors.primaryColor,
-                        GlobalColors.secondaryColor
+                        GlobalColors.primaryColor
                     ),
                     start = Offset(offsetX * 1000f - 500f, 0f),
                     end = Offset(offsetX * 1000f + 500f, 0f)
@@ -741,7 +812,8 @@ fun AnnouncementItem(context: Context) {
             ) {
                 ColorProgressIndicator(modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
-                    .fillMaxSize())
+                    .fillMaxSize(),
+                    delayMillis = 200L)
             }
 
         } else if (announcements.isNotEmpty()) {
