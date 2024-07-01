@@ -141,12 +141,14 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
 
     fun sendMessage(messageContent: String) {
         try {
+            MyDatabase.generateChatID { chatId ->
             val newMessage = Message(
+                id = chatId,
                 message = messageContent,
                 senderName = user.name,
                 senderID = currentAdmissionNumber,
                 recipientID = targetUserId,
-                time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
+                time = SimpleDateFormat("hh:mm A", Locale.getDefault()).format(Date()),
                 date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
             )
             sendUserToUserMessage(newMessage, conversationId) { success ->
@@ -157,6 +159,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                         snackbarHostState.showSnackbar("Failed to send message")
                     }
                 }
+            }
             }
         } catch (e: Exception) {
             errorMessage = e.message
