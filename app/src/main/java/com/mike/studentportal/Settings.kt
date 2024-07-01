@@ -282,7 +282,7 @@ fun ProfileCard(
             fetchUserDataByEmail(it) { fetchedUser ->
                 fetchedUser?.let {
                     user = it
-                    currentName = it.name
+                    currentName = it.firstName +" "+ it.lastName
                     currentEmail = it.email
                     currentAdmissionNumber = it.id
                 }
@@ -671,7 +671,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                             val feedback = Feedback(
                                 id = feedbackId,
                                 rating = currentRating,
-                                sender = user.name,
+                                sender = user.firstName+" "+user.lastName,
                                 message = feedbackText,
                                 admissionNumber = user.id
                             )
