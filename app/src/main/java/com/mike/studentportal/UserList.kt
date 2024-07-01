@@ -125,7 +125,7 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = user.name,
+                text = user.firstName +" "+ user.lastName,
                 style = CC.descriptionTextStyle(navController.context),
                 modifier = Modifier.weight(1f),
                 color = GlobalColors.textColor
@@ -148,7 +148,7 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
 fun UsersPreview() {
     //ParticipantsScreen(rememberNavController(), LocalContext.current)
     ProfileCard(
-        user = User(name = "Mike", email = "mike@2020"),
+        user = User(firstName = "Mike", email = "mike@2020"),
         navController = rememberNavController(),
         context = LocalContext.current
     )
