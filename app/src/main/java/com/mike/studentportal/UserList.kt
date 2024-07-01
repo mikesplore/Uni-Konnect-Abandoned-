@@ -45,7 +45,7 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Participants", style = CC.titleTextStyle(context)) },
+                title = { Text("Participants (${users?.size})", style = CC.titleTextStyle(context)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
