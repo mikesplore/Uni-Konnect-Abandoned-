@@ -71,7 +71,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
             fetchUserDataByEmail(email) { fetchedUser ->
                 fetchedUser?.let {
                     user = it
-                    currentName = it.name
+                    currentName = it.firstName
                     currentAdmissionNumber = it.id
                 }
             }
@@ -82,7 +82,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
         fetchUserDataByAdmissionNumber(targetUserId) { fetchedUser ->
             fetchedUser?.let {
                 user2 = it
-                name = user2.name
+                name = user2.firstName
 
             }
         }
@@ -145,7 +145,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
             val newMessage = Message(
                 id = chatId,
                 message = messageContent,
-                senderName = user.name,
+                senderName = user.firstName,
                 senderID = currentAdmissionNumber,
                 recipientID = targetUserId,
                 time = SimpleDateFormat("hh:mm A", Locale.getDefault()).format(Date()),
@@ -330,7 +330,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            if (message.isNotBlank() && user.name.isNotBlank()) {
+                            if (message.isNotBlank() && user.firstName.isNotBlank()) {
                                 sendMessage(message)
                                 message = ""
                             }
