@@ -139,19 +139,16 @@ fun MoreDetails(context: Context, navController: NavController) {
                     Button(
                         onClick = {
                             addloading = true
-                            database.push().setValue(
-                                User(
-                                    email = Details.email.value, name = Details.name.value
-                                )
-                            ).addOnSuccessListener {
-                                addloading = false
-                                Toast.makeText(context, "Success data added!", Toast.LENGTH_SHORT)
-                                    .show()
-                                navController.navigate("dashboard")
-                            }.addOnFailureListener {
-                                addloading = false
-                                Toast.makeText(context, "Failed to add user", Toast.LENGTH_SHORT)
-                                    .show()
+                            MyDatabase.generateIndexNumber { indexNumber ->
+                                val user = User(id = indexNumber, name = Details.name.value, email = Details.email.value)
+                                MyDatabase.writeUsers(user) { success ->
+                                    if (success) {
+                                        Toast.makeText(context, "Added successfully", Toast.LENGTH_SHORT).show()
+                                        navController.navigate("dashboard")
+                                    } else {
+                                        Toast.makeText(context,"Failed to write user to database",Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
 
 
