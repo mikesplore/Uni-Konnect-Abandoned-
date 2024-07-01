@@ -13,16 +13,16 @@ import java.util.Locale
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.util.UUID
 
 
 data class User(
     var id: String = "", // Use a mutable 'var'
-    val name: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val email: String = "",
+    val phoneNumber: String = "",
     val isAdmin: Boolean = false
 )
 
@@ -339,8 +339,10 @@ object MyDatabase {
                         val userEmail = userSnapshot.child("email").getValue(String::class.java)
                         if (userEmail == email) {
                             val userId = userSnapshot.child("id").getValue(String::class.java) ?: ""
-                            val userName = userSnapshot.child("name").getValue(String::class.java) ?: ""
-                            callback(User(id = userId, name = userName, email = userEmail))
+                            val firstName = userSnapshot.child("firstName").getValue(String::class.java) ?: ""
+                            val lastName = userSnapshot.child("lastName").getValue(String::class.java) ?: ""
+                            val phoneNumber = userSnapshot.child("firstName").getValue(String::class.java) ?: ""
+                            callback(User(id = userId, firstName = firstName, lastName = lastName,phoneNumber = phoneNumber, email = userEmail))
                             return
                         }
                     }
@@ -361,8 +363,10 @@ object MyDatabase {
                         val userId = userSnapshot.child("id").getValue(String::class.java)
                         if (userId == admissionNumber) {
                             val userEmail = userSnapshot.child("Email").getValue(String::class.java) ?: ""
-                            val userName = userSnapshot.child("name").getValue(String::class.java) ?: ""
-                            callback(User(id = userId, name = userName, email = userEmail))
+                            val firstName = userSnapshot.child("firstName").getValue(String::class.java) ?: ""
+                            val lastName = userSnapshot.child("lastName").getValue(String::class.java) ?: ""
+                            val phoneNumber = userSnapshot.child("phoneNumber").getValue(String::class.java) ?: ""
+                            callback(User(id = userId, firstName = firstName, lastName  =lastName, phoneNumber = phoneNumber, email = userEmail))
                             return
                         }
                     }

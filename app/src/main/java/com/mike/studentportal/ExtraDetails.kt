@@ -56,11 +56,12 @@ fun MoreDetails(context: Context, navController: NavController) {
                     val existingUser = fetchedUsers?.find { it.email == Details.email.value }
 
                     if (existingUser != null) {
-                        Details.name.value = existingUser.name
+                        Details.firstName.value = existingUser.firstName
+                        Details.lastName.value = existingUser.lastName
                         val userName =
-                            existingUser.name // Assuming your User class has a 'name' property
+                            existingUser.firstName+" "+ existingUser.lastName // Assuming your User class has a 'name' property
                         loading = false
-                        Toast.makeText(context, "Welcome back, $userName!", Toast.LENGTH_SHORT)
+                        Toast.makeText(context, "Welcome back, ${userName.substringBefore(' ')}!", Toast.LENGTH_SHORT)
                             .show()
                         navController.navigate("dashboard")
                     } else {
@@ -122,10 +123,10 @@ fun MoreDetails(context: Context, navController: NavController) {
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     CC.SingleLinedTextField(
-                        value = Details.name.value,
+                        value = Details.firstName.value,
                         onValueChange = {
                             if (!emailFound) { // Only update if email is not found
-                                Details.name.value = it
+                                Details.firstName.value = it
                             }
                         },
                         label = "First name",
@@ -135,12 +136,25 @@ fun MoreDetails(context: Context, navController: NavController) {
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
+                    CC.SingleLinedTextField(
+                        value = Details.lastName.value,
+                        onValueChange = {
+                            if (!emailFound) { // Only update if email is not found
+                                Details.lastName.value = it
+                            }
+                        },
+                        label = "Last name",
+                        context = context,
+                        singleLine = true,
+                        enabled = !emailFound // Disable the field if email is found
+                    )
 
+                    Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
                             addloading = true
                             MyDatabase.generateIndexNumber { indexNumber ->
-                                val user = User(id = indexNumber, name = Details.name.value, email = Details.email.value)
+                                val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, email = Details.email.value)
                                 MyDatabase.writeUsers(user) { success ->
                                     if (success) {
                                         Toast.makeText(context, "Added successfully", Toast.LENGTH_SHORT).show()
