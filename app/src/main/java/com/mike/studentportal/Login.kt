@@ -44,7 +44,6 @@ fun LoginScreen(navController: NavController, context: Context) {
     var loading by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        auth.signOut()
         visible = true
     }
 
