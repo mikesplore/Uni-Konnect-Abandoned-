@@ -261,7 +261,7 @@ fun MainScreen() {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "users") {
 
         composable(
             route = "login",
