@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.mike.studentportal.CommonComponents as CC
 
@@ -65,11 +66,14 @@ fun AssignmentScreen(navController: NavController, context: Context) {
         modifier = Modifier.fillMaxSize(),
     ) {
 
-        LaunchedEffect(Unit) {
-            MyDatabase.fetchCourses { fetchedCourses ->
-                courses.clear()
-                courses.addAll(fetchedCourses)
-                loading = false
+        LaunchedEffect(key1 = Unit) { // Trigger the effect only once
+            while (true) { // Continuous loop
+                MyDatabase.fetchCourses { fetchedCourses ->
+                    courses.clear() // Clear previous courses
+                    courses.addAll(fetchedCourses)
+                    loading = false
+                }
+                delay(10) // Wait for 5 seconds
             }
         }
 
@@ -159,9 +163,12 @@ fun AssignmentScreen(navController: NavController, context: Context) {
 @Composable
 fun AssignmentsList(courseCode: String, context: Context) {
     var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
-    LaunchedEffect(courseCode) {
-        MyDatabase.getAssignments(courseCode) { fetchedAssignments ->
-            assignments = fetchedAssignments
+    LaunchedEffect(key1 = courseCode) { // Trigger when courseCode changes
+        while (true) { // Continuous loop
+            MyDatabase.getAssignments(courseCode) { fetchedAssignments ->
+                assignments = fetchedAssignments
+            }
+            delay(10) // Wait for 5 seconds
         }
     }
 
