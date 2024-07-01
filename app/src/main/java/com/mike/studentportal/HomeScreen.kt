@@ -387,11 +387,13 @@ fun IconList(courses: List<Course>, navController: NavController, context: Conte
 fun TodayTimetable(context: Context) {
     var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
 
-    LaunchedEffect(Global.loading.value) {
-        MyDatabase.getCurrentDayTimetable(CC.currentDay(), onTimetableFetched = {
-            timetables = it
-            Global.loading.value = false
-        })
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            delay(10000L) // Delay for 10 seconds
+            MyDatabase.getCurrentDayTimetable(CC.currentDay()) { timetable ->
+                timetables = timetable
+            }
+        }
     }
 
     Card(
