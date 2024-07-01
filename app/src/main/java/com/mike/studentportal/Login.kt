@@ -109,8 +109,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                             onSignInSuccess = {
                                 val user = firebaseAuth.currentUser
                                 Details.email.value = user?.email.toString()
-                                Details.name.value = user?.displayName.toString()
-
                                 Toast.makeText(
                                     context,
                                     "Sign-in successful: $email",
@@ -247,7 +245,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                                 MyDatabase.generateIndexNumber { indexNumber ->
-                                                    val user = User(id = indexNumber, name = name, email = email)
+                                                    val user = User(id = indexNumber, firstName = splitFullName(name).first, lastName = splitFullName(name).second, email = email)
                                                     MyDatabase.writeUsers(user) { success ->
                                                         if (success) {
                                                            isSigningUp = false
@@ -367,6 +365,15 @@ fun LoginScreen(navController: NavController, context: Context) {
                 }
             }
         }
+    }
+}
+
+fun splitFullName(fullName: String): Pair<String, String> {
+    val names = fullName.split(" ")
+    return if (names.size >= 2) {
+        Pair(names[0], names[1])
+    } else {
+        Pair(fullName, "") // Handle cases with only one name or no spaces
     }
 }
 
