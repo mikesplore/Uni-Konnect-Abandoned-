@@ -100,6 +100,7 @@ import com.google.accompanist.pager.rememberPagerState
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import com.mike.studentportal.CommonComponents as CC
@@ -423,14 +424,18 @@ fun Dashboard(
     LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
     }
-    LaunchedEffect(auth.currentUser?.email) {
-        auth.currentUser?.email?.let {
-            fetchUserDataByEmail(it) { fetchedUser ->
-                fetchedUser?.let {
-                    user = it
-                    currentName = it.name
+    LaunchedEffect(key1 = Unit) { // Use a stable key
+        while (true) {
+            delay(10L) // Delay for 10 seconds
+            auth.currentUser?.email?.let { email ->
+                fetchUserDataByEmail(email) { fetchedUser ->
+                    fetchedUser?.let {
+                        user = it
+                        currentName = it.firstName
+                        Log.e("ProfileCard", "Fetched user: $user")
+                        // You might want to add a mechanism to notify the UI about the updated data
+                    }
                 }
-                Log.e("ProfileCard", "Fetched user: $user")
             }
         }
     }
