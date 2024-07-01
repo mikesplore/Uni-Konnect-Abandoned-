@@ -10,10 +10,16 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import com.mike.studentportal.CommonComponents as CC
+import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.io.File
 
 data class User(
-    val id: String = MyDatabase.generateIndexNumber(), val name: String = "", val email: String = ""
+    val id: String = MyDatabase.generateIndexNumber(),
+    val name: String = "",
+    val email: String = "",
+    val isAdmin: Boolean = false
 )
 
 data class Timetable(
@@ -29,9 +35,21 @@ data class Timetable(
 data class Chat(
     var id: String = MyDatabase.generateChatID(),
     var message: String = "",
-    var sender: String = "",
+    var senderName: String = "",
+    var senderID: String = "",
     var time: String = "",
     var date: String = "",
+
+)
+
+data class Message(
+    var id: String = MyDatabase.generateChatID(),
+    var message: String = "",
+    var senderName: String = "",
+    var senderID: String = "",
+    var time: String = "",
+    var date: String = "",
+    var recipientID: String = ""
 
 )
 
@@ -102,7 +120,6 @@ data class GridItem(
 object MyDatabase {
     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
     private val auth = FirebaseAuth.getInstance()
-    val logout = auth.signOut()
 
 
     //initialize the Unique id of the items
@@ -193,6 +210,8 @@ object MyDatabase {
         })
     }
 
+
+
     // Attendance functions
     fun signAttendance(studentID: String, courseCode: String, status: String, onResult: (Boolean) -> Unit) {
         val database = FirebaseDatabase.getInstance().reference
@@ -224,6 +243,25 @@ object MyDatabase {
             override fun onCancelled(error: DatabaseError) {
                 // Handle the error, maybe pass an empty list or an error state to the callback
                 onAttendanceFetched(emptyList())
+            }
+        })
+    }
+
+    fun sendUserToUserMessage(message: Message, path: String, onComplete: (Boolean) -> Unit) {
+        database.child(path).push().setValue(message).addOnCompleteListener { task ->
+            onComplete(task.isSuccessful)
+        }
+    }
+
+    fun fetchUserToUserMessages(path: String, onMessagesFetched: (List<Message>) -> Unit) {
+        database.child(path).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val messages = snapshot.children.mapNotNull { it.getValue(Message::class.java) }
+                onMessagesFetched(messages)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
             }
         })
     }
@@ -287,8 +325,7 @@ object MyDatabase {
                         val userEmail = userSnapshot.child("email").getValue(String::class.java)
                         if (userEmail == email) {
                             val userId = userSnapshot.child("id").getValue(String::class.java) ?: ""
-                            val userName =
-                                userSnapshot.child("name").getValue(String::class.java) ?: ""
+                            val userName = userSnapshot.child("name").getValue(String::class.java) ?: ""
                             callback(User(id = userId, name = userName, email = userEmail))
                             return
                         }
@@ -301,6 +338,31 @@ object MyDatabase {
                 }
             })
     }
+
+    fun fetchUserDataByAdmissionNumber(admissionNumber: String, callback: (User?) -> Unit) {
+        database.child("Users").orderByChild("id").equalTo(admissionNumber)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (userSnapshot in snapshot.children) {
+                        val userId = userSnapshot.child("id").getValue(String::class.java)
+                        if (userId == admissionNumber) {
+                            val userEmail = userSnapshot.child("Email").getValue(String::class.java) ?: ""
+                            val userName = userSnapshot.child("name").getValue(String::class.java) ?: ""
+                            callback(User(id = userId, name = userName, email = userEmail))
+                            return
+                        }
+                    }
+                    callback(null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    callback(null) // Handle or log the error as needed
+                }
+            }
+         )
+    }
+
+
 
 
     // Authentication functions
@@ -456,5 +518,41 @@ object MyDatabase {
         })
     }
 
+}
+
+
+// Function to save messages to a file
+fun saveMessagesToFile(context: Context, messages: List<Message>, fileName: String) {
+    val gson = Gson()
+    val jsonString = gson.toJson(messages)
+    val file = File(context.filesDir, fileName)
+    file.writeText(jsonString)
+}
+
+// Function to load messages from a file
+fun loadMessagesFromFile(context: Context, fileName: String): List<Message> {
+    val file = File(context.filesDir, fileName)
+    if (!file.exists()) return emptyList()
+    val jsonString = file.readText()
+    val gson = Gson()
+    val type = object : TypeToken<List<Message>>() {}.type
+    return gson.fromJson(jsonString, type)
+}
+
+fun saveChatsToFile(context: Context, chats: List<Chat>, fileName: String) {
+    val gson = Gson()
+    val jsonString = gson.toJson(chats)
+    val file = File(context.filesDir, fileName)
+    file.writeText(jsonString)
+}
+
+// Function to load messages from a file
+fun loadChatsFromFile(context: Context, fileName: String): List<Chat> {
+    val file = File(context.filesDir, fileName)
+    if (!file.exists()) return emptyList()
+    val jsonString = file.readText()
+    val gson = Gson()
+    val type = object : TypeToken<List<Chat>>() {}.type
+    return gson.fromJson(jsonString, type)
 }
 
