@@ -248,7 +248,7 @@ fun AssignmentCard(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Author: ${Details.name.value}",
+                    text = "Author: ${Details.firstName.value}",
                     style = CC.descriptionTextStyle(context),
                     color = GlobalColors.tertiaryColor
                 )
