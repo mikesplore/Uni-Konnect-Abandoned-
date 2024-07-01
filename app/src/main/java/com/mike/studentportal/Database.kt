@@ -13,17 +13,21 @@ import java.util.Locale
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import java.io.File
+import java.util.UUID
+
 
 data class User(
-    val id: String = MyDatabase.generateIndexNumber(),
+    var id: String = "", // Use a mutable 'var'
     val name: String = "",
     val email: String = "",
     val isAdmin: Boolean = false
 )
 
 data class Timetable(
-    val id: String = MyDatabase.generateTimetableID(),
+    val id: String = "",
     val startTime: String = "",
     val endTime: String = "",
     val unitName: String = "",
@@ -33,7 +37,7 @@ data class Timetable(
 )
 
 data class Chat(
-    var id: String = MyDatabase.generateChatID(),
+    var id: String = "",
     var message: String = "",
     var senderName: String = "",
     var senderID: String = "",
@@ -43,7 +47,7 @@ data class Chat(
 )
 
 data class Message(
-    var id: String = MyDatabase.generateChatID(),
+    var id: String = "",
     var message: String = "",
     var senderName: String = "",
     var senderID: String = "",
@@ -65,7 +69,7 @@ data class Course(
 )
 
 data class Feedback(
-    val id: String = MyDatabase.generateFeedbackID(),
+    val id: String = "",
     val rating: Int = 0,
     val message: String = "",
     val sender: String = "",
@@ -73,17 +77,19 @@ data class Feedback(
 )
 
 data class Assignment(
-    val id: String = MyDatabase.generateAssignmentID(),
+    val id: String = "",
     val name: String = "",
     val description: String = "",
     val dueDate: String = "",
     val courseCode: String = ""
 )
 
-data class Day(val id: String = MyDatabase.generateDayID(), val name: String = "")
+data class Day(
+    val id: String = "",
+    val name: String = "")
 enum class Section { NOTES, PAST_PAPERS, RESOURCES }
 data class Announcement(
-    val id: String = MyDatabase.generateAnnouncementID(),
+    val id: String = "",
     val date: String = "",
     val title: String = "",
     val description: String = "",
@@ -91,7 +97,7 @@ data class Announcement(
 )
 
 data class Event(
-    val id: String = MyDatabase.generateAnnouncementID(),
+    val id: String = "",
     val date: String = "",
     val title: String = "",
     val description: String = "",
@@ -100,13 +106,15 @@ data class Event(
 )
 
 data class Attendance(
-    val id: String = MyDatabase.generateAttendanceID(),
+    val id: String = "",
     val date: String = "",
     val status: String = "",
     val studentId: String = ""
 )
 
-data class Fcm(val id: String = MyDatabase.generateFcmID(), val token: String = "")
+data class Fcm(val id: String = "", val token: String = "")
+
+
 data class GridItem(
     val title: String = "",
     val description: String = "",
@@ -115,80 +123,53 @@ data class GridItem(
     var fileType: String = "image"
 )
 
+data class MyCode(
+    val id: String = UUID.randomUUID().toString(),
+    var code: Int = 0
+)
 
 
 object MyDatabase {
     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
-    private val auth = FirebaseAuth.getInstance()
-
-
-    //initialize the Unique id of the items
-    private var userID = 0
-    private var announcementID = 0
-    private var timetableID = 0
-    private var assignmentID = 0
-    private var dayID = 0
-    private var attendanceID = 0
-    private var FcmID = 0
-    private var feedbackID = 0
-    private var ChatID = 0
     private var calendar: Calendar = Calendar.getInstance()
     private var year = calendar.get(Calendar.YEAR)
 
     // index number
-    fun generateIndexNumber(): String {
-        val currentID = userID
-        userID++
-        return "CP$currentID$year"
+    fun generateIndexNumber(onIndexNumberGenerated: (String) -> Unit) {
+        updateAndGetCode { newCode ->
+            val indexNumber = "CP$newCode$year"
+            onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
+        }
     }
 
-    fun generateChatID(): String {
-        val currentID = ChatID
-        ChatID++
-        return "CH$currentID$year"
+    fun generateChatID(onIndexNumberGenerated: (String) -> Unit) {
+        updateAndGetCode { newCode ->
+            val indexNumber = "CH$newCode$year"
+            onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
+        }
     }
 
-    fun generateFcmID(): String {
-        val currentID = FcmID
-        FcmID++
-        return "FC$currentID$year"
+    fun generateFCMID(onIndexNumberGenerated: (String) -> Unit) {
+        updateAndGetCode { newCode ->
+            val indexNumber = "FC$newCode$year"
+            onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
+        }
     }
 
-    fun generateFeedbackID(): String {
-        val currentID = feedbackID
-        feedbackID++
-        return "FD$currentID$year"
+    fun generateFeedbackID(onIndexNumberGenerated: (String) -> Unit) {
+        updateAndGetCode { newCode ->
+            val indexNumber = "FB$newCode$year"
+            onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
+        }
     }
 
-    fun generateAttendanceID(): String {
-        val currentID = attendanceID
-        attendanceID++
-        return "AT$currentID$year"
+    fun generateAttendanceID(onIndexNumberGenerated: (String) -> Unit) {
+        updateAndGetCode { newCode ->
+            val indexNumber = "AT$newCode$year"
+            onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
+        }
     }
 
-    fun generateAnnouncementID(): String {
-        val currentID = announcementID
-        announcementID++
-        return "AN$currentID$year"
-    }
-
-    fun generateTimetableID(): String {
-        val currentID = timetableID
-        timetableID++
-        return "TT$currentID$year"
-    }
-
-    fun generateAssignmentID(): String {
-        val currentID = assignmentID
-        assignmentID++
-        return "AS$currentID$year"
-    }
-
-    fun generateDayID(): String {
-        val currentID = dayID
-        dayID++
-        return "DY$currentID$year"
-    }
 
     //chats functions
     fun sendMessage(chat: Chat, onComplete: (Boolean) -> Unit) {
@@ -211,13 +192,39 @@ object MyDatabase {
     }
 
 
+    private fun updateAndGetCode(onCodeUpdated: (Int) -> Unit) {
+        val database = FirebaseDatabase.getInstance().getReference("Code")
+
+        database.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val myCode = snapshot.getValue(MyCode::class.java)!!
+                    myCode.code += 1
+                    database.setValue(myCode).addOnSuccessListener {
+                        onCodeUpdated(myCode.code) // Pass the incremented code to the callback
+                    }
+                } else {
+                    val newCode = MyCode(code = 1)
+                    database.setValue(newCode).addOnSuccessListener {
+                        onCodeUpdated(newCode.code) // Pass the initial code to the callback
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle the error appropriately (e.g., log it or notify the user)
+            }
+        })
+    }
+
 
     // Attendance functions
     fun signAttendance(studentID: String, courseCode: String, status: String, onResult: (Boolean) -> Unit) {
         val database = FirebaseDatabase.getInstance().reference
         val attendanceRef = database.child("Attendances").child(courseCode).child(studentID).push()
         val today = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-        val attendance = Attendance(date = today, status = status, studentId = studentID)
+        generateAttendanceID { attendanceID ->
+            val attendance = Attendance(id = attendanceID, date = today, status = status, studentId = studentID)
 
         attendanceRef.setValue(attendance)
             .addOnSuccessListener {
@@ -226,6 +233,7 @@ object MyDatabase {
             .addOnFailureListener {
                 onResult(false)
             }
+    }
     }
 
 
@@ -300,8 +308,14 @@ object MyDatabase {
     }
 
     // User functions
-    fun writeUsers(user: User) {
+    fun writeUsers(user:User, onComplete: (Boolean) -> Unit) {
         database.child("Users").child(user.id).setValue(user)
+            .addOnSuccessListener {
+                onComplete(true) // Success: invoke callback with 'true'
+            }
+            .addOnFailureListener {
+                onComplete(false) // Failure: invoke callback with 'false'
+            }
     }
 
     fun getUsers(onUsersFetched: (List<User>?) -> Unit) {
@@ -555,4 +569,6 @@ fun loadChatsFromFile(context: Context, fileName: String): List<Chat> {
     val type = object : TypeToken<List<Chat>>() {}.type
     return gson.fromJson(jsonString, type)
 }
+
+
 
