@@ -326,7 +326,6 @@ fun ProfileCard(
                     text = currentName,
                     style = CC.descriptionTextStyle(context).copy(
                         fontSize = 14.sp,
-                        color = Color.White
                     ),
                     modifier = Modifier
                         .padding(vertical = 4.dp)
@@ -356,7 +355,6 @@ fun ProfileCard(
                             text = "Email: $currentEmail",
                             style = CC.descriptionTextStyle(context).copy(
                                 fontSize = 14.sp,
-                                color = Color.White
                             ),
                             modifier = Modifier
                                 .padding(vertical = 4.dp)
@@ -379,7 +377,6 @@ fun ProfileCard(
                         text = "Admission Number: $currentAdmissionNumber",
                         style = CC.descriptionTextStyle(context).copy(
                             fontSize = 14.sp,
-                            color = Color.White
                         ),
                         modifier = Modifier
                             .padding(vertical = 4.dp)
