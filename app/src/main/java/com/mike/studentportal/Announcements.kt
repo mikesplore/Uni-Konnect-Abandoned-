@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.mike.studentportal.MyDatabase.getAnnouncements
+import kotlinx.coroutines.delay
 import com.mike.studentportal.CommonComponents as CC
 
 object Details {
@@ -64,10 +65,14 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
     var isLoading by rememberSaveable { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
 
-    LaunchedEffect(Unit) {
-        getAnnouncements { fetchedAnnouncements ->
-            announcements.addAll(fetchedAnnouncements ?: emptyList())
-            isLoading = false
+    LaunchedEffect(key1 = Unit) { // Trigger the effect only once
+        while (true) { // Continuous loop
+            getAnnouncements { fetchedAnnouncements ->
+                announcements.clear() // Clear previous announcements
+                announcements.addAll(fetchedAnnouncements ?: emptyList())
+                isLoading = false
+            }
+            delay(10) // Wait for 5 seconds
         }
     }
 
