@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -84,16 +87,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import com.mike.studentportal.CommonComponents as CC
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+
 object Global {
     val showAlert: MutableState<Boolean> = mutableStateOf(false)
     val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
@@ -106,6 +116,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_StudentPortal)
         super.onCreate(savedInstanceState)
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(true)
+            .build()
+        val chatFetchRequest = PeriodicWorkRequestBuilder<ChatFetchWorker>(1, TimeUnit.SECONDS)
+            .setConstraints(constraints)
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "ChatFetchWorker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            chatFetchRequest
+        )
         if (Global.edgeToEdge.value) {
             enableEdgeToEdge()
         }
@@ -117,6 +139,8 @@ class MainActivity : ComponentActivity() {
         }
         createNotificationChannel(this)
     }
+
+
 
     fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -172,7 +196,6 @@ sealed class Screen(
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-
     val context = LocalContext.current
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
@@ -238,8 +261,7 @@ fun MainScreen() {
         }
     }
     val navController = rememberNavController()
-
-    NavHost(navController, startDestination = "splashscreen") {
+    NavHost(navController, startDestination = "dashboard") {
 
         composable(
             route = "login",
@@ -348,9 +370,34 @@ fun MainScreen() {
             SettingsScreen(navController, context)
         }
 
+        composable("users",
+            enterTransition = {
+                fadeIn(animationSpec = tween(500))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }) {
+            ParticipantsScreen(navController, context)
+        }
+
+        composable(
+            "chat/{userId}",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000)) + slideInVertically(animationSpec = tween(1000)) { initialState -> initialState }
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000)) + slideOutVertically(animationSpec = tween(1000)) { finalState -> finalState }
+            },
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            UserChatScreen(navController, LocalContext.current, backStackEntry.arguments?.getString("userId") ?: "")
+        }
+
         composable(
             "course/{courseCode}",
-            arguments = listOf(navArgument("courseCode") { type = NavType.StringType })
+            arguments = listOf(navArgument("courseCode") { type = NavType.StringType }),
+            enterTransition = { fadeIn(animationSpec = tween(1000)) },
+            exitTransition = { fadeOut(animationSpec = tween(1000)) }
         ) { backStackEntry ->
             val courseCode = backStackEntry.arguments?.getString("courseCode") ?: ""
             CourseScreen(courseCode = courseCode, context)
@@ -369,15 +416,29 @@ fun Dashboard(
     screens: List<Screen>,
     context: Context
 ) {
+    var user by remember { mutableStateOf(User()) }
+    var auth = FirebaseAuth.getInstance()
     var expanded by remember { mutableStateOf(false) }
+    var currentName by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
+    }
+    LaunchedEffect(auth.currentUser?.email) {
+        auth.currentUser?.email?.let {
+            fetchUserDataByEmail(it) { fetchedUser ->
+                fetchedUser?.let {
+                    user = it
+                    currentName = it.name
+                }
+                Log.e("ProfileCard", "Fetched user: $user")
+            }
+        }
     }
     Scaffold(
         topBar = {
             TopAppBar(title = {
                 Text(
-                    "${CC.getGreetingMessage()}, ${Details.name.value} 👋",
+                    "${CC.getGreetingMessage()}, $currentName👋",
                     style = CC.titleTextStyle(context),
                     fontSize = 20.sp
                 )
@@ -449,7 +510,7 @@ fun Dashboard(
                             Text("Sign Out", style = CC.descriptionTextStyle(context))
                         }
                     }, onClick = {
-                        MyDatabase.logout
+                        auth.signOut()
                         navController.navigate("login")
                         expanded = false
                     })
