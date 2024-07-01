@@ -100,7 +100,7 @@ fun ChatScreen(
             fetchUserDataByEmail(email) { fetchedUser ->
                 fetchedUser?.let {
                     user = it
-                    currentName = it.name
+                    currentName = it.firstName
                     currentEmail = it.email
                     currentAdmissionNumber = it.id
                 }
@@ -323,7 +323,7 @@ fun ChatScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            if (message.isNotBlank() && user.name.isNotBlank()) {
+                            if (message.isNotBlank() && user.firstName.isNotBlank()) {
                                 sendMessage(message)
                                 message = ""
                             }
