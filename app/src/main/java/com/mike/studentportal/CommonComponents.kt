@@ -145,11 +145,6 @@ object CommonComponents {
         }
     }
 
-    fun getCurrentUser(): String {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        return currentUser?.email ?: "" // Return email if available, otherwise an empty string
-    }
-
     fun currentDayID(): Int {
         return when (dayOfWeek) {
             Calendar.SUNDAY -> 0
