@@ -667,12 +667,15 @@ fun RatingAndFeedbackScreen(context: Context) {
                 Button(
                     onClick = {
                         loading = true
-                        MyDatabase.writeFeedback(Feedback(
-                            rating = currentRating,
-                            sender = user.name,
-                            message = feedbackText,
-                            admissionNumber = user.id
-                        ), onSuccess = {
+                        MyDatabase.generateFeedbackID { feedbackId ->
+                            val feedback = Feedback(
+                                id = feedbackId,
+                                rating = currentRating,
+                                sender = user.name,
+                                message = feedbackText,
+                                admissionNumber = user.id
+                            )
+                        MyDatabase.writeFeedback(feedback, onSuccess = {
                             loading = false
                             Toast.makeText(
                                 context, "Thanks for your feedback", Toast.LENGTH_SHORT
@@ -690,7 +693,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                        )
+                        )}
                     },
                     modifier = Modifier
                         .fillMaxWidth()
