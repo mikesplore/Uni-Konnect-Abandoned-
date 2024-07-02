@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -33,15 +34,22 @@ import com.mike.studentportal.CommonComponents as CC
 @Composable
 fun LoginScreen(navController: NavController, context: Context) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    var name by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isSigningUp by remember { mutableStateOf(true) }
+    var isSigningUp by remember { mutableStateOf(false) }
     var isGithubLoading by remember { mutableStateOf(false) }
     var isGoogleLoading by remember { mutableStateOf(false) }
     val firebaseAuth = FirebaseAuth.getInstance()
     var visible by remember { mutableStateOf(true) }
     var loading by remember { mutableStateOf(false) }
+    val brush = Brush.verticalGradient(
+        colors = listOf(
+            GlobalColors.primaryColor,
+            GlobalColors.secondaryColor
+        )
+    )
 
     LaunchedEffect(Unit) {
         visible = true
@@ -77,10 +85,11 @@ fun LoginScreen(navController: NavController, context: Context) {
             },
             containerColor = GlobalColors.primaryColor
         ) {
+
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .background(GlobalColors.primaryColor)
+                    .background(brush)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -93,7 +102,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text ="Continue with one of the following",
+                        text = "Continue with one of the following options",
                         style = CC.descriptionTextStyle(context)
                     )
 
@@ -109,6 +118,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                             onSignInSuccess = {
                                 val user = firebaseAuth.currentUser
                                 Details.email.value = user?.email.toString()
+
                                 Toast.makeText(
                                     context,
                                     "Sign-in successful: $email",
@@ -122,12 +132,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                                         return@OnCompleteListener
                                     }
                                     // retrieve device token and send to database
-
-                                    MyDatabase.generateFCMID {  fcmID ->
-                                        val token = task.result
-                                        val fCM = Fcm(id = fcmID, token = token)
-                                    MyDatabase.writeFcmToken(token = fCM)
-                                    }
+                                    val token = task.result
+                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
                                 })
                             },
                             onSignInFailure = {
@@ -152,11 +158,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                                         return@OnCompleteListener
                                     }
                                     // retrieve device token and send to database
-                                    MyDatabase.generateFCMID {  fcmID ->
-                                        val token = task.result
-                                        val fCM = Fcm(id = fcmID, token = token)
-                                        MyDatabase.writeFcmToken(token = fCM)
-                                    }
+                                    val token = task.result
+                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
                                 })
                             },
                             onSignInFailure = {
@@ -186,9 +189,17 @@ fun LoginScreen(navController: NavController, context: Context) {
                             if (targetState) {
                                 Spacer(modifier = Modifier.height(20.dp))
                                 CC.SingleLinedTextField(
-                                    value = name,
-                                    onValueChange = { name = it },
-                                    label = "Name",
+                                    value = firstName,
+                                    onValueChange = { firstName = it },
+                                    label = "First Name",
+                                    singleLine = true,
+                                    context = context
+                                )
+                                Spacer(modifier = Modifier.height(20.dp))
+                                CC.SingleLinedTextField(
+                                    value = lastName,
+                                    onValueChange = { lastName = it },
+                                    label = "Last Name",
                                     singleLine = true,
                                     context = context
                                 )
@@ -244,16 +255,19 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     "Registration successful!",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
-                                                MyDatabase.generateIndexNumber { indexNumber ->
-                                                    val user = User(id = indexNumber, firstName = splitFullName(name).first, lastName = splitFullName(name).second, email = email)
-                                                    MyDatabase.writeUsers(user) { success ->
-                                                        if (success) {
-                                                           isSigningUp = false
-                                                        } else {
-                                                            Toast.makeText(context,"Failed to write user to database", Toast.LENGTH_SHORT).show()
+                                                MyDatabase.generateIndexNumber {  userID ->
+                                                    val user = User(
+                                                        id = userID,
+                                                        firstName = firstName,
+                                                        lastName = lastName
+                                                    )
+                                                    MyDatabase.writeUsers(
+                                                        user,
+                                                        onComplete = {
+                                                            Toast.makeText(context, "Details saved!", Toast.LENGTH_SHORT).show()
                                                         }
-                                                    }
-                                                }
+                                                    )}
+                                                isSigningUp = false
                                             } else {
                                                 loading = false
                                                 Toast.makeText(
@@ -280,6 +294,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     "Sign In successful!",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
+                                                email = ""
+                                                password = ""
                                                 navController.navigate("dashboard")
                                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(
                                                     OnCompleteListener { task ->
@@ -289,11 +305,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                             return@OnCompleteListener
                                                         }
                                                         // retrieve device token and send to database
-                                                        MyDatabase.generateFCMID {  fcmID ->
-                                                            val token = task.result
-                                                            val fCM = Fcm(id = fcmID, token = token)
-                                                            MyDatabase.writeFcmToken(token = fCM)
-                                                        }
+                                                        val token = task.result
+                                                        MyDatabase.writeFcmToken(token = Fcm(token = token))
                                                     })
                                             } else {
                                                 loading = false
@@ -365,15 +378,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                 }
             }
         }
-    }
-}
-
-fun splitFullName(fullName: String): Pair<String, String> {
-    val names = fullName.split(" ")
-    return if (names.size >= 2) {
-        Pair(names[0], names[1])
-    } else {
-        Pair(fullName, "") // Handle cases with only one name or no spaces
     }
 }
 
