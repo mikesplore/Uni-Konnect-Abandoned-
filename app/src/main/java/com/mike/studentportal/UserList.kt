@@ -1,6 +1,7 @@
 package com.mike.studentportal
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,16 +21,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import com.mike.studentportal.MyDatabase.getUsers
+import kotlinx.coroutines.delay
 import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ParticipantsScreen(navController: NavController, context: Context) {
+    val auth = FirebaseAuth.getInstance()
     var users by remember { mutableStateOf<List<User>?>(null) }
+    var currentMe by remember { mutableStateOf(User()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
-    val scope = rememberCoroutineScope()
+    var currentPerson by remember { mutableStateOf("") }
+    LaunchedEffect(key1 = Unit) { // Use a stable key
+        while (true) {
+            delay(10L) // Delay for 10 seconds
+            auth.currentUser?.email?.let { email ->
+                fetchUserDataByEmail(email) { fetchedUser ->
+                    fetchedUser?.let {
+                        currentMe = it
+                        currentPerson = it.firstName
+                        Log.e("ProfileCard", "Fetched user: $currentMe")
+                        // You might want to add a mechanism to notify the UI about the updated data
+                    }
+                }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         getUsers { fetchedUsers ->
@@ -104,6 +125,24 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
 
 @Composable
 fun ProfileCard(user: User, navController: NavController, context: Context) {
+    val auth = FirebaseAuth.getInstance()
+    var currentMe by remember { mutableStateOf(User()) }
+    var currentPerson by remember { mutableStateOf("") }
+    LaunchedEffect(key1 = Unit) { // Use a stable key
+        while (true) {
+            delay(10L) // Delay for 10 seconds
+            auth.currentUser?.email?.let { email ->
+                fetchUserDataByEmail(email) { fetchedUser ->
+                    fetchedUser?.let {
+                        currentMe = it
+                        currentPerson = it.firstName
+                        Log.e("ProfileCard", "Fetched user: $currentMe")
+                        // You might want to add a mechanism to notify the UI about the updated data
+                    }
+                }
+            }
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -124,8 +163,19 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
                     .background(Color.Gray)
             )
             Spacer(modifier = Modifier.width(16.dp))
+            val displayName = if (user.id == currentMe.id) {
+                if (user.isAdmin) {
+                    "You (Admin)"
+                } else {
+                    "You"
+                }
+            } else if (user.isAdmin) {
+                user.firstName + " " + user.lastName + " (Admin)"
+            } else {
+                user.firstName + " " + user.lastName
+            }
             Text(
-                text = user.firstName +" "+ user.lastName,
+                text = displayName,
                 style = CC.descriptionTextStyle(navController.context),
                 modifier = Modifier.weight(1f),
                 color = GlobalColors.textColor
@@ -137,7 +187,11 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
                 colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Text", style = CC.descriptionTextStyle(context))
+                if (user.id == currentMe.id) {
+                    Text("Self Chat", style = CC.descriptionTextStyle(context))}
+                else{
+                    Text("DM", style = CC.descriptionTextStyle(context))
+                }
             }
         }
     }
