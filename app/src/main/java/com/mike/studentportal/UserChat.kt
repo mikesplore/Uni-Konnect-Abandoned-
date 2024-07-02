@@ -88,11 +88,6 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
         }
     }
 
-    // Load old messages from file
-    LaunchedEffect(Unit) {
-        messages = loadMessagesFromFile(context, fileName)
-    }
-
     // Generate a unique conversation ID for the current user and the target user
     val conversationId =
         "Direct Messages/${generateConversationId(currentAdmissionNumber, targetUserId)}"
@@ -101,8 +96,6 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
         try {
             fetchUserToUserMessages(conversationId) { fetchedMessages ->
                 messages = fetchedMessages
-                // Save the new messages to file
-                saveMessagesToFile(context, fetchedMessages, fileName)
             }
         } catch (e: Exception) {
             errorMessage = e.message
@@ -148,7 +141,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                 senderName = user.firstName,
                 senderID = currentAdmissionNumber,
                 recipientID = targetUserId,
-                time = SimpleDateFormat("hh:mm A", Locale.getDefault()).format(Date()),
+                time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
                 date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
             )
             sendUserToUserMessage(newMessage, conversationId) { success ->
@@ -309,23 +302,13 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextField(value = message,
-                        textStyle = CC.descriptionTextStyle(context),
+                    CC.SingleLinedTextField(
+                        value = message,
                         onValueChange = { message = it },
-                        label = { Text("Message", style = CC.descriptionTextStyle(context)) },
-                        modifier = Modifier.weight(1f),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GlobalColors.primaryColor,
-                            unfocusedContainerColor = GlobalColors.primaryColor,
-                            cursorColor = GlobalColors.textColor,
-                            focusedTextColor = GlobalColors.textColor,
-                            unfocusedTextColor = GlobalColors.textColor,
-                            focusedLabelColor = GlobalColors.textColor,
-                            unfocusedLabelColor = GlobalColors.textColor,
-                            focusedIndicatorColor = GlobalColors.secondaryColor,
-                            unfocusedIndicatorColor = GlobalColors.secondaryColor
-                        ),
-                        shape = RoundedCornerShape(10.dp)
+                        label = "Message",
+                        enabled = true,
+                        singleLine = false,
+                        context = context
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
