@@ -47,7 +47,6 @@ fun GitAuth(
                         // Navigate to more details screen to add details
                         isLoading = false // Stop loading on success
                         onSignInSuccess()
-                        navController.navigate("moredetails")
 
                     }
                     .addOnFailureListener {
