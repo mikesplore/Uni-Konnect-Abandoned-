@@ -105,7 +105,7 @@ val OnlineImages = listOf(
         "CCS 4305"
     ), Images(
         "https://media.geeksforgeeks.org/wp-content/uploads/20211018204909/communication.jpg",
-        "CCS 4307"
+        "CIT 4307"
     ), Images("https://images.slideplayer.com/25/7665857/slides/slide_11.jpg", "CSE 4301")
 )
 
@@ -386,14 +386,14 @@ fun IconList(courses: List<Course>, navController: NavController, context: Conte
 @Composable
 fun TodayTimetable(context: Context) {
     var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
+    var loading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(key1 = Unit) {
-        while (true) {
-            delay(10000L) // Delay for 10 seconds
+    LaunchedEffect(loading) {
             MyDatabase.getCurrentDayTimetable(CC.currentDay()) { timetable ->
                 timetables = timetable
             }
-        }
+        loading = false
+
     }
 
     Card(
@@ -403,7 +403,7 @@ fun TodayTimetable(context: Context) {
             .shadow(8.dp, RoundedCornerShape(16.dp)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        if (Global.loading.value) {
+        if (loading) {
             ColorProgressIndicator(
                 modifier = Modifier
                     .fillMaxSize()
@@ -413,6 +413,7 @@ fun TodayTimetable(context: Context) {
             if (timetables.isNullOrEmpty()) {
                 Box(
                     modifier = Modifier
+
                         .background(GlobalColors.primaryColor)
                         .border(
                             1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
