@@ -65,6 +65,11 @@ data class AttendanceState(
     val state: Boolean = false
 )
 
+data class Update(
+    val id: String = "",
+    val version: String = ""
+)
+
 data class Course(
     val courseCode: String = "", val courseName: String = "", var lastDate: String = ""
 )
@@ -216,6 +221,34 @@ object MyDatabase {
                 // Handle the error appropriately (e.g., log it or notify the user)
             }
         })
+    }
+
+    // Function to save Update to the "Update" node in the database
+    fun saveUpdate(update: Update, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
+        val updatesRef = database.child("Updates") // Reference to the "Updates" node
+        updatesRef.setValue(update)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
+    // Function to retrieve Update from the "Update" node
+    fun getUpdate(onResult: (Update?) -> Unit) {
+        val updatesRef = database.child("Updates")
+        updatesRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val update = snapshot.getValue(Update::class.java)
+                onResult(update)
+            } else {
+                onResult(null) // Handle the case where no update data exists
+            }
+        }.addOnFailureListener { exception ->
+            // Handle potential errors during data retrieval
+            onResult(null)
+        }
     }
 
 
