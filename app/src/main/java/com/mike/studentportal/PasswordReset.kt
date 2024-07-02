@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +27,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,6 +49,12 @@ fun PasswordReset(navController: NavController,context: Context) {
     val auth: FirebaseAuth = Firebase.auth
     var loading by remember { mutableStateOf(false) }
     var visible by remember { mutableStateOf(true) }
+    val brush = Brush.verticalGradient(
+        colors = listOf(
+            GlobalColors.primaryColor,
+            GlobalColors.secondaryColor
+        )
+    )
 
     LaunchedEffect(Unit) {
         visible = true
@@ -71,6 +79,7 @@ fun PasswordReset(navController: NavController,context: Context) {
         ) {
             Column(
                 modifier = Modifier
+                    .background(brush)
                     .padding(it)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
