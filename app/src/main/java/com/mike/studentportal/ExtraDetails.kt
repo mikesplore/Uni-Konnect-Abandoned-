@@ -90,10 +90,10 @@ fun MoreDetails(context: Context, navController: NavController) {
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(text = "More Details", style = CC.titleTextStyle(context)) },
+            title = { Text(text = "Details", style = CC.titleTextStyle(context)) },
             navigationIcon = {
                 IconButton(
-                    onClick = { navController.navigate("dashboard") },
+                    onClick = { navController.navigate("login") },
                     modifier = Modifier.absolutePadding(left = 10.dp)
                 ) {
                     Icon(
