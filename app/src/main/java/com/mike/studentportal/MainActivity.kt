@@ -99,10 +99,15 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
+import com.mike.studentportal.MyDatabase.getUpdate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import android.content.Intent
+import android.net.Uri
+import com.mike.studentportal.MyDatabase.saveUpdate
+
 import com.mike.studentportal.CommonComponents as CC
 
 object Global {
@@ -200,12 +205,89 @@ fun MainScreen() {
     val context = LocalContext.current
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
+    var update by remember { mutableStateOf(false) }
+    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+    val versionName = packageInfo.versionName
+
     LaunchedEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
+        while (true) {
+            GlobalColors.loadColorScheme(context) // Assuming this is necessary for each check
+            getUpdate { localUpdate ->
+                if (localUpdate != null) {
+                    Log.d("Package Update", "New version available: ${localUpdate}")
+                    if (localUpdate.id != versionName) {
+
+                        update = true
+                    }
+                } else {
+                    Log.d("Package Update", "No information found regarding the update")
+                }
+            }
+            delay(60000) // Wait for 60 seconds
+        }
     }
     val screens = listOf(
         Screen.Home, Screen.Announcements, Screen.Assignments, Screen.Timetable, Screen.Attendance
     )
+
+    if (update) {
+        BasicAlertDialog(
+            onDismissRequest = { update = false }, modifier = Modifier.background(
+                Color.Transparent, RoundedCornerShape(10.dp)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(
+                        GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                    )
+                    .padding(24.dp), // Add padding for better visual spacing
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "New Update available!", style = CC.titleTextStyle(context).copy(
+                        fontSize = 18.sp, fontWeight = FontWeight.Bold
+                    ), // Make title bolder
+                    modifier = Modifier.padding(bottom = 8.dp) // Add spacing below title
+                )
+                Text(
+                    "New version of this app is available. " +
+                            "The update contains bug fixes and addresses some of user-reported issues..",
+                    style = CC.descriptionTextStyle(context),
+                    modifier = Modifier.padding(bottom = 16.dp) // Add spacing below description
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/mikesplore/Student-Portal/blob/main/app/release/app-release.apk"))
+                            context.startActivity(intent)
+                            update = false
+
+                        }, modifier = Modifier.weight(1f), // Make buttons take equal width
+                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
+                    ) {
+                        Text(
+                            "Update", style = CC.descriptionTextStyle(context)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(
+                        onClick = {update = false },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+                    ) {
+                        Text(
+                            "Cancel", color = GlobalColors.primaryColor
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     if (Global.showAlert.value) {
         BasicAlertDialog(
             onDismissRequest = { Global.showAlert.value = false }, modifier = Modifier.background(
@@ -261,8 +343,12 @@ fun MainScreen() {
             }
         }
     }
+
+
+
+
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "splashscreen") {
+    NavHost(navController, startDestination = "dashboard") {
 
         composable(
             route = "login",
@@ -619,6 +705,8 @@ fun Dashboard(
         }
     }
 }
+
+
 
 
 @Preview
