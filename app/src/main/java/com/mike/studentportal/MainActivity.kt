@@ -241,28 +241,28 @@ fun MainScreen() {
                             (context as MainActivity).requestNotificationPermission()
                             Global.showAlert.value = false
                         }, modifier = Modifier.weight(1f), // Make buttons take equal width
-                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) // Customize button colors
+                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) 
                     ) {
                         Text(
                             "Enable", style = CC.descriptionTextStyle(context)
-                        ) // Set text color for contrast
+                        ) 
                     }
-                    Spacer(modifier = Modifier.width(16.dp)) // Add space between buttons
+                    Spacer(modifier = Modifier.width(16.dp)) 
                     Button(
                         onClick = { Global.showAlert.value = false },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) // Customize button colors
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) 
                     ) {
                         Text(
                             "Cancel", color = GlobalColors.primaryColor
-                        ) // Set text color for contrast
+                        ) 
                     }
                 }
             }
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "splashscreen") {
 
         composable(
             route = "login",
@@ -325,7 +325,13 @@ fun MainScreen() {
             MoreDetails(context, navController)
         }
 
-        composable("attendance") {
+        composable("attendance",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }) {
             SignAttendanceScreen(navController, context)
         }
 
@@ -341,7 +347,13 @@ fun MainScreen() {
             Appearance(navController, context)
         }
 
-        composable("chat") {
+        composable("chat",
+            enterTransition = {
+                fadeIn(animationSpec = tween(1000))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(1000))
+            }) {
             ChatScreen(navController, context)
         }
 
