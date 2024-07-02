@@ -36,6 +36,11 @@ fun GoogleAuth(
     val activity = LocalContext.current as Activity
     val provider = OAuthProvider.newBuilder("google.com")
     var isLoading by remember { mutableStateOf(false) }
+    provider.scopes = listOf(
+        "profile",    // Required for display name and profile picture
+        "email",      // Required for email address
+        "openid"      // Required for OpenID Connect authentication
+    )
 
     Box(
         modifier = Modifier
@@ -47,8 +52,6 @@ fun GoogleAuth(
                         // Navigate to more details screen to add details
                         isLoading = false // Stop loading on success
                         onSignInSuccess()
-                        navController.navigate("moredetails")
-
                     }
                     .addOnFailureListener {
                         isLoading = false // Stop loading on failure
@@ -65,6 +68,7 @@ fun GoogleAuth(
             .height(60.dp)
             .width(130.dp),
         contentAlignment = Alignment.Center
+
     ) {
         if (isLoading) {
             // Show CircularProgressIndicator when loading
