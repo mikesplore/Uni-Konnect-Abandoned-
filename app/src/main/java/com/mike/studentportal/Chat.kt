@@ -92,7 +92,6 @@ fun ChatScreen(
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
 
-    val fileName = "chat_data.json"
 
     // Fetch user data when the composable is launched
     LaunchedEffect(currentUser?.email) {
@@ -108,17 +107,10 @@ fun ChatScreen(
         }
     }
 
-    // Load old chats from file
-    LaunchedEffect(Unit) {
-        chats = loadChatsFromFile(context, fileName)
-    }
-
     fun fetchChats() {
         try {
             MyDatabase.fetchChats { fetchedChats ->
                 chats = fetchedChats
-                // Save the new chats to file
-                saveChatsToFile(context, fetchedChats, fileName)
             }
         } catch (e: Exception) {
             errorMessage = e.message
@@ -154,23 +146,23 @@ fun ChatScreen(
     fun sendMessage(message: String) {
         try {
             MyDatabase.generateChatID {  chatId ->
-            val newChat = Chat(
-                id = chatId,
-                message = message,
-                senderName = currentName,
-                senderID = currentAdmissionNumber,
-                time = SimpleDateFormat("hh:mm A", Locale.getDefault()).format(Date()),
-                date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-            )
-            MyDatabase.sendMessage(newChat) { success ->
-                if (success) {
-                    fetchChats()
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Failed to send message")
+                val newChat = Chat(
+                    id = chatId,
+                    message = message,
+                    senderName = currentName,
+                    senderID = currentAdmissionNumber,
+                    time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
+                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+                )
+                MyDatabase.sendMessage(newChat) { success ->
+                    if (success) {
+                        fetchChats()
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Failed to send message")
+                        }
                     }
-                }
-            }}
+                }}
         } catch (e: Exception) {
             errorMessage = e.message
             scope.launch {
@@ -299,6 +291,7 @@ fun ChatScreen(
                             ChatBubble(
                                 chat = chat,
                                 isUser = chat.senderID == currentAdmissionNumber,
+                                isAdmin = chat.isAdmin == user.isAdmin,
                                 context = context,
                                 navController = navController
                             )
@@ -343,7 +336,7 @@ fun ChatScreen(
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun ChatBubble(
-    chat: Chat, isUser: Boolean, context: Context, navController: NavController
+    chat: Chat, isUser: Boolean, isAdmin: Boolean, context: Context, navController: NavController
 ) {
     val alignment = if (isUser) Alignment.TopEnd else Alignment.TopStart
     val backgroundColor = if (isUser) GlobalColors.extraColor1 else GlobalColors.extraColor2
@@ -372,7 +365,7 @@ fun ChatBubble(
                         horizontalArrangement = Arrangement.Start
                     ) {
                         Text(
-                            text = chat.senderName,
+                            text = if(isAdmin) chat.senderName+ " "+"(Admin)" else chat.senderName,
                             style = CC.descriptionTextStyle(context),
                             fontWeight = FontWeight.Bold,
                             color = GlobalColors.primaryColor
@@ -425,6 +418,6 @@ fun PreviewMyScreen() {
     ChatBubble(
         chat = Chat(
             senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01"
-        ), isUser = true, context = LocalContext.current, rememberNavController()
+        ), isUser = true, isAdmin = false, context = LocalContext.current, rememberNavController()
     )
 }
