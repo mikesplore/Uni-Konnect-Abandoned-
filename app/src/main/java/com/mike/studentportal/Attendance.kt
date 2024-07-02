@@ -54,6 +54,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                 loading = false
 
                 // Fetch attendance states for each course
+
                 fetchedCourses.forEach { course ->
                     MyDatabase.fetchAttendanceState(course.courseCode) { fetchedState ->
                         if (fetchedState != null) {
