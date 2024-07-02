@@ -43,6 +43,7 @@ data class Chat(
     var senderID: String = "",
     var time: String = "",
     var date: String = "",
+    var isAdmin: Boolean = false
 
 )
 
@@ -163,7 +164,7 @@ object MyDatabase {
         }
     }
 
-    fun generateAttendanceID(onIndexNumberGenerated: (String) -> Unit) {
+    private fun generateAttendanceID(onIndexNumberGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
             val indexNumber = "AT$newCode$year"
             onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
@@ -173,13 +174,13 @@ object MyDatabase {
 
     //chats functions
     fun sendMessage(chat: Chat, onComplete: (Boolean) -> Unit) {
-        database.child("Chats").push().setValue(chat).addOnCompleteListener { task ->
+        database.child("Group Discussions").push().setValue(chat).addOnCompleteListener { task ->
             onComplete(task.isSuccessful)
         }
     }
 
     fun fetchChats(onChatsFetched: (List<Chat>) -> Unit) {
-        database.child("Chats").addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("Group Discussions").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val chats = snapshot.children.mapNotNull { it.getValue(Chat::class.java) }
                 onChatsFetched(chats)
@@ -536,42 +537,6 @@ object MyDatabase {
         })
     }
 
-}
-
-
-// Function to save messages to a file
-fun saveMessagesToFile(context: Context, messages: List<Message>, fileName: String) {
-    val gson = Gson()
-    val jsonString = gson.toJson(messages)
-    val file = File(context.filesDir, fileName)
-    file.writeText(jsonString)
-}
-
-// Function to load messages from a file
-fun loadMessagesFromFile(context: Context, fileName: String): List<Message> {
-    val file = File(context.filesDir, fileName)
-    if (!file.exists()) return emptyList()
-    val jsonString = file.readText()
-    val gson = Gson()
-    val type = object : TypeToken<List<Message>>() {}.type
-    return gson.fromJson(jsonString, type)
-}
-
-fun saveChatsToFile(context: Context, chats: List<Chat>, fileName: String) {
-    val gson = Gson()
-    val jsonString = gson.toJson(chats)
-    val file = File(context.filesDir, fileName)
-    file.writeText(jsonString)
-}
-
-// Function to load messages from a file
-fun loadChatsFromFile(context: Context, fileName: String): List<Chat> {
-    val file = File(context.filesDir, fileName)
-    if (!file.exists()) return emptyList()
-    val jsonString = file.readText()
-    val gson = Gson()
-    val type = object : TypeToken<List<Chat>>() {}.type
-    return gson.fromJson(jsonString, type)
 }
 
 
