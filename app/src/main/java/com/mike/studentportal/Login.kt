@@ -117,13 +117,13 @@ fun LoginScreen(navController: NavController, context: Context) {
                             firebaseAuth = firebaseAuth,
                             onSignInSuccess = {
                                 val user = firebaseAuth.currentUser
-                                Details.email.value = user?.email.toString()
-
                                 Toast.makeText(
                                     context,
                                     "Sign-in successful: $email",
                                     Toast.LENGTH_SHORT
                                 ).show()
+                                Details.firstName.value = auth.currentUser?.displayName.toString()
+                                Details.email.value = user?.email.toString()
                                 navController.navigate("moredetails")
                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
                                     if (!task.isSuccessful) {
@@ -133,7 +133,14 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     }
                                     // retrieve device token and send to database
                                     val token = task.result
-                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                    MyDatabase.generateFCMID { fcmID ->
+                                        val myFCM = Fcm(
+                                            id = fcmID,
+                                            token = token,
+                                        )
+                                        MyDatabase.writeFcmToken(token = myFCM)
+                                    }
+
                                 })
                             },
                             onSignInFailure = {
@@ -150,6 +157,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     .show()
                                 val user = firebaseAuth.currentUser
                                 Details.email.value = user?.email.toString()
+                                Details.firstName.value = auth.currentUser?.displayName.toString()
                                 navController.navigate("moredetails")
                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
                                     if (!task.isSuccessful) {
@@ -159,7 +167,13 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     }
                                     // retrieve device token and send to database
                                     val token = task.result
-                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                    MyDatabase.generateFCMID { fcmID ->
+                                        val myFCM = Fcm(
+                                            id = fcmID,
+                                            token = token,
+                                        )
+                                        MyDatabase.writeFcmToken(token = myFCM)
+                                    }
                                 })
                             },
                             onSignInFailure = {
@@ -179,8 +193,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Text(if(isSigningUp)"Sign up with your email and password" else "Sign in with your email and password", style = CC.descriptionTextStyle(context))
 
                     AnimatedContent(targetState = isSigningUp, transitionSpec = {
-                        fadeIn(animationSpec = tween(300)) + slideInVertically() with
-                                fadeOut(animationSpec = tween(300)) + slideOutVertically()
+                        (fadeIn(animationSpec = tween(300)) + slideInVertically()).togetherWith(
+                            fadeOut(animationSpec = tween(300)) + slideOutVertically()
+                        )
                     }, label = "") { targetState ->
                         Column(
                             modifier = Modifier.fillMaxWidth(),
