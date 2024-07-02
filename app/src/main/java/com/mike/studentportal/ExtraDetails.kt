@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +46,12 @@ fun MoreDetails(context: Context, navController: NavController) {
     var emailFound by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
     var addloading by remember { mutableStateOf(false) }
+    var brush  = Brush.verticalGradient(
+        colors = listOf(
+            GlobalColors.primaryColor,
+            GlobalColors.secondaryColor
+        )
+    )
 
     LaunchedEffect(Unit) {
         MyDatabase.getUsers { fetchedUsers ->
@@ -98,19 +105,13 @@ fun MoreDetails(context: Context, navController: NavController) {
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
         )
-    }) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .background(GlobalColors.primaryColor)
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
+    }, containerColor = GlobalColors.primaryColor) {
             // main content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(GlobalColors.primaryColor)
-                    .padding(16.dp),
+                    .background(brush)
+                    .padding(it),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -154,10 +155,13 @@ fun MoreDetails(context: Context, navController: NavController) {
                         onClick = {
                             addloading = true
                             MyDatabase.generateIndexNumber { indexNumber ->
-                                val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, email = Details.email.value)
+                                val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, phoneNumber = "", email = Details.email.value)
                                 MyDatabase.writeUsers(user) { success ->
                                     if (success) {
                                         Toast.makeText(context, "Added successfully", Toast.LENGTH_SHORT).show()
+                                        addloading = false
+                                        Details.firstName.value = ""
+                                        Details.lastName.value = ""
                                         navController.navigate("dashboard")
                                     } else {
                                         Toast.makeText(context,"Failed to write user to database",Toast.LENGTH_SHORT).show()
@@ -167,14 +171,13 @@ fun MoreDetails(context: Context, navController: NavController) {
 
 
                         }, modifier = Modifier
-                            .width(275.dp)
-                            .background(
-                                GlobalColors.primaryColor, RoundedCornerShape(10.dp)
-                            ), // Background moved to outer Modifier
-                        colors = ButtonDefaults.buttonColors(Color.Transparent)
+                            .width(275.dp),
+                        colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
                         Row(
-                            modifier = Modifier, verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (loading || addloading) {
                                 CircularProgressIndicator(
@@ -196,7 +199,7 @@ fun MoreDetails(context: Context, navController: NavController) {
                     }
                 }
             }
-        }
+
     }
 }
 
