@@ -14,6 +14,8 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
 import java.util.UUID
 
 
@@ -34,6 +36,12 @@ data class Timetable(
     val venue: String = "",
     val lecturer: String = "",
     val dayId: String = ""
+)
+
+data class UserPreferences(
+    val lastScreen: String = "dashboard",
+    val lastDate: String = ""
+
 )
 
 data class Chat(
@@ -71,7 +79,9 @@ data class Update(
 )
 
 data class Course(
-    val courseCode: String = "", val courseName: String = "", var lastDate: String = ""
+    val courseCode: String = "",
+    val courseName: String = "",
+    var visits: Int = 0
 )
 
 data class Feedback(
@@ -139,6 +149,7 @@ object MyDatabase {
     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
     private var calendar: Calendar = Calendar.getInstance()
     private var year = calendar.get(Calendar.YEAR)
+
 
     // index number
     fun generateIndexNumber(onIndexNumberGenerated: (String) -> Unit) {
@@ -252,6 +263,7 @@ object MyDatabase {
     }
 
 
+
     // Attendance functions
     fun signAttendance(studentID: String, courseCode: String, status: String, onResult: (Boolean) -> Unit) {
         val database = FirebaseDatabase.getInstance().reference
@@ -325,10 +337,19 @@ object MyDatabase {
         })
     }
 
+    fun writeCourse(course: Course, onSuccess: () -> Unit){
+        database.child("NewCourses").child(course.courseCode).setValue(course)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener {
+                    exception ->
+            }
+    }
 
     // Courses functions
     fun fetchCourses(onCoursesFetched: (List<Course>) -> Unit) {
-        database.child("Courses").addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("NewCourses").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val courseList = snapshot.children.mapNotNull { it.getValue(Course::class.java) }
                 onCoursesFetched(courseList) // Call the callback with the fetched courses
