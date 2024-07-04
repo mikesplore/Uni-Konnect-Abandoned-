@@ -53,7 +53,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:545774727181:android:a96e95ef8a72519b0aa544",
+        "mobilesdk_app_id": "1:545774727181:android:b760f9df883d39f60aa544",
         "android_client_info": {
           "package_name": "com.mike.studentportal"
         }
@@ -65,14 +65,6 @@
           "android_info": {
             "package_name": "com.mike.studentportal",
             "certificate_hash": "2eb31aa87f916ac74208ba6e415c738c7929a180"
-          }
-        },
-        {
-          "client_id": "545774727181-prtfrfn88j2qfnvjt97aopeiin62i2sc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.mike.studentportal",
-            "certificate_hash": "3aee5494d1c4b090ce0de9b16f257bad01eb79f2"
           }
         },
         {
