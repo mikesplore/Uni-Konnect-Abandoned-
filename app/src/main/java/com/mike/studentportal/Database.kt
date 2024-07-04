@@ -11,6 +11,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
@@ -70,7 +71,7 @@ data class Message(
 data class AttendanceState(
     val courseID: String = "",
     val courseName: String = "",
-    val state: Boolean = false
+    var state: Boolean = false
 )
 
 data class Update(
@@ -186,6 +187,12 @@ object MyDatabase {
             onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
         }
     }
+     fun generateLastDateCode(onLastDateGenerated: (String) -> Unit) {
+        updateAndGetCode { newCode ->
+            val dateCode = "LD$newCode$year"
+            onLastDateGenerated(dateCode) // Pass the generated index number to the callback
+        }
+    }
 
 
     //chats functions
@@ -262,35 +269,58 @@ object MyDatabase {
         }
     }
 
+    fun fetchAttendanceState(courseCode: String, onStateFetched: (AttendanceState?) -> Unit) {
+        val database = FirebaseDatabase.getInstance().reference
+        database.child("AttendanceStates").child(courseCode).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val attendanceState = snapshot.getValue(AttendanceState::class.java)
+                onStateFetched(attendanceState) // Pass the fetched state or null if not found
+            }
 
+            override fun onCancelled(error: DatabaseError) {
+                // Handle the error, maybe pass null to indicate failure
+                onStateFetched(null)
+            }
+        })
+    }
 
     // Attendance functions
     fun signAttendance(studentID: String, courseCode: String, status: String, onResult: (Boolean) -> Unit) {
-        val database = FirebaseDatabase.getInstance().reference
-        val attendanceRef = database.child("Attendances").child(courseCode).child(studentID).push()
         val today = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-        generateAttendanceID { attendanceID ->
-            val attendance = Attendance(id = attendanceID, date = today, status = status, studentId = studentID)
 
-        attendanceRef.setValue(attendance)
-            .addOnSuccessListener {
-                onResult(true)
-            }
-            .addOnFailureListener {
+        // Check if attendance has been signed today before saving
+        checkAttendanceRecord(studentID, courseCode, today) { isSignedToday ->
+            if (isSignedToday) {
+                // Attendance already signed for today, do not save again
                 onResult(false)
+            } else {
+                // Attendance not yet signed for today, proceed to save
+                val attendanceRef = database.child("Attendances").child(courseCode).child(studentID).push()
+                val attendance = Attendance(id = attendanceRef.key ?: "", date = today, status = status, studentId = studentID)
+
+                attendanceRef.setValue(attendance)
+                    .addOnSuccessListener {
+                        onResult(true) // Successfully signed attendance
+                    }
+                    .addOnFailureListener {
+                        onResult(false) // Failed to sign attendance
+                    }
             }
+        }
     }
-    }
+
 
 
     fun fetchAttendances(
-        studentID: String, courseCode: String, onAttendanceFetched: (List<Attendance>) -> Unit
+        studentID: String,
+        courseCode: String,
+        onAttendanceFetched: (List<Attendance>) -> Unit
     ) {
         val attendanceRef = database.child("Attendances/$courseCode/$studentID")
         attendanceRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val attendances =
-                    snapshot.children.mapNotNull { it.getValue(Attendance::class.java) }
+                val attendances = snapshot.children.mapNotNull { it.getValue(Attendance::class.java) }
                 onAttendanceFetched(attendances)
             }
 
@@ -300,6 +330,26 @@ object MyDatabase {
             }
         })
     }
+
+
+    private fun checkAttendanceRecord(studentID: String, courseCode: String, date: String, onResult: (Boolean) -> Unit) {
+        val key = "Attendances/$courseCode/$studentID"
+        database.child(key).orderByChild("date").equalTo(date).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    onResult(true) // Attendance record found for today
+                } else {
+                    onResult(false) // No attendance record found for today
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error checking attendance record: ${error.message}")
+                onResult(false) // Error occurred, consider it as no record found
+            }
+        })
+    }
+
 
     fun sendUserToUserMessage(message: Message, path: String, onComplete: (Boolean) -> Unit) {
         database.child(path).push().setValue(message).addOnCompleteListener { task ->
@@ -320,25 +370,8 @@ object MyDatabase {
         })
     }
 
-
-    fun fetchAttendanceState(courseCode: String, onStateFetched: (AttendanceState?) -> Unit) {
-        val database = FirebaseDatabase.getInstance().reference
-        database.child("AttendanceStates").child(courseCode).addListenerForSingleValueEvent(object :
-            ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val attendanceState = snapshot.getValue(AttendanceState::class.java)
-                onStateFetched(attendanceState) // Pass the fetched state or null if not found
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle the error, maybe pass null to indicate failure
-                onStateFetched(null)
-            }
-        })
-    }
-
     fun writeCourse(course: Course, onSuccess: () -> Unit){
-        database.child("NewCourses").child(course.courseCode).setValue(course)
+        database.child("Courses").child(course.courseCode).setValue(course)
             .addOnSuccessListener {
                 onSuccess()
             }
@@ -349,7 +382,7 @@ object MyDatabase {
 
     // Courses functions
     fun fetchCourses(onCoursesFetched: (List<Course>) -> Unit) {
-        database.child("NewCourses").addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("Courses").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val courseList = snapshot.children.mapNotNull { it.getValue(Course::class.java) }
                 onCoursesFetched(courseList) // Call the callback with the fetched courses
