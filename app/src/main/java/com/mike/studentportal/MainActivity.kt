@@ -106,7 +106,12 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.border
+import com.google.accompanist.pager.PagerDefaults
 import com.mike.studentportal.MyDatabase.saveUpdate
+import dev.chrisbanes.snapper.ExperimentalSnapperApi
 
 import com.mike.studentportal.CommonComponents as CC
 
@@ -344,9 +349,6 @@ fun MainScreen() {
         }
     }
 
-
-
-
     val navController = rememberNavController()
     NavHost(navController, startDestination = "dashboard") {
 
@@ -506,7 +508,7 @@ fun MainScreen() {
 }
 
 
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class, ExperimentalSnapperApi::class)
 @Composable
 fun Dashboard(
     navController: NavController,
@@ -530,8 +532,6 @@ fun Dashboard(
                     fetchedUser?.let {
                         user = it
                         currentName = it.firstName
-                        Log.e("ProfileCard", "Fetched user: $user")
-                        // You might want to add a mechanism to notify the UI about the updated data
                     }
                 }
             }
@@ -629,8 +629,7 @@ fun Dashboard(
                 modifier = Modifier.fillMaxWidth(),
                 color = Color.Transparent,
                 contentColor = Color.Transparent,
-
-                ) {
+            ) {
                 Box(
                     modifier = Modifier
                         .padding(start = 30.dp)
@@ -640,38 +639,41 @@ fun Dashboard(
                 ) {
                     Row(
                         modifier = Modifier
+                            .fillMaxWidth(0.7f)
                             .align(Alignment.BottomCenter)
                             .background(
                                 GlobalColors.extraColor1.copy(), RoundedCornerShape(40.dp)
-                            )
-                            .padding(horizontal = 16.dp),
+                            ),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         screens.forEachIndexed { index, screen ->
                             val isSelected = pagerState.currentPage == index
 
-                            // Animate color and size changes
-
                             val iconColor by animateColorAsState(
                                 targetValue = if (isSelected) GlobalColors.extraColor2
-                                else GlobalColors.primaryColor, label = ""
+                                else GlobalColors.primaryColor, label = "", animationSpec = tween(1000)
                             )
                             val iconSize by animateFloatAsState(
-                                targetValue = if (isSelected) 45f else 25f, label = ""
+                                targetValue = if (isSelected) 45f else 25f, label = "",
+                                animationSpec = tween(2000)
                             )
                             val offsetY by animateDpAsState(
-                                targetValue = if (isSelected) (-10).dp else 0.dp, label = ""
+                                targetValue = if (isSelected) (-10).dp else 0.dp, label = "",
+                                animationSpec = tween(1000)
                             )
 
-                            Box(
+                            Column(
                                 modifier = Modifier
-                                    .height(50.dp)
+
+                                    .height(60.dp)
                                     .offset(y = offsetY),
-                                contentAlignment = Alignment.Center
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                    contentDescription = "screen.title",
+                                Icon(
+                                    imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                                    contentDescription = screen.name,
                                     tint = iconColor,
                                     modifier = Modifier
                                         .clickable {
@@ -679,20 +681,34 @@ fun Dashboard(
                                                 pagerState.animateScrollToPage(index)
                                             }
                                         }
-                                        .offset(y = offsetY)
-                                        .padding(5.dp)
-                                        .size(iconSize.dp))
+                                        .size(iconSize.dp)
+                                )
+                                AnimatedVisibility(
+                                    visible = isSelected,
+                                    enter = fadeIn(animationSpec = tween(1000)) + slideInVertically(animationSpec = tween(1000)) { initialState -> initialState },
+                                    exit = fadeOut(animationSpec = tween(1000))+ slideOutVertically (animationSpec = tween(1000)) {initialState -> initialState}
+                                ) {
+                                    Text(
+                                        text = screen.name,
+                                        style = CC.descriptionTextStyle(context),
+                                        color = GlobalColors.extraColor2
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }, containerColor = GlobalColors.primaryColor
+        }
+        , containerColor = GlobalColors.primaryColor
 
     ) { innerPadding ->
 
         HorizontalPager(
-            state = pagerState, count = screens.size, modifier = Modifier.padding(innerPadding)
+            state = pagerState,
+            count = screens.size,
+            modifier = Modifier.padding(innerPadding),
+            flingBehavior = PagerDefaults.flingBehavior(state = pagerState)
         ) { page ->
             when (screens[page]) {
                 Screen.Home -> HomeScreen(context, navController)
