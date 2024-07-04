@@ -3,6 +3,12 @@ package com.mike.studentportal
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,8 +16,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -210,15 +218,33 @@ fun AttendanceList(
 
     Column(
         modifier = Modifier
+
             .fillMaxSize()
             .padding(16.dp)
     ) {
         if (attendanceRecords.isEmpty()) {
             Text("No attendance records found", style = CC.descriptionTextStyle(context))
         } else {
-            LazyColumn {
-                itemsIndexed(attendanceRecords) { index, record ->
-                    AttendanceCard(record, context, index)
+
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                itemsIndexed(attendanceRecords, key = { _, record -> record.id }) { index, record ->
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = true,
+                        enter = slideInVertically(
+                            animationSpec = tween(
+                                500,
+                                easing = LinearOutSlowInEasing
+                            )
+                        ) { fullHeight -> -fullHeight },
+                        exit = slideOutVertically(
+                            animationSpec = tween(
+                                500,
+                                easing = FastOutLinearInEasing
+                            )
+                        ) { fullHeight -> fullHeight }
+                    ) {
+                        AttendanceCard(record, context, index)
+                    }
                 }
             }
         }
@@ -273,7 +299,8 @@ fun AttendanceList(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
                 modifier = Modifier
@@ -282,7 +309,7 @@ fun AttendanceList(
                         color = GlobalColors.secondaryColor,
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .fillMaxWidth()
+                    .width(300.dp)
                     .padding(16.dp)
                     .background(GlobalColors.secondaryColor.copy(alpha = 0.1f)),
                 verticalAlignment = Alignment.CenterVertically,
@@ -307,7 +334,7 @@ fun AttendanceList(
                         color = GlobalColors.secondaryColor,
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .fillMaxWidth()
+                    .width(300.dp)
                     .padding(16.dp)
                     .background(GlobalColors.primaryColor.copy(alpha = 0.1f)),
                 verticalAlignment = Alignment.CenterVertically,
