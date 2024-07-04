@@ -1,6 +1,7 @@
 package com.mike.studentportal
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,11 +9,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -21,10 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.mike.studentportal.CommonComponents as CC
 import java.text.SimpleDateFormat
@@ -46,6 +53,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
     var currentName by remember { mutableStateOf("") }
     var currentEmail by remember { mutableStateOf("") }
     var currentAdmissionNumber by remember { mutableStateOf("") }
+    var contentloading = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -154,7 +162,9 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                         courseCode = courses[selectedTabIndex].courseCode,
                         context,
                         attendanceRecordsMap[courses[selectedTabIndex].courseCode] ?: emptyList(),
-                        attendanceStates[selectedTabIndex] // Pass the attendance state for the selected tab
+                        attendanceStates[selectedTabIndex], // Pass the attendance state for the selected tab
+
+
                     )
                 }
             }
@@ -170,61 +180,82 @@ fun AttendanceList(
     courseCode: String,
     context: Context,
     attendanceRecords: List<Attendance>,
-    attendanceState: AttendanceState
+    attendanceState: AttendanceState,
 ) {
+    var loading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val today = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-    var hasSignedToday by remember {
+
+    // Check if attendance has been signed today for the current course
+    val hasSignedToday = remember {
         mutableStateOf(attendanceRecords.any { it.date == today })
     }
-    var clickCount by remember { mutableIntStateOf(0) }
 
     // Calculate the counts of present and absent attendances
     val presentCount = attendanceRecords.count { it.status == "Present" }
     val absentCount = attendanceRecords.count { it.status == "Absent" }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    // Function to fetch attendance state continuously
+    LaunchedEffect(Unit) {
+        val interval = 10000L // Fetch every 10 seconds
+        while (true) {
+            MyDatabase.fetchAttendanceState(courseCode) { fetchedState ->
+                if (fetchedState?.state != null) {
+                    attendanceState.state = fetchedState.state
+                }
+            }
+            delay(interval)
+        }
+    }
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         if (attendanceRecords.isEmpty()) {
             Text("No attendance records found", style = CC.descriptionTextStyle(context))
         } else {
             LazyColumn {
-                items(attendanceRecords) { record ->
-                    AttendanceCard(record, context)
+                itemsIndexed(attendanceRecords) { index, record ->
+                    AttendanceCard(record, context, index)
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Button to sign attendance
         Button(
             onClick = {
                 coroutineScope.launch {
-                    if (attendanceState.state) {
-                        MyDatabase.signAttendance(studentID, courseCode, "Present") { success ->
-                            if (success) {
-                                MyDatabase.fetchAttendances(studentID, courseCode) { fetchedAttendance ->
-                                    // Do something with fetched attendance
-                                }
+                    loading = true
+                    MyDatabase.signAttendance(studentID, courseCode, "Present") { success ->
+                        if (success) {
+                            // Update attendance state after signing
+                            MyDatabase.fetchAttendances(studentID, courseCode) { fetchedAttendance ->
+                                attendanceState.state = fetchedAttendance.any { it.date == today }
+                                Log.d("Comparison result","$attendanceState")
+                                Log.d("Comparison result","Signing today for $courseCode")
+                                // Reset hasSignedToday to true after successfully signing attendance
+                                hasSignedToday.value = true
                                 Toast.makeText(context, "Attendance signed successfully", Toast.LENGTH_SHORT).show()
-                                hasSignedToday = true
-                                clickCount++
-                            } else {
-                                Toast.makeText(context, "Failed to sign attendance", Toast.LENGTH_SHORT).show()
                             }
+                        } else {
+                            Toast.makeText(context, "Already signed attendance", Toast.LENGTH_SHORT).show()
                         }
-                    } else {
-                        Toast.makeText(context, "Attendance closed for this Course", Toast.LENGTH_SHORT).show()
+                        loading = false
                     }
                 }
+
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.secondaryColor),
-            enabled = attendanceState.state && clickCount == 0 // Enable the button based on attendance state and click count
+            enabled = attendanceState.state
         ) {
-            if (attendanceState.state) {
+            if (loading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = GlobalColors.textColor)
+            } else if (attendanceState.state) {
                 Text("Sign Attendance", style = CC.descriptionTextStyle(context))
             } else {
                 Icon(
@@ -236,30 +267,37 @@ fun AttendanceList(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Display total present and absent counts
         Column(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier
-            .border(
-                width = 1.dp,
-                color = GlobalColors.secondaryColor,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .fillMaxWidth()
-            .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Total Present:", style = CC.descriptionTextStyle(context))
-            Text("$presentCount", style = CC.descriptionTextStyle(context))
-        }
-            Row(modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = GlobalColors.secondaryColor,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .fillMaxWidth()
-                .padding(20.dp),
+            Row(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.secondaryColor,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .fillMaxWidth()
+                    .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween) {
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Total Present:", style = CC.descriptionTextStyle(context))
+                Text("$presentCount", style = CC.descriptionTextStyle(context))
+            }
+
+            Row(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.secondaryColor,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text("Total Absent:", style = CC.descriptionTextStyle(context))
                 Text("$absentCount", style = CC.descriptionTextStyle(context))
             }
@@ -267,31 +305,41 @@ fun AttendanceList(
     }
 }
 
-
 @Composable
-fun AttendanceCard(attendance: Attendance, context: Context) {
+fun AttendanceCard(attendance: Attendance, context: Context, weekIndex: Int) {
+    val cardColor = if (attendance.status == "Present") GlobalColors.extraColor1 else GlobalColors.extraColor2
+    val icon = if (attendance.status == "Present") Icons.Filled.Check else Icons.Filled.Close // Use Filled.Close for Absent
+    val tint = if (attendance.status == "Present") Color.Green else Color.Red
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp), elevation = CardDefaults.elevatedCardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (attendance.status == "Present") GlobalColors.extraColor1 else GlobalColors.extraColor2
-        )
+            .padding(vertical = 8.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {
-        Row (modifier = Modifier
-            .padding(16.dp)
-            .fillMaxSize(),
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween){
-            Text(
-                text = attendance.date,
-                style = CC.descriptionTextStyle(context)
-            )
-            IconButton(onClick = {}) {
-                Icon(if (attendance.status == "Present")Icons.Filled.Check else Icons.Filled.Clear,
-                    contentDescription = if (attendance.status =="Present") "Present" else "Absent",
-                    tint = if (attendance.status == "Present") Color.Green else Color.Red)
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) { // Allow text to take up more space
+                Text(
+                    text = "Week ${weekIndex + 1}",
+                    style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold) // Bolder week text
+                )
+                Text(
+                    text = attendance.status, // Display the actual status (Present/Absent)
+                    style = CC.descriptionTextStyle(context).copy(fontSize = 14.sp) // Smaller font for status
+                )
+            }
+
+            IconButton(onClick = { /* Your click logic here */ }) {
+                Icon(icon, contentDescription = attendance.status, tint = tint)
             }
         }
     }
 }
+
