@@ -148,7 +148,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     .show()
                                 isGoogleLoading = false
                             },
-                            navController
                         )
                         GitAuth(
                             firebaseAuth = firebaseAuth,
@@ -181,7 +180,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     .show()
                                 isGithubLoading = false
                             },
-                            navController
                         )
                     }
 
