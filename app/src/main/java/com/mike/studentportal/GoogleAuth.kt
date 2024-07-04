@@ -31,7 +31,6 @@ fun GoogleAuth(
     firebaseAuth: FirebaseAuth,
     onSignInSuccess: () -> Unit,
     onSignInFailure: (String) -> Unit,
-    navController: NavController
 ) {
     val activity = LocalContext.current as Activity
     val provider = OAuthProvider.newBuilder("google.com")
