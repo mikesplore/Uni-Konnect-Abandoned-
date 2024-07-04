@@ -126,7 +126,6 @@ fun CoursesScreen(navController: NavController, context: Context) {
                             )
                         }
                         IconButton(onClick = {
-                            course.lastDate = CC.lastDate
                             CourseName.name.value = course.courseName
                             navController.navigate("course/${course.courseCode}")
                         }) {
