@@ -251,7 +251,8 @@ fun AttendanceList(
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.secondaryColor),
-            enabled = attendanceState.state
+            enabled = attendanceState.state,
+            shape = RoundedCornerShape(10.dp)
         ) {
             if (loading) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = GlobalColors.textColor)
@@ -269,7 +270,11 @@ fun AttendanceList(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Display total present and absent counts
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
             Row(
                 modifier = Modifier
                     .border(
@@ -278,13 +283,22 @@ fun AttendanceList(
                         shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(16.dp)
+                    .background(GlobalColors.secondaryColor.copy(alpha = 0.1f)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Total Present:", style = CC.descriptionTextStyle(context))
-                Text("$presentCount", style = CC.descriptionTextStyle(context))
+                Text(
+                    text = "Total Present:",
+                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                )
+                Text(
+                    text = "$presentCount",
+                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier
@@ -294,14 +308,22 @@ fun AttendanceList(
                         shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(16.dp)
+                    .background(GlobalColors.primaryColor.copy(alpha = 0.1f)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Total Absent:", style = CC.descriptionTextStyle(context))
-                Text("$absentCount", style = CC.descriptionTextStyle(context))
+                Text(
+                    text = "Total Absent:",
+                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                )
+                Text(
+                    text = "$absentCount",
+                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                )
             }
         }
+
     }
 }
 
@@ -325,10 +347,12 @@ fun AttendanceCard(attendance: Attendance, context: Context, weekIndex: Int) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.weight(1f)) { // Allow text to take up more space
+            Column(modifier = Modifier
+                .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally) { // Allow text to take up more space
                 Text(
                     text = "Week ${weekIndex + 1}",
-                    style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold) // Bolder week text
+                    style = CC.titleTextStyle(context).copy(fontWeight = FontWeight.Bold) // Bolder week text
                 )
                 Text(
                     text = attendance.status, // Display the actual status (Present/Absent)
