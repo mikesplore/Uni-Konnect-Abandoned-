@@ -2,8 +2,6 @@ package com.mike.studentportal
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -13,8 +11,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,7 +52,6 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -78,7 +73,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -141,7 +135,7 @@ fun HomeScreen(context: Context, navController: NavController) {
         Background(context)
         Column(
             modifier = Modifier
-                
+
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -168,8 +162,7 @@ fun HomeScreen(context: Context, navController: NavController) {
                         modifier = Modifier
                             .horizontalScroll(rememberScrollState())
                             .height(90.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
                     ) {
                         EmptyIconBox(context)
                         EmptyIconBox(context)
@@ -218,16 +211,19 @@ fun HomeScreen(context: Context, navController: NavController) {
                         LoadingImageBox()
                         LoadingImageBox()
                     }
-                } else if (courses.isEmpty()){
-                    Row(modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .fillMaxWidth()) {
-                    EmptyImageBox(context)
-                    EmptyImageBox(context)
-                    EmptyImageBox(context)
-                    EmptyImageBox(context)
-                    EmptyImageBox(context)}}
-                else{
+                } else if (courses.isEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .fillMaxWidth()
+                    ) {
+                        EmptyImageBox(context)
+                        EmptyImageBox(context)
+                        EmptyImageBox(context)
+                        EmptyImageBox(context)
+                        EmptyImageBox(context)
+                    }
+                } else {
 
                     ImageList(courses, context, images.value, navController)
                 }
@@ -270,16 +266,24 @@ fun HomeScreen(context: Context, navController: NavController) {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun IconBox(course: Course, navController: NavController, context: Context, modifier: Modifier = Modifier, animationDelay: Int = 0) {
+fun IconBox(
+    course: Course,
+    navController: NavController,
+    context: Context,
+    modifier: Modifier = Modifier,
+    animationDelay: Int = 0
+) {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.9f else 1f,
-        label = ""
+        targetValue = if (isPressed) 0.9f else 1f, label = ""
     )
     val offsetX by animateDpAsState(
         targetValue = 0.dp, // Initially off-screen
-        animationSpec = tween(durationMillis = 500, delayMillis = animationDelay, easing = LinearOutSlowInEasing),
-        label = ""
+        animationSpec = tween(
+            durationMillis = 500,
+            delayMillis = animationDelay,
+            easing = LinearOutSlowInEasing
+        ), label = ""
     )
 
     Column(
@@ -299,9 +303,10 @@ fun IconBox(course: Course, navController: NavController, context: Context, modi
                     navController.navigate("course/${course.courseCode}")
                 }, contentAlignment = Alignment.Center
         ) {
-            MyBackground(modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
+            MyBackground(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
             )
             Icon(
                 imageVector = Icons.Filled.School,
@@ -407,9 +412,9 @@ fun TodayTimetable(context: Context) {
     var loading by remember { mutableStateOf(true) }
 
     LaunchedEffect(loading) {
-            MyDatabase.getCurrentDayTimetable(CC.currentDay()) { timetable ->
-                timetables = timetable
-            }
+        MyDatabase.getCurrentDayTimetable(CC.currentDay()) { timetable ->
+            timetables = timetable
+        }
         loading = false
 
     }
@@ -453,59 +458,59 @@ fun TodayTimetable(context: Context) {
                 ) {
                     items(timetables!!) { timetable ->
 
-                            Column(
-                                modifier = Modifier
-                                    .border(
-                                        1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
-                                    )
-                                    .width(300.dp)
-                                    .height(200.dp)
-                                    .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
-                                    .padding(10.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = timetable.unitName,
-                                    style = CC.titleTextStyle(context),
-                                    textAlign = TextAlign.Center
+                        Column(
+                            modifier = Modifier
+                                .border(
+                                    1.dp,
+                                    GlobalColors.tertiaryColor,
+                                    shape = RoundedCornerShape(16.dp)
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CalendarToday,
-                                        contentDescription = "Event Date and Time",
-                                        tint = GlobalColors.secondaryColor
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text(
-                                        text = "${timetable.startTime} - ${timetable.endTime}",
-                                        style = CC.descriptionTextStyle(context)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(5.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Place,
-                                        contentDescription = "Event Location",
-                                        tint = GlobalColors.secondaryColor
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = timetable.venue,
-                                        style = CC.descriptionTextStyle(context)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(5.dp))
+                                .width(300.dp)
+                                .height(200.dp)
+                                .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
+                                .padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = timetable.unitName,
+                                style = CC.titleTextStyle(context),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = "Event Date and Time",
+                                    tint = GlobalColors.secondaryColor
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
                                 Text(
-                                    text = timetable.lecturer,
-                                    style = CC.descriptionTextStyle(context),
-                                    textAlign = TextAlign.Center
+                                    text = "${timetable.startTime} - ${timetable.endTime}",
+                                    style = CC.descriptionTextStyle(context)
                                 )
                             }
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Place,
+                                    contentDescription = "Event Location",
+                                    tint = GlobalColors.secondaryColor
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = timetable.venue, style = CC.descriptionTextStyle(context)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(
+                                text = timetable.lecturer,
+                                style = CC.descriptionTextStyle(context),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
 
                     }
@@ -597,7 +602,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                         val updatedCourse = Course(
                             courseCode = course.courseCode,
                             courseName = course.courseName,
-                            visits = course.visits+1
+                            visits = course.visits + 1
                         )
                         // Save updated last date to preferences
                         MyDatabase.writeCourse(updatedCourse) {
@@ -617,7 +622,6 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
         }
     }
 }
-
 
 
 @Composable
@@ -643,8 +647,9 @@ fun ImageList(
                         .padding(8.dp)
                         .width(250.dp)
                         .height(250.dp)
-                        .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center
+                        .border(
+                            1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp)
+                        ), contentAlignment = Alignment.Center
                 ) {
                     Text("No image available")
                 }
@@ -652,7 +657,6 @@ fun ImageList(
         }
     }
 }
-
 
 
 @Composable
@@ -705,7 +709,7 @@ fun EmptyImageBox(context: Context) {
         contentAlignment = Alignment.Center
     ) {
 
-            Text("Empty", style = CC.descriptionTextStyle(context))
+        Text("Empty", style = CC.descriptionTextStyle(context))
 
     }
 }
@@ -714,17 +718,12 @@ fun EmptyImageBox(context: Context) {
 fun ColorProgressIndicator(modifier: Modifier = Modifier, delayMillis: Long = 0L) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val offsetX by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
+        initialValue = 0f, targetValue = 1f, animationSpec = infiniteRepeatable(
             animation = tween(
                 delayMillis = delayMillis.toInt(), // Add delay here
-                durationMillis = 3000,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
+                durationMillis = 3000, easing = LinearEasing
+            ), repeatMode = RepeatMode.Restart
+        ), label = ""
     )
 
     Box(
@@ -733,8 +732,7 @@ fun ColorProgressIndicator(modifier: Modifier = Modifier, delayMillis: Long = 0L
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        GlobalColors.primaryColor,
-                        GlobalColors.primaryColor,
+                        GlobalColors.secondaryColor,
                         GlobalColors.secondaryColor,
                         GlobalColors.primaryColor,
                         GlobalColors.primaryColor
@@ -788,7 +786,7 @@ fun Background(context: Context) {
         Icons.Outlined.BorderColor,
         Icons.Outlined.Book,
     )
-    LaunchedEffect (Unit){
+    LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
 
     }
@@ -847,22 +845,26 @@ fun AnnouncementItem(context: Context) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                ColorProgressIndicator(modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .fillMaxSize(),
-                    delayMillis = 200L)
+                ColorProgressIndicator(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .fillMaxSize(),
+                    delayMillis = 200L
+                )
             }
 
         } else if (announcements.isNotEmpty()) {
             val firstAnnouncement = announcements[announcements.lastIndex]
             Box(
                 modifier = Modifier.background(
-                    GlobalColors.primaryColor,
-                    RoundedCornerShape(10.dp)
+                    GlobalColors.primaryColor, RoundedCornerShape(10.dp)
                 )
             ) {
-                MyBackground(modifier = Modifier.fillMaxSize()
-                    .clip(RoundedCornerShape(10.dp)))
+                MyBackground(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(10.dp))
+                )
                 Column(
                     modifier = Modifier.fillMaxSize(),
                 ) {
@@ -936,7 +938,7 @@ fun AnnouncementItem(context: Context) {
             ) {
                 Text(
                     "No announcements available", style = CC.descriptionTextStyle(context)
-                ) // Handle the case of an empty list
+                )
             }
 
         }
@@ -960,11 +962,14 @@ fun BottomEnd(context: Context) {
         Spacer(modifier = Modifier.height(8.dp))
         Text("All rights reserved © 2024", style = CC.descriptionTextStyle(context))
         Text("Version $versionName", style = CC.descriptionTextStyle(context))
-        Text("Student Portal", style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold))
+        Text(
+            "Student Portal",
+            style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold)
+        )
         Text("Developed by Mike", style = CC.descriptionTextStyle(context))
         Spacer(modifier = Modifier.height(8.dp))
         Row {
-            // Add social media icons here
+
         }
     }
 }
