@@ -5,10 +5,15 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,23 +41,20 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
     var currentPerson by remember { mutableStateOf("") }
-    LaunchedEffect(key1 = Unit) { // Use a stable key
-        while (true) {
-            delay(10L) // Delay for 10 seconds
+
+    LaunchedEffect(key1 = Unit) {
             auth.currentUser?.email?.let { email ->
                 fetchUserDataByEmail(email) { fetchedUser ->
                     fetchedUser?.let {
                         currentMe = it
                         currentPerson = it.firstName
-                        Log.e("ProfileCard", "Fetched user: $currentMe")
-                        // You might want to add a mechanism to notify the UI about the updated data
                     }
                 }
             }
-        }
+
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(loading) {
         getUsers { fetchedUsers ->
             if (fetchedUsers == null) {
                 errorMessage = "Failed to fetch users. Please try again later."
@@ -74,6 +76,12 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
                             contentDescription = "Back",
                             tint = Color.White
                         )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {loading  = true}) {
+                        Icon(Icons.Default.Refresh,"Refresh",
+                            tint = GlobalColors.textColor)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
@@ -106,13 +114,15 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
                         )
                     }
                     else -> {
-                        Column(
+                        LazyColumn(
                             modifier = Modifier
+                                .fillMaxHeight()
                                 .fillMaxSize()
                                 .padding(16.dp)
                         ) {
-                            users!!.forEach { user ->
+                            items(users!!) { user ->
                                 ProfileCard(user, navController, context)
+                                HorizontalDivider(color = GlobalColors.textColor)
                             }
                         }
                     }
@@ -128,20 +138,18 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
     val auth = FirebaseAuth.getInstance()
     var currentMe by remember { mutableStateOf(User()) }
     var currentPerson by remember { mutableStateOf("") }
-    LaunchedEffect(key1 = Unit) { // Use a stable key
-        while (true) {
-            delay(10L) // Delay for 10 seconds
+    var loading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(loading) {
             auth.currentUser?.email?.let { email ->
                 fetchUserDataByEmail(email) { fetchedUser ->
                     fetchedUser?.let {
                         currentMe = it
                         currentPerson = it.firstName
-                        Log.e("ProfileCard", "Fetched user: $currentMe")
-                        // You might want to add a mechanism to notify the UI about the updated data
                     }
                 }
             }
-        }
+
     }
     Card(
         modifier = Modifier
