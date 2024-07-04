@@ -1,13 +1,20 @@
 package com.mike.studentportal
 
 import android.content.Context
+import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +30,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,6 +69,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -69,6 +78,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -81,8 +91,6 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.mike.studentportal.MyDatabase.getAnnouncements
-import kotlinx.coroutines.delay
-import kotlin.time.Duration
 import com.mike.studentportal.CommonComponents as CC
 
 data class Images(val link: String, val description: String)
@@ -184,7 +192,7 @@ fun HomeScreen(context: Context, navController: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Recent courses", style = CC.titleTextStyle(context), fontSize = 20.sp
+                    "Popular courses", style = CC.titleTextStyle(context), fontSize = 20.sp
                 )
                 Text("View All",
                     style = CC.descriptionTextStyle(context),
@@ -260,19 +268,29 @@ fun HomeScreen(context: Context, navController: NavController) {
 }
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun IconBox(course: Course, navController: NavController, context: Context) {
-    val brush = Brush.linearGradient(
-        listOf(
-            GlobalColors.extraColor2, GlobalColors.extraColor1
-        )
+fun IconBox(course: Course, navController: NavController, context: Context, modifier: Modifier = Modifier, animationDelay: Int = 0) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.9f else 1f,
+        label = ""
     )
+    val offsetX by animateDpAsState(
+        targetValue = 0.dp, // Initially off-screen
+        animationSpec = tween(durationMillis = 500, delayMillis = animationDelay, easing = LinearOutSlowInEasing),
+        label = ""
+    )
+
     Column(
-        modifier = Modifier.padding(start = 10.dp),
+        modifier = modifier
+            .padding(start = 10.dp)
+            .offset(x = offsetX), // Apply offset for sliding animation
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
+
                 .background(Color.Transparent, CircleShape)
                 .size(60.dp)
                 .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape)
@@ -500,6 +518,11 @@ fun TodayTimetable(context: Context) {
 
 @Composable
 fun ImageBox(course: Course, image: Images, context: Context, navController: NavController) {
+
+    LaunchedEffect(course.courseCode) {
+
+    }
+
     Box(
         modifier = Modifier
             .padding(8.dp)
@@ -529,7 +552,6 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                 )
             }
 
-
             Column(
                 modifier = Modifier
                     .background(
@@ -553,7 +575,9 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                     style = CC.titleTextStyle(context),
                     fontSize = 20.sp,
                     textAlign = TextAlign.Left,
-                    modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = 5.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 5.dp, end = 5.dp)
                 )
                 Row(
                     modifier = Modifier
@@ -563,13 +587,22 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Last Date: ${course.lastDate}",
+                        text = "Visited ${course.visits} times",
                         style = CC.descriptionTextStyle(context),
                         color = GlobalColors.textColor.copy(0.5f),
                         textAlign = TextAlign.Left,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(onClick = {
+                        val updatedCourse = Course(
+                            courseCode = course.courseCode,
+                            courseName = course.courseName,
+                            visits = course.visits+1
+                        )
+                        // Save updated last date to preferences
+                        MyDatabase.writeCourse(updatedCourse) {
+                            Log.d("Updated Course:", "Updated Visit is ${updatedCourse.visits}")
+                        }
                         CourseName.name.value = course.courseName
                         navController.navigate("course/${course.courseCode}")
                     }) {
@@ -579,20 +612,20 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                             tint = GlobalColors.extraColor1
                         )
                     }
-
                 }
-
             }
         }
     }
 }
+
+
 
 @Composable
 fun ImageList(
     courses: List<Course>, context: Context, images: List<Images>, navController: NavController
 ) {
     val sortedCourses =
-        courses.sortedByDescending { it.lastDate } // Sort by lastDate in descending order
+        courses.sortedByDescending { it.visits } // Sort by lastDate in descending order
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -619,6 +652,7 @@ fun ImageList(
         }
     }
 }
+
 
 
 @Composable
