@@ -3,12 +3,16 @@ package com.mike.studentportal
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -36,7 +40,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
     var loading by remember { mutableStateOf(true) }
     val courses = remember { mutableStateListOf<Course>() }
     val attendanceStates = remember { mutableStateListOf<AttendanceState>() }
-    val attendanceRecords = remember { mutableStateListOf<Attendance>() }
+    val attendanceRecordsMap = remember { mutableStateMapOf<String, List<Attendance>>() }
     val coroutineScope = rememberCoroutineScope()
     var user by remember { mutableStateOf(User()) }
     var currentName by remember { mutableStateOf("") }
@@ -46,21 +50,26 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
-
-        LaunchedEffect(Unit) {
+        // Fetch courses and attendance states initially
+        LaunchedEffect(loading) {
             MyDatabase.fetchCourses { fetchedCourses ->
                 courses.clear()
                 courses.addAll(fetchedCourses)
-                loading = false
 
-                // Fetch attendance states for each course
+                // Fetch attendance states and records for each course
+                coroutineScope.launch {
+                    fetchedCourses.forEach { course ->
+                        MyDatabase.fetchAttendanceState(course.courseCode) { fetchedState ->
+                            if (fetchedState != null) {
+                                attendanceStates.add(fetchedState)
+                            }
+                        }
 
-                fetchedCourses.forEach { course ->
-                    MyDatabase.fetchAttendanceState(course.courseCode) { fetchedState ->
-                        if (fetchedState != null) {
-                            attendanceStates.add(fetchedState)
+                        MyDatabase.fetchAttendances(currentAdmissionNumber, course.courseCode) { fetchedAttendances ->
+                            attendanceRecordsMap[course.courseCode] = fetchedAttendances
                         }
                     }
+                    loading = false
                 }
             }
         }
@@ -98,7 +107,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                     .fillMaxWidth()
                     .height(50.dp))
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Loading Courses", style = CC.descriptionTextStyle(context))
+                Text("Loading Courses and Attendances", style = CC.descriptionTextStyle(context))
             }
         } else {
             if (courses.isEmpty()) {
@@ -120,12 +129,6 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                     courses.forEachIndexed { index, course ->
                         Tab(selected = selectedTabIndex == index, onClick = {
                             selectedTabIndex = index
-                            coroutineScope.launch {
-                                MyDatabase.fetchAttendances(currentAdmissionNumber, course.courseCode) { fetchedAttendances ->
-                                    attendanceRecords.clear()
-                                    attendanceRecords.addAll(fetchedAttendances)
-                                }
-                            }
                         }, text = {
                             Box(
                                 modifier = Modifier
@@ -150,7 +153,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                         studentID = currentAdmissionNumber,
                         courseCode = courses[selectedTabIndex].courseCode,
                         context,
-                        attendanceRecords,
+                        attendanceRecordsMap[courses[selectedTabIndex].courseCode] ?: emptyList(),
                         attendanceStates[selectedTabIndex] // Pass the attendance state for the selected tab
                     )
                 }
@@ -158,6 +161,8 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
         }
     }
 }
+
+
 
 @Composable
 fun AttendanceList(
@@ -173,6 +178,10 @@ fun AttendanceList(
         mutableStateOf(attendanceRecords.any { it.date == today })
     }
     var clickCount by remember { mutableIntStateOf(0) }
+
+    // Calculate the counts of present and absent attendances
+    val presentCount = attendanceRecords.count { it.status == "Present" }
+    val absentCount = attendanceRecords.count { it.status == "Absent" }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -193,20 +202,21 @@ fun AttendanceList(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    if (attendanceState.state){
-                    MyDatabase.signAttendance(studentID, courseCode,"Present") { success ->
-                        if (success) {
-                            MyDatabase.fetchAttendances(studentID, courseCode) { fetchedAttendance ->
-                                // Do something with fetched attendance
+                    if (attendanceState.state) {
+                        MyDatabase.signAttendance(studentID, courseCode, "Present") { success ->
+                            if (success) {
+                                MyDatabase.fetchAttendances(studentID, courseCode) { fetchedAttendance ->
+                                    // Do something with fetched attendance
+                                }
+                                Toast.makeText(context, "Attendance signed successfully", Toast.LENGTH_SHORT).show()
+                                hasSignedToday = true
+                                clickCount++
+                            } else {
+                                Toast.makeText(context, "Failed to sign attendance", Toast.LENGTH_SHORT).show()
                             }
-                            Toast.makeText(context, "Attendance signed successfully", Toast.LENGTH_SHORT).show()
-                            hasSignedToday = true
-                            clickCount++
-                        } else {
-                            Toast.makeText(context, "Failed to sign attendance", Toast.LENGTH_SHORT).show()
                         }
-                    }}else{
-                        Toast.makeText(context,"Attendance closed for this Course", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Attendance closed for this Course", Toast.LENGTH_SHORT).show()
                     }
                 }
             },
@@ -224,8 +234,39 @@ fun AttendanceList(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = GlobalColors.secondaryColor,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .fillMaxWidth()
+            .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Total Present:", style = CC.descriptionTextStyle(context))
+            Text("$presentCount", style = CC.descriptionTextStyle(context))
+        }
+            Row(modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = GlobalColors.secondaryColor,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .fillMaxWidth()
+                .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Total Absent:", style = CC.descriptionTextStyle(context))
+                Text("$absentCount", style = CC.descriptionTextStyle(context))
+            }
+        }
     }
 }
+
 
 @Composable
 fun AttendanceCard(attendance: Attendance, context: Context) {
@@ -237,9 +278,20 @@ fun AttendanceCard(attendance: Attendance, context: Context) {
             containerColor = if (attendance.status == "Present") GlobalColors.extraColor1 else GlobalColors.extraColor2
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Date: ${attendance.date}", style = CC.descriptionTextStyle(context))
-            Text("Status: ${attendance.status}", style = CC.descriptionTextStyle(context))
+        Row (modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween){
+            Text(
+                text = attendance.date,
+                style = CC.descriptionTextStyle(context)
+            )
+            IconButton(onClick = {}) {
+                Icon(if (attendance.status == "Present")Icons.Filled.Check else Icons.Filled.Clear,
+                    contentDescription = if (attendance.status =="Present") "Present" else "Absent",
+                    tint = if (attendance.status == "Present") Color.Green else Color.Red)
+            }
         }
     }
 }
