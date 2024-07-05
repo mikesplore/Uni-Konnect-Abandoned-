@@ -2,6 +2,7 @@ package com.mike.studentportal
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -43,9 +44,11 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -91,6 +94,55 @@ fun ChatScreen(
     var currentAdmissionNumber by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
+    val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var timeSpent by remember { mutableLongStateOf(0L) }
+    val screenID = "SC6"
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            timeSpent = System.currentTimeMillis() - startTime
+            delay(1000) // Update every second (adjust as needed)
+        }
+    }
+
+
+    DisposableEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+        onDispose {
+            // Fetch the screen details
+            MyDatabase.getScreenDetails(screenID) { screenDetails ->
+                if (screenDetails != null) {
+                    MyDatabase.writeScren(courseScreen = screenDetails) {}
+                    // Fetch existing screen time
+                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
+                        val totalScreenTime = if (existingScreenTime != null) {
+                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
+                            existingScreenTime.time.toLong() + timeSpent
+                        } else {
+                            timeSpent
+                        }
+
+                        // Create a new ScreenTime object
+                        val screentime = ScreenTime(
+                            id = screenID,
+                            screenName = screenDetails.screenName,
+                            time = totalScreenTime.toString()
+                        )
+
+                        // Save the updated screen time
+                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
+                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
+                        }, onFailure = {
+                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
+                        })
+                    }
+
+                } else {
+                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
+                }
+            }
+        }
+    }
 
 
     // Fetch user data when the composable is launched
