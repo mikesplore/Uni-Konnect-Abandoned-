@@ -591,8 +591,9 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val visits = if(course.visits==0) "Never visited" else if(course.visits==1) "Visited once" else "Visited ${course.visits} times"
                     Text(
-                        text = "Visited ${course.visits} times",
+                        text = visits,
                         style = CC.descriptionTextStyle(context),
                         color = GlobalColors.textColor.copy(0.5f),
                         textAlign = TextAlign.Left,
