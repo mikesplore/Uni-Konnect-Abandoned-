@@ -1,6 +1,7 @@
 package com.mike.studentportal
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -37,9 +38,11 @@ import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.mike.studentportal.CommonComponents as CC
 
@@ -76,7 +80,55 @@ fun TimetableScreen(context: Context) {
                 .background(GlobalColors.secondaryColor, CircleShape)
         )
     }
-    val coroutineScope = rememberCoroutineScope()
+    val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var timeSpent by remember { mutableLongStateOf(0L) }
+    val screenID = "SC4"
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            timeSpent = System.currentTimeMillis() - startTime
+            delay(1000) // Update every second (adjust as needed)
+        }
+    }
+
+
+    DisposableEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+        onDispose {
+            // Fetch the screen details
+            MyDatabase.getScreenDetails(screenID) { screenDetails ->
+                if (screenDetails != null) {
+                    MyDatabase.writeScren(courseScreen = screenDetails) {}
+                    // Fetch existing screen time
+                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
+                        val totalScreenTime = if (existingScreenTime != null) {
+                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
+                            existingScreenTime.time.toLong() + timeSpent
+                        } else {
+                            timeSpent
+                        }
+
+                        // Create a new ScreenTime object
+                        val screentime = ScreenTime(
+                            id = screenID,
+                            screenName = screenDetails.screenName,
+                            time = totalScreenTime.toString()
+                        )
+
+                        // Save the updated screen time
+                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
+                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
+                        }, onFailure = {
+                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
+                        })
+                    }
+
+                } else {
+                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
