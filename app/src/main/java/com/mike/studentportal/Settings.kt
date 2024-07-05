@@ -79,18 +79,75 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
+import androidx.compose.material.icons.outlined.ArrowForwardIos
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import com.mike.studentportal.MyDatabase.getAllScreenTimes
 import com.mike.studentportal.MyDatabase.updatePassword
+import kotlinx.coroutines.delay
 import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+
 fun SettingsScreen(navController: NavController, context: Context) {
+    val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var timeSpent by remember { mutableLongStateOf(0L) }
+    val screenID = "SC8"
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            timeSpent = System.currentTimeMillis() - startTime
+            delay(1000) // Update every second (adjust as needed)
+        }
+    }
+
+
+    DisposableEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+        onDispose {
+            // Fetch the screen details
+            MyDatabase.getScreenDetails(screenID) { screenDetails ->
+                if (screenDetails != null) {
+                    MyDatabase.writeScren(courseScreen = screenDetails) {}
+                    // Fetch existing screen time
+                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
+                        val totalScreenTime = if (existingScreenTime != null) {
+                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
+                            existingScreenTime.time.toLong() + timeSpent
+                        } else {
+                            timeSpent
+                        }
+
+                        // Create a new ScreenTime object
+                        val screentime = ScreenTime(
+                            id = screenID,
+                            screenName = screenDetails.screenName,
+                            time = totalScreenTime
+                        )
+
+                        // Save the updated screen time
+                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
+                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
+                        }, onFailure = {
+                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
+                        })
+                    }
+
+                } else {
+                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
+                }
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -138,6 +195,11 @@ fun SettingsScreen(navController: NavController, context: Context) {
             SectionTitle(context, Icons.Default.SafetyCheck, "System")
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before system settings section
             SystemSettings(context)
+            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
+            SectionTitle(context, Icons.Default.Feedback, "Statistics")
+            Text("Most used section of this app (Across all users)", style = CC.descriptionTextStyle(context))
+            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
+            ScreenWithMostTimeSpent(navController, context)
             Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
             SectionTitle(context, Icons.Default.Security, "Security")
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before password section
@@ -149,6 +211,7 @@ fun SettingsScreen(navController: NavController, context: Context) {
             RatingAndFeedbackScreen(context)
             Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
             BottomEnd(context)
+
 
         }
         }
@@ -725,6 +788,58 @@ fun RatingAndFeedbackScreen(context: Context) {
     }
 }
 
+
+@Composable
+fun ScreenWithMostTimeSpent(navController: NavController, context: Context) {
+    val screenTimes = remember { mutableStateListOf<ScreenTime>() }
+    var screenWithMaxTime by remember { mutableStateOf<ScreenTime?>(null) }
+
+    // Fetch screen times when the composable enters the composition
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000)
+            getAllScreenTimes { fetchedScreenTimes ->
+                Log.d("fetched Screen time", "The screen times are: $fetchedScreenTimes")
+                screenTimes.clear()
+                screenTimes.addAll(fetchedScreenTimes)
+
+                // Find screen with maximum time
+                screenWithMaxTime = fetchedScreenTimes.maxByOrNull { it.time }
+            }
+        }
+    }
+
+    // Display screen with maximum time (if available)
+    screenWithMaxTime?.let {
+        Column(
+            modifier = Modifier
+                .background(GlobalColors.extraColor2, RoundedCornerShape(16.dp))
+                .border(
+                    width = 1.dp,
+                    color = GlobalColors.textColor,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .padding(10.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(it.screenName, style = CC.titleTextStyle(context))
+            Text(convertToHoursMinutesSeconds(it.time), style = CC.descriptionTextStyle(context))
+
+            // Place the IconButton inside the Column
+            IconButton(
+                onClick = { navController.navigate("statistics") },
+                modifier = Modifier.align(Alignment.End) // Align to the end of the Column
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.ArrowForwardIos,
+                    "",
+                    tint = GlobalColors.textColor
+                )
+            }
+        }
+    }
+}
 
 @Preview
 @Composable
