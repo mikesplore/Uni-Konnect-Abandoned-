@@ -548,7 +548,7 @@ fun Dashboard(
             MyDatabase.getScreenTime(screenID) { existingScreenTime ->
                 val totalScreenTime = if (existingScreenTime != null) {
                     Log.d("Screen Time","Retrieved Screen time: $existingScreenTime")
-                    existingScreenTime.time.toLong() + timeSpent
+                    existingScreenTime.time + timeSpent
                 } else {
                     timeSpent
                 }
@@ -557,7 +557,7 @@ fun Dashboard(
                 val screentime = ScreenTime(
                     id = screenID,
                     screenName = screenName,
-                    time = totalScreenTime.toString()
+                    time = totalScreenTime
                 )
 
                 // Save the updated screen time
