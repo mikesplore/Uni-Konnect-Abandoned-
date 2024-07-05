@@ -58,8 +58,55 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     var currentAdmissionNumber by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
-    val fileName = "user_chat_${targetUserId}.json"
+    val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var timeSpent by remember { mutableLongStateOf(0L) }
+    val screenID = "SC5"
 
+    LaunchedEffect(Unit) {
+        while (true) {
+            timeSpent = System.currentTimeMillis() - startTime
+            delay(1000) // Update every second (adjust as needed)
+        }
+    }
+
+
+    DisposableEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+        onDispose {
+            // Fetch the screen details
+            MyDatabase.getScreenDetails(screenID) { screenDetails ->
+                if (screenDetails != null) {
+                    MyDatabase.writeScren(courseScreen = screenDetails) {}
+                    // Fetch existing screen time
+                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
+                        val totalScreenTime = if (existingScreenTime != null) {
+                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
+                            existingScreenTime.time.toLong() + timeSpent
+                        } else {
+                            timeSpent
+                        }
+
+                        // Create a new ScreenTime object
+                        val screentime = ScreenTime(
+                            id = screenID,
+                            screenName = screenDetails.screenName,
+                            time = totalScreenTime.toString()
+                        )
+
+                        // Save the updated screen time
+                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
+                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
+                        }, onFailure = {
+                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
+                        })
+                    }
+
+                } else {
+                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
+                }
+            }
+        }
+    }
 
     // Search functionality
     var isSearchVisible by remember { mutableStateOf(false) }
