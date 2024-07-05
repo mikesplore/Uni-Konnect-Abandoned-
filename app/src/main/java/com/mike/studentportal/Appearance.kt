@@ -168,7 +168,7 @@ fun Appearance(navController: NavController, context: Context) {
                     MyDatabase.getScreenTime(screenID) { existingScreenTime ->
                         val totalScreenTime = if (existingScreenTime != null) {
                             Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
-                            existingScreenTime.time.toLong() + timeSpent
+                            existingScreenTime.time + timeSpent
                         } else {
                             timeSpent
                         }
@@ -177,7 +177,7 @@ fun Appearance(navController: NavController, context: Context) {
                         val screentime = ScreenTime(
                             id = screenID,
                             screenName = screenDetails.screenName,
-                            time = totalScreenTime.toString()
+                            time = totalScreenTime
                         )
 
                         // Save the updated screen time
