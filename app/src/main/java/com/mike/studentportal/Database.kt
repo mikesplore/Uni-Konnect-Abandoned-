@@ -145,6 +145,18 @@ data class MyCode(
     var code: Int = 0
 )
 
+data class ScreenTime(
+    val id: String = "",
+    val screenName: String = "",
+    val time: Long = 0
+)
+
+data class Screens(
+    val screenId: String = "",
+    val screenName: String = "",
+
+)
+
 
 object MyDatabase {
     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
@@ -187,9 +199,9 @@ object MyDatabase {
             onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
         }
     }
-     fun generateLastDateCode(onLastDateGenerated: (String) -> Unit) {
+     fun generateScreenTimeID(onLastDateGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
-            val dateCode = "LD$newCode$year"
+            val dateCode = "ST$newCode$year"
             onLastDateGenerated(dateCode) // Pass the generated index number to the callback
         }
     }
@@ -380,6 +392,14 @@ object MyDatabase {
             }
     }
 
+    fun writeScren(courseScreen: Screens, onSuccess: () -> Unit){
+        database.child("Screens").child(courseScreen.screenId).setValue(courseScreen)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener {
+    }}
+
     // Courses functions
     fun fetchCourses(onCoursesFetched: (List<Course>) -> Unit) {
         database.child("Courses").addListenerForSingleValueEvent(object : ValueEventListener {
@@ -500,6 +520,58 @@ object MyDatabase {
             onSuccess()
         }.addOnFailureListener { exception ->
             onFailure(exception)
+        }
+    }
+
+    //Screen time functions
+    fun saveScreenTime(screenTime: ScreenTime, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
+        val screenTimeRef = database.child("ScreenTime").child(screenTime.id)
+        screenTimeRef.setValue(screenTime).addOnSuccessListener {
+            onSuccess()
+        }.addOnFailureListener { exception ->
+            onFailure(exception)
+        }
+    }
+
+    fun getScreenTime(screenID: String, onScreenTimeFetched: (ScreenTime?) -> Unit) {
+        val screenTimeRef = database.child("ScreenTime").child(screenID)
+        screenTimeRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val retrievedScreenTime = snapshot.getValue(ScreenTime::class.java)
+                onScreenTimeFetched(retrievedScreenTime)
+            } else {
+                onScreenTimeFetched(null)
+            }
+        }.addOnFailureListener {
+            onScreenTimeFetched(null)
+        }
+    }
+
+    fun getAllScreenTimes(onScreenTimesFetched: (List<ScreenTime>) -> Unit) {
+        val screenTimeRef = database.child("ScreenTime")
+        screenTimeRef.get().addOnSuccessListener { snapshot ->
+            val screenTimes = mutableListOf<ScreenTime>()
+            for (childSnapshot in snapshot.children) {
+                val screenTime = childSnapshot.getValue(ScreenTime::class.java)
+                screenTime?.let { screenTimes.add(it) }
+            }
+            onScreenTimesFetched(screenTimes)
+        }.addOnFailureListener {
+            onScreenTimesFetched(emptyList()) // Return an empty list on failure
+        }
+    }
+
+    fun getScreenDetails(screenID: String, onScreenDetailsFetched: (Screens?) -> Unit) {
+        val screenDetailsRef = database.child("Screens").child(screenID)
+        screenDetailsRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val screenDetails = snapshot.getValue(Screens::class.java)
+                onScreenDetailsFetched(screenDetails)
+            } else {
+                onScreenDetailsFetched(null)
+            }
+        }.addOnFailureListener {
+            onScreenDetailsFetched(null)
         }
     }
 
