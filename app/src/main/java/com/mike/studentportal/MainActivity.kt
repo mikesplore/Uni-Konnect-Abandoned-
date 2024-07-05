@@ -109,6 +109,8 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableLongStateOf
 import com.google.accompanist.pager.PagerDefaults
 import com.mike.studentportal.MyDatabase.saveUpdate
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
@@ -350,7 +352,7 @@ fun MainScreen() {
     }
 
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "settings") {
 
         composable(
             route = "login",
@@ -471,6 +473,10 @@ fun MainScreen() {
             SettingsScreen(navController, context)
         }
 
+        composable("statistics"){
+            BarGraph(context)
+        }
+
         composable("users",
             enterTransition = {
                 fadeIn(animationSpec = tween(500))
@@ -518,11 +524,50 @@ fun Dashboard(
     context: Context
 ) {
     var user by remember { mutableStateOf(User()) }
-    var auth = FirebaseAuth.getInstance()
+    val auth = FirebaseAuth.getInstance()
     var expanded by remember { mutableStateOf(false) }
     var currentName by remember { mutableStateOf("") }
+    val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var timeSpent by remember { mutableLongStateOf(0L) }
+    val screenID = "SC10"
+    val screenName = "Dashboard Screen"
+
     LaunchedEffect(Unit) {
+        while (true) {
+            timeSpent = System.currentTimeMillis() - startTime
+            delay(1000) // Update every second (adjust as needed)
+        }
+    }
+
+    DisposableEffect(Unit) {
         GlobalColors.loadColorScheme(context)
+        MyDatabase.writeScren(courseScreen = Screens(screenID, screenName)) {
+        }
+        onDispose {
+            // Fetch existing screen time
+            MyDatabase.getScreenTime(screenID) { existingScreenTime ->
+                val totalScreenTime = if (existingScreenTime != null) {
+                    Log.d("Screen Time","Retrieved Screen time: $existingScreenTime")
+                    existingScreenTime.time.toLong() + timeSpent
+                } else {
+                    timeSpent
+                }
+
+                // Create a new ScreenTime object
+                val screentime = ScreenTime(
+                    id = screenID,
+                    screenName = screenName,
+                    time = totalScreenTime.toString()
+                )
+
+                // Save the updated screen time
+                MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
+                    Log.d("Screen Time", "Saved $totalScreenTime to the database")
+                }, onFailure = {
+                    Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
+                })
+            }
+        }
     }
     LaunchedEffect(key1 = Unit) { // Use a stable key
         while (true) {
@@ -655,7 +700,7 @@ fun Dashboard(
                                 else GlobalColors.primaryColor, label = "", animationSpec = tween(1000)
                             )
                             val iconSize by animateFloatAsState(
-                                targetValue = if (isSelected) 45f else 25f, label = "",
+                                targetValue = if (isSelected) 40f else 25f, label = "",
                                 animationSpec = tween(2000)
                             )
                             val offsetY by animateDpAsState(
