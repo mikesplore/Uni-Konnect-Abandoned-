@@ -328,13 +328,13 @@ fun convertToHoursMinutesSeconds(timeInMillis: Long): String {
     // Build the formatted string based on non-zero values
     val timeComponents = mutableListOf<String>()
     if (hours > 0) {
-        timeComponents.add(String.format(Locale.getDefault(), "%02d hours", hours))
+        timeComponents.add(String.format(Locale.getDefault(), "%02d hour(s)", hours))
     }
     if (minutes > 0) {
-        timeComponents.add(String.format(Locale.getDefault(), "%02d minutes", minutes))
+        timeComponents.add(String.format(Locale.getDefault(), "%02d minute(s)", minutes))
     }
     if (seconds > 0 || timeComponents.isEmpty()) {
-        timeComponents.add(String.format(Locale.getDefault(), "%02d seconds", seconds))
+        timeComponents.add(String.format(Locale.getDefault(), "%02d second(s)", seconds))
     }
 
     // Join the components with a comma
