@@ -43,7 +43,6 @@ fun GitAuth(
                 firebaseAuth
                     .startActivityForSignInWithProvider(activity, provider.build())
                     .addOnSuccessListener {
-                        // Navigate to more details screen to add details
                         isLoading = false // Stop loading on success
                         onSignInSuccess()
 
