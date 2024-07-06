@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+    implementation (libs.androidx.biometric)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.fragment)
@@ -81,6 +82,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.messaging.ktx)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
