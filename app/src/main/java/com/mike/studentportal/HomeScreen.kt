@@ -946,34 +946,7 @@ fun AnnouncementItem(context: Context) {
     }
 }
 
-@Composable
-fun BottomEnd(context: Context) {
-    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-    val versionName = packageInfo.versionName
 
-    Column(
-        modifier = Modifier
-            .height(150.dp) // Increased height for more content
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        HorizontalDivider(thickness = 1.dp, color = GlobalColors.tertiaryColor)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("All rights reserved © 2024", style = CC.descriptionTextStyle(context))
-        Text("Version $versionName", style = CC.descriptionTextStyle(context))
-        Text(
-            "Student Portal",
-            style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold)
-        )
-        Text("Developed by Mike", style = CC.descriptionTextStyle(context))
-        Spacer(modifier = Modifier.height(8.dp))
-        Row {
-
-        }
-    }
-}
 
 
 @Preview
