@@ -2,17 +2,24 @@ package com.mike.studentportal
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -64,9 +71,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -77,7 +87,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -90,40 +99,40 @@ import androidx.navigation.navArgument
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerDefaults
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationError
+import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationFailed
+import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationNotSet
+import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationSuccess
+import com.mike.studentportal.BiometricPromptManager.BiometricResult.FeatureUnavailable
+import com.mike.studentportal.BiometricPromptManager.BiometricResult.HardwareUnavailable
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import com.mike.studentportal.MyDatabase.getUpdate
+import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-import android.content.Intent
-import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.border
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableLongStateOf
-import com.google.accompanist.pager.PagerDefaults
-import com.mike.studentportal.MyDatabase.saveUpdate
-import dev.chrisbanes.snapper.ExperimentalSnapperApi
-
 import com.mike.studentportal.CommonComponents as CC
 
 object Global {
     val showAlert: MutableState<Boolean> = mutableStateOf(false)
     val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
     var loading: MutableState<Boolean> = mutableStateOf(true)
+    var isAuthenticationSuccessful: MutableState<Boolean> = mutableStateOf(true)
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    val promptManager by lazy {
+        BiometricPromptManager(this)
+    }
 
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -147,12 +156,50 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
-           MainScreen()
+            MainScreen(this)
+            val biometricResult by promptManager.promptResult.collectAsState(initial = null)
+            val enrollLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartActivityForResult(),
+                onResult = {
+                    println("Result: $it")
+                }
+            )
+            LaunchedEffect(biometricResult) {
+                requestNotificationPermission()
+                if (biometricResult is AuthenticationNotSet) {
+                    if (Build.VERSION.SDK_INT >= 30) {
+                        val enrollIntent = Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
+                            putExtra(
+                                Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
+                                BIOMETRIC_STRONG or DEVICE_CREDENTIAL
+                            )
+                        }
+                        enrollLauncher.launch(enrollIntent)
+                    }
+                }
+            }
+            biometricResult?.let { result ->
+                Log.d(
+                    "Biometric Result",
+                    when (result) {
+                        is AuthenticationError ->
+                            result.error
+
+                        AuthenticationFailed -> "Authentication Failed"
+                        AuthenticationNotSet -> "Authentication Not Set"
+                        AuthenticationSuccess -> "Authentication Success"
+                        FeatureUnavailable -> "Feature Unavailable"
+                        HardwareUnavailable -> "Hardware Unavailable"
+                    }
+                )
+            }
+            if (biometricResult is AuthenticationSuccess){
+                Global.isAuthenticationSuccessful.value = true
+            }
 
         }
         createNotificationChannel(this)
     }
-
 
 
     fun requestNotificationPermission() {
@@ -162,8 +209,10 @@ class MainActivity : ComponentActivity() {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                Global.showAlert.value = false
             } else {
                 // Permission already granted
+                Global.showAlert.value = true
                 sharedPreferences.edit().putBoolean("NotificationPermissionGranted", true).apply()
             }
         }
@@ -172,9 +221,11 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
+                Global.showAlert.value = true
                 Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
                 sharedPreferences.edit().putBoolean("NotificationPermissionGranted", true).apply()
             } else {
+                Global.showAlert.value = false
                 Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
             }
         }
@@ -208,7 +259,7 @@ sealed class Screen(
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(mainActivity: MainActivity) {
     val context = LocalContext.current
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
@@ -221,7 +272,7 @@ fun MainScreen() {
             GlobalColors.loadColorScheme(context) // Assuming this is necessary for each check
             getUpdate { localUpdate ->
                 if (localUpdate != null) {
-                    Log.d("Package Update", "New version available: ${localUpdate}")
+                    Log.d("Package Update", "New version available: $localUpdate")
                     if (localUpdate.id != versionName) {
 
                         update = true
@@ -269,7 +320,10 @@ fun MainScreen() {
                 ) {
                     Button(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/mikesplore/Student-Portal/blob/main/app/release/app-release.apk"))
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/mikesplore/Student-Portal/blob/main/app/release/app-release.apk")
+                            )
                             context.startActivity(intent)
                             update = false
 
@@ -282,7 +336,7 @@ fun MainScreen() {
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(
-                        onClick = {update = false },
+                        onClick = { update = false },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
                     ) {
@@ -294,65 +348,8 @@ fun MainScreen() {
             }
         }
     }
-
-    if (Global.showAlert.value) {
-        BasicAlertDialog(
-            onDismissRequest = { Global.showAlert.value = false }, modifier = Modifier.background(
-                Color.Transparent, RoundedCornerShape(10.dp)
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .background(
-                        GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-                    )
-                    .padding(24.dp), // Add padding for better visual spacing
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    "Enable Notifications", style = CC.titleTextStyle(context).copy(
-                        fontSize = 18.sp, fontWeight = FontWeight.Bold
-                    ), // Make title bolder
-                    modifier = Modifier.padding(bottom = 8.dp) // Add spacing below title
-                )
-                Text(
-                    "Please enable notifications to receive realtime updates.",
-                    style = CC.descriptionTextStyle(context),
-                    modifier = Modifier.padding(bottom = 16.dp) // Add spacing below description
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(
-                        onClick = {
-                            // Call the requestNotificationPermission function from the context
-                            (context as MainActivity).requestNotificationPermission()
-                            Global.showAlert.value = false
-                        }, modifier = Modifier.weight(1f), // Make buttons take equal width
-                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) 
-                    ) {
-                        Text(
-                            "Enable", style = CC.descriptionTextStyle(context)
-                        ) 
-                    }
-                    Spacer(modifier = Modifier.width(16.dp)) 
-                    Button(
-                        onClick = { Global.showAlert.value = false },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray) 
-                    ) {
-                        Text(
-                            "Cancel", color = GlobalColors.primaryColor
-                        ) 
-                    }
-                }
-            }
-        }
-    }
-
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "settings") {
+    NavHost(navController, startDestination = "profile") {
 
         composable(
             route = "login",
@@ -415,6 +412,10 @@ fun MainScreen() {
             MoreDetails(context, navController)
         }
 
+        composable("profile"){
+            ProfileScreen(navController, context)
+        }
+
         composable("attendance",
             enterTransition = {
                 fadeIn(animationSpec = tween(1000))
@@ -459,7 +460,7 @@ fun MainScreen() {
                 )
             }
 
-            ) {
+        ) {
             CoursesScreen(navController = navController, context)
         }
 
@@ -470,10 +471,10 @@ fun MainScreen() {
             exitTransition = {
                 fadeOut(animationSpec = tween(1000))
             }) {
-            SettingsScreen(navController, context)
+            Settings(navController, context, mainActivity)
         }
 
-        composable("statistics"){
+        composable("statistics") {
             BarGraph(context)
         }
 
@@ -497,7 +498,11 @@ fun MainScreen() {
             },
             arguments = listOf(navArgument("userId") { type = NavType.StringType })
         ) { backStackEntry ->
-            UserChatScreen(navController, LocalContext.current, backStackEntry.arguments?.getString("userId") ?: "")
+            UserChatScreen(
+                navController,
+                LocalContext.current,
+                backStackEntry.arguments?.getString("userId") ?: ""
+            )
         }
 
         composable(
@@ -547,7 +552,7 @@ fun Dashboard(
             // Fetch existing screen time
             MyDatabase.getScreenTime(screenID) { existingScreenTime ->
                 val totalScreenTime = if (existingScreenTime != null) {
-                    Log.d("Screen Time","Retrieved Screen time: $existingScreenTime")
+                    Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
                     existingScreenTime.time + timeSpent
                 } else {
                     timeSpent
@@ -602,8 +607,8 @@ fun Dashboard(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.background(
-                            GlobalColors.primaryColor
-                        )
+                        GlobalColors.primaryColor
+                    )
                 ) {
                     DropdownMenuItem(text = {
                         Row(
@@ -697,7 +702,9 @@ fun Dashboard(
 
                             val iconColor by animateColorAsState(
                                 targetValue = if (isSelected) GlobalColors.extraColor2
-                                else GlobalColors.primaryColor, label = "", animationSpec = tween(1000)
+                                else GlobalColors.primaryColor,
+                                label = "",
+                                animationSpec = tween(1000)
                             )
                             val iconSize by animateFloatAsState(
                                 targetValue = if (isSelected) 40f else 25f, label = "",
@@ -730,8 +737,12 @@ fun Dashboard(
                                 )
                                 AnimatedVisibility(
                                     visible = isSelected,
-                                    enter = fadeIn(animationSpec = tween(1000)) + slideInVertically(animationSpec = tween(1000)) { initialState -> initialState },
-                                    exit = fadeOut(animationSpec = tween(1000))+ slideOutVertically (animationSpec = tween(1000)) {initialState -> initialState}
+                                    enter = fadeIn(animationSpec = tween(1000)) + slideInVertically(
+                                        animationSpec = tween(1000)
+                                    ) { initialState -> initialState },
+                                    exit = fadeOut(animationSpec = tween(1000)) + slideOutVertically(
+                                        animationSpec = tween(1000)
+                                    ) { initialState -> initialState }
                                 ) {
                                     Text(
                                         text = screen.name,
@@ -744,8 +755,7 @@ fun Dashboard(
                     }
                 }
             }
-        }
-        , containerColor = GlobalColors.primaryColor
+        }, containerColor = GlobalColors.primaryColor
 
     ) { innerPadding ->
 
@@ -770,8 +780,4 @@ fun Dashboard(
 
 
 
-@Preview
-@Composable
-fun PreviewMainScreen() {
-    MainScreen()
-}
+
