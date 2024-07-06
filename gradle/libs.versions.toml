@@ -2,6 +2,7 @@
 accompanistPager = "0.28.0"
 accompanistPagerIndicators = "0.28.0"
 agp = "8.6.0-alpha04"
+biometric = "1.2.0-alpha05"
 fragment = "1.8.0"
 gson = "2.10.1"
 kotlin = "1.9.0"
@@ -22,10 +23,12 @@ coilCompose = "2.4.0"
 firebaseFirestoreKtx = "25.0.0"
 firebaseMessagingKtx = "24.0.0"
 workRuntimeKtx = "2.9.0"
+appcompat = "1.7.0"
 
 [libraries]
 accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 androidx-material-icons-extended-android = { module = "androidx.compose.material:material-icons-extended-android", version.ref = "materialIconsExtendedAndroid" }
@@ -51,6 +54,7 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
