@@ -80,6 +80,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableIntStateOf
@@ -94,14 +95,25 @@ import com.mike.studentportal.MyDatabase.getAllScreenTimes
 import com.mike.studentportal.MyDatabase.updatePassword
 import kotlinx.coroutines.delay
 import com.mike.studentportal.CommonComponents as CC
+data class SectionState(val title: String, val icon: ImageVector, var isExpanded: Boolean)
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
-fun SettingsScreen(navController: NavController, context: Context) {
+fun NewSettingsScreen(navController: NavController, context: Context) {
     val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var timeSpent by remember { mutableLongStateOf(0L) }
     val screenID = "SC8"
+
+    val sections = remember {
+        mutableStateListOf(
+            SectionState("Profile", Icons.Default.AccountCircle, false),
+            SectionState("System", Icons.Default.SafetyCheck, false),
+            SectionState("Statistics", Icons.Default.BarChart, false),
+            SectionState("Security", Icons.Default.Security, false),
+            SectionState("Feedback", Icons.AutoMirrored.Filled.Message, false)
+        )
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -109,7 +121,6 @@ fun SettingsScreen(navController: NavController, context: Context) {
             delay(1000) // Update every second (adjust as needed)
         }
     }
-
 
     DisposableEffect(Unit) {
         GlobalColors.loadColorScheme(context)
@@ -148,6 +159,7 @@ fun SettingsScreen(navController: NavController, context: Context) {
             }
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -166,65 +178,63 @@ fun SettingsScreen(navController: NavController, context: Context) {
                     }
                 }
             )
-        }, containerColor = GlobalColors.primaryColor
+        },
+        containerColor = GlobalColors.primaryColor
     ) {
-        Box(modifier = Modifier.fillMaxSize()){
+        Box(modifier = Modifier.fillMaxSize()) {
             Background(context)
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(it)
-                .fillMaxSize()
-                .background(GlobalColors.primaryColor)
-                .padding(16.dp), // Added padding to the column
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            SectionTitle(context, Icons.Default.AccountCircle, "Profile")
-            Spacer(modifier = Modifier.height(8.dp))
-            ProfileCard(context = context)
-            Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
-
-            SectionWithRow(
-                title = "Appearance",
-                description = "Change the appearance of the app",
-                navController = navController,
-                route = "appearance",
-                context = context
-            )
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before system settings section
-            SectionTitle(context, Icons.Default.SafetyCheck, "System")
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before system settings section
-            SystemSettings(context)
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
-            SectionTitle(context, Icons.Default.Feedback, "Statistics")
-            Text("Most used section of this app (Across all users)", style = CC.descriptionTextStyle(context))
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
-            ScreenWithMostTimeSpent(navController, context)
-            Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
-            SectionTitle(context, Icons.Default.Security, "Security")
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before password section
-            Text("Change Password", style = CC.descriptionTextStyle(context))
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before password section
-            PasswordUpdateSection(context)
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
-            SectionTitle(context, Icons.AutoMirrored.Filled.Message, "We value your Feedback")
-            RatingAndFeedbackScreen(context)
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
-            BottomEnd(context)
-
-
-        }
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(it)
+                    .fillMaxSize()
+                    .background(GlobalColors.primaryColor)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                sections.forEachIndexed { index, section ->
+                    SectionTitle(context, section.icon, section.title, onClick = {
+                        sections[index] = section.copy(isExpanded = !section.isExpanded)
+                    })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AnimatedVisibility(
+                        visible = section.isExpanded,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 300)),
+                        exit = fadeOut(animationSpec = tween(durationMillis = 300))
+                    ) {
+                        when (section.title) {
+                            "Profile" -> ProfileCard(context)
+                            "System" -> SystemSettings(context)
+                            "Statistics" -> {
+                                Text(
+                                    "Most used section of this app (Across all users)",
+                                    style = CC.descriptionTextStyle(context)
+                                )
+                                ScreenWithMostTimeSpent(navController, context)
+                            }
+                            "Security" -> {
+                                Text("Change Password", style = CC.descriptionTextStyle(context))
+                                PasswordUpdateSection(context)
+                            }
+                            "Feedback" -> RatingAndFeedbackScreen(context)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                MyAbout(context)
+            }
         }
     }
 }
 
 @Composable
-fun SectionTitle(context: Context, icon: ImageVector, title: String) {
+fun SectionTitle(context: Context, icon: ImageVector, title: String, onClick: () -> Unit) {
     LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
     }
     Row(
         modifier = Modifier
+            .clickable { onClick() }
             .height(40.dp)
             .border(
                 1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
@@ -459,139 +469,9 @@ fun ProfileCard(
 
 
 
-@Composable
-fun PasswordTextField(
-    label: String,
-    value: String,
-    isEditing: Boolean,
-    onValueChange: (String) -> Unit,
-    context: Context
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label, style = CC.descriptionTextStyle(context)) },
-        enabled = isEditing,
-        textStyle = CC.descriptionTextStyle(context),
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = GlobalColors.textColor,
-            disabledContainerColor = GlobalColors.secondaryColor,
-            focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedContainerColor = GlobalColors.primaryColor,
-            disabledTextColor = LocalContentColor.current.copy(LocalContentAlpha.current),
-            disabledLabelColor = LocalContentColor.current.copy(ContentAlpha.medium)
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp)
-    )
-}
 
-@Composable
-fun PasswordUpdateSection(context: Context) {
-    var currentPassword by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
-    var loading by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .border(
-                1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-            )
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        PasswordTextField(
-            label = "Current Password",
-            value = currentPassword,
-            isEditing = true,
-            onValueChange = { currentPassword = it },
-            context = context
-        )
-        PasswordTextField(
-            label = "New Password",
-            value = newPassword,
-            isEditing = true,
-            onValueChange = { newPassword = it },
-            context = context
-        )
-        PasswordTextField(
-            label = "Confirm Password",
-            value = confirmPassword,
-            isEditing = true,
-            onValueChange = { confirmPassword = it },
-            context = context
-        )
 
-        Button(
-            onClick = {
-                loading = true
-                if (newPassword == confirmPassword && newPassword.isNotEmpty() && currentPassword.isNotEmpty()) {
-                    currentUser?.let { user ->
-                        val credential =
-                            EmailAuthProvider.getCredential(user.email!!, currentPassword)
-                        user.reauthenticate(credential).addOnCompleteListener { reauthTask ->
-                            if (reauthTask.isSuccessful) {
-                                updatePassword(newPassword, onSuccess = {
-                                    // Handle success (e.g., show a success message)
-                                    loading = false
-                                    Toast.makeText(
-                                        context, "Password updated successfully", Toast.LENGTH_SHORT
-                                    ).show()
-                                    currentPassword = ""
-                                    newPassword = ""
-                                    confirmPassword = ""
-                                }, onFailure = { exception ->
-                                    // Handle failure (e.g., show an error message)
-                                    loading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Failed to Change password: ${exception.message}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                })
-                            } else {
-                                // Handle reauthentication failure
-                                loading = false
-                                Toast.makeText(
-                                    context,
-                                    "Authentication failed: ${reauthTask.exception?.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    }
-                } else {
-                    // Handle password mismatch
-                    loading = false
-                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                }
-            }, modifier = Modifier.padding(top = 16.dp), colors = ButtonDefaults.buttonColors(
-                containerColor = GlobalColors.tertiaryColor, contentColor = Color.White
-            ), shape = RoundedCornerShape(10.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
-            ) {
-                if (loading) {
-                    CircularProgressIndicator(
-                        color = GlobalColors.primaryColor,
-                        trackColor = GlobalColors.tertiaryColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    Text("Change Password", style = CC.descriptionTextStyle(context))
-                }
-            }
-
-        }
-    }
-}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -793,6 +673,7 @@ fun RatingAndFeedbackScreen(context: Context) {
 fun ScreenWithMostTimeSpent(navController: NavController, context: Context) {
     val screenTimes = remember { mutableStateListOf<ScreenTime>() }
     var screenWithMaxTime by remember { mutableStateOf<ScreenTime?>(null) }
+    var loading by remember { mutableStateOf(true) }
 
     // Fetch screen times when the composable enters the composition
     LaunchedEffect(Unit) {
@@ -827,16 +708,19 @@ fun ScreenWithMostTimeSpent(navController: NavController, context: Context) {
             Text(convertToHoursMinutesSeconds(it.time), style = CC.descriptionTextStyle(context))
 
             // Place the IconButton inside the Column
-            IconButton(
-                onClick = { navController.navigate("statistics") },
-                modifier = Modifier.align(Alignment.End) // Align to the end of the Column
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Outlined.ArrowForwardIos,
-                    "",
-                    tint = GlobalColors.textColor
-                )
-            }
+            Row(modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center) {
+                Button(onClick = {navController.navigate("statistics")},
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GlobalColors.secondaryColor
+                    )
+                ) {
+                    Text("View more statistics", style = CC.descriptionTextStyle(context))
+                }
+                }
         }
     }
 }
@@ -844,6 +728,5 @@ fun ScreenWithMostTimeSpent(navController: NavController, context: Context) {
 @Preview
 @Composable
 fun PreviewSettingsScreen() {
-    SettingsScreen(rememberNavController(), LocalContext.current)
+    NewSettingsScreen(rememberNavController(), LocalContext.current)
 }
-
