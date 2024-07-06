@@ -91,12 +91,12 @@ object GlobalColors {
     )
 
     private val darkScheme = ColorScheme(
-        primaryColor = "#000000",
+        primaryColor = "#121212",
         secondaryColor = "#333333",
         tertiaryColor = "#666666",
         textColor = "#FFFFFF",
-        extraColor1 = "#164863",
-        extraColor2 = "#427D9D"
+        extraColor1 = "#B0EBB4",
+        extraColor2 = "#1679AB"
     )
 
     private var currentScheme by mutableStateOf(lightScheme)
@@ -257,7 +257,8 @@ fun Appearance(navController: NavController, context: Context) {
                 ) {
                     Text("Use Dark Theme", style = CC.descriptionTextStyle(context))
                     Switch(
-                        checked = isDarkMode, onCheckedChange = {
+                        checked = isDarkMode,
+                        onCheckedChange = {
                             isDarkMode = it
                             GlobalColors.saveColorScheme(context, it)
                         }, colors = SwitchDefaults.colors(
