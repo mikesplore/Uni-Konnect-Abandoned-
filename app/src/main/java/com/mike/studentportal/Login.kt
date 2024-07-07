@@ -271,6 +271,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                 MyDatabase.generateIndexNumber {  userID ->
                                                     val user = User(
                                                         id = userID,
+                                                        email = email,
                                                         firstName = firstName,
                                                         lastName = lastName
                                                     )
