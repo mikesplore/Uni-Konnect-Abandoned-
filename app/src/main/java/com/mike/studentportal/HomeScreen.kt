@@ -355,7 +355,6 @@ fun LoadingIconBox() {
                 .height(15.dp)
         ) {
             ColorProgressIndicator(
-                delayMillis = 100L,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(10.dp))
@@ -675,7 +674,6 @@ fun LoadingImageBox() {
             modifier = Modifier.fillMaxSize()
         ) {
             ColorProgressIndicator(
-                delayMillis = 150L,
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp, 16.dp))
                     .fillMaxWidth()
@@ -687,7 +685,6 @@ fun LoadingImageBox() {
                     .fillMaxHeight(1f)
             ) {
                 ColorProgressIndicator(
-                    delayMillis = 150L,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp))
@@ -716,14 +713,13 @@ fun EmptyImageBox(context: Context) {
 }
 
 @Composable
-fun ColorProgressIndicator(modifier: Modifier = Modifier, delayMillis: Long = 0L) {
+fun ColorProgressIndicator(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val offsetX by infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 1f, animationSpec = infiniteRepeatable(
             animation = tween(
-                delayMillis = delayMillis.toInt(), // Add delay here
-                durationMillis = 3000, easing = LinearEasing
-            ), repeatMode = RepeatMode.Restart
+                durationMillis = 1500, easing = LinearEasing
+            ), repeatMode = RepeatMode.Reverse
         ), label = ""
     )
 
@@ -733,10 +729,20 @@ fun ColorProgressIndicator(modifier: Modifier = Modifier, delayMillis: Long = 0L
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        GlobalColors.secondaryColor,
-                        GlobalColors.secondaryColor,
-                        GlobalColors.primaryColor,
-                        GlobalColors.primaryColor
+                        GlobalColors.secondaryColor.copy(0.1f),
+                        GlobalColors.secondaryColor.copy(0.3f),
+                        GlobalColors.secondaryColor.copy(0.5f),
+                        GlobalColors.secondaryColor.copy(0.7f),
+                        GlobalColors.secondaryColor.copy(0.9f),
+                        GlobalColors.secondaryColor.copy(0.7f),
+                        GlobalColors.secondaryColor.copy(0.5f),
+                        GlobalColors.secondaryColor.copy(0.3f),
+                        GlobalColors.secondaryColor.copy(0.1f),
+                        Color.Transparent,
+                        Color.Transparent,
+                        Color.Transparent
+
+
                     ),
                     start = Offset(offsetX * 1000f - 500f, 0f),
                     end = Offset(offsetX * 1000f + 500f, 0f)
@@ -850,7 +856,6 @@ fun AnnouncementItem(context: Context) {
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
                         .fillMaxSize(),
-                    delayMillis = 200L
                 )
             }
 
