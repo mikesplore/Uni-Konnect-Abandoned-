@@ -26,6 +26,7 @@ data class User(
     val lastName: String = "",
     val email: String = "",
     val phoneNumber: String = "",
+    val gender: String = "",
     val isAdmin: Boolean = false
 )
 
@@ -91,6 +92,12 @@ data class Feedback(
     val message: String = "",
     val sender: String = "",
     val admissionNumber: String = ""
+)
+
+data class AccountDeletion(
+    val id: String = "",
+    val admissionNumber: String = "",
+    val email: String = ""
 )
 
 data class Assignment(
@@ -175,6 +182,13 @@ object MyDatabase {
     fun generateChatID(onIndexNumberGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
             val indexNumber = "CH$newCode$year"
+            onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
+        }
+    }
+
+    fun generateAccountDeletionID(onIndexNumberGenerated: (String) -> Unit) {
+        updateAndGetCode { newCode ->
+            val indexNumber = "AD$newCode$year"
             onIndexNumberGenerated(indexNumber) // Pass the generated index number to the callback
         }
     }
@@ -392,6 +406,16 @@ object MyDatabase {
             }
     }
 
+    fun writeAccountDeletionData(accountDeletion: AccountDeletion, onSuccess: () -> Unit){
+        database.child("Account Deletion").child(accountDeletion.id).setValue(accountDeletion)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener {
+                exception ->
+            }
+    }
+
     fun writeScren(courseScreen: Screens, onSuccess: () -> Unit){
         database.child("Screens").child(courseScreen.screenId).setValue(courseScreen)
             .addOnSuccessListener {
@@ -418,6 +442,17 @@ object MyDatabase {
     // User functions
     fun writeUsers(user:User, onComplete: (Boolean) -> Unit) {
         database.child("Users").child(user.id).setValue(user)
+            .addOnSuccessListener {
+                onComplete(true) // Success: invoke callback with 'true'
+            }
+            .addOnFailureListener {
+                onComplete(false) // Failure: invoke callback with 'false'
+            }
+    }
+
+    //delete user
+    fun deleteUser(userId: String, onComplete: (Boolean) -> Unit) {
+        database.child("Users").child(userId).removeValue()
             .addOnSuccessListener {
                 onComplete(true) // Success: invoke callback with 'true'
             }
