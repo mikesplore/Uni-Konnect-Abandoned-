@@ -233,7 +233,7 @@ fun NewSettingsPreview(){
 fun MyIconButton(icon: ImageVector, navController: NavController, route: String){
     Box(modifier = Modifier
         .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
-        .clickable { }
+        .clickable { navController.navigate(route)}
         .size(50.dp)
         .clip(RoundedCornerShape(10.dp)),
         contentAlignment = Alignment.Center){
