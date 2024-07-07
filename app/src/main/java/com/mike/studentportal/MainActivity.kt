@@ -26,6 +26,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -349,7 +350,7 @@ fun MainScreen(mainActivity: MainActivity) {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "profile") {
+    NavHost(navController, startDestination = "dashboard") {
 
         composable(
             route = "login",
@@ -412,7 +413,16 @@ fun MainScreen(mainActivity: MainActivity) {
             MoreDetails(context, navController)
         }
 
-        composable("profile"){
+        composable("profile",
+            enterTransition = { slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
+            ) },
+            exitTransition = {
+                slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(1000)
+                )
+            }
+            ){
             ProfileScreen(navController, context)
         }
 
