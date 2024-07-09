@@ -149,14 +149,14 @@ fun Settings(navController: NavController, context: Context, mainActivity: MainA
             TopAppBar(title = {}, navigationIcon = {
                 IconButton(onClick = { navController.navigate("dashboard") }) {
                     Icon(
-                        Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor
+                        Icons.Default.ArrowBackIosNew, "Back", tint = CC.textColor()
                     )
                 }
             }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = GlobalColors.primaryColor
+                containerColor = CC.primary()
             )
             )
-        }, containerColor = GlobalColors.primaryColor
+        }, containerColor = CC.primary()
     ) {
         Column(
             modifier = Modifier
@@ -241,7 +241,7 @@ fun Settings(navController: NavController, context: Context, mainActivity: MainA
                         Text(
                             "Personal Info",
                             style = CC.descriptionTextStyle(context),
-                            color = GlobalColors.textColor.copy(0.8f)
+                            color = CC.textColor().copy(0.8f)
                         )
                     }
                 }
@@ -282,14 +282,14 @@ fun Settings(navController: NavController, context: Context, mainActivity: MainA
                 IconButton(
                     onClick = { navController.navigate("appearance") },
                     modifier = Modifier.background(
-                            GlobalColors.secondaryColor,
+                            CC.secondary(),
                             RoundedCornerShape(10.dp)
                         )
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowForwardIos,
                         contentDescription = "Font Style",
-                        tint = GlobalColors.textColor
+                        tint = CC.textColor()
                     )
                 }
             }
@@ -320,12 +320,12 @@ fun NewSettingsPreview() {
 @Composable
 fun MyIconButton(icon: ImageVector, navController: NavController, route: String) {
     Box(modifier = Modifier
-        .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
+        .background(CC.secondary(), RoundedCornerShape(10.dp))
         .clickable { navController.navigate(route) }
         .size(50.dp)
         .clip(RoundedCornerShape(10.dp)),
         contentAlignment = Alignment.Center) {
-        Icon(icon, contentDescription = null, tint = GlobalColors.textColor)
+        Icon(icon, contentDescription = null, tint = CC.textColor())
     }
 
 }
@@ -345,14 +345,14 @@ fun DarkMode(context: Context) {
     ) {
         Box(
             modifier = Modifier
-                .background(GlobalColors.secondaryColor, CircleShape)
+                .background(CC.secondary(), CircleShape)
                 .size(50.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = iconDescription,
-                tint = GlobalColors.extraColor2
+                tint = CC.extraColor2()
             )
         }
         Text("Dark Mode", style = CC.descriptionTextStyle(context), fontSize = 20.sp)
@@ -361,12 +361,12 @@ fun DarkMode(context: Context) {
                 isDarkMode = it
                 GlobalColors.saveColorScheme(context, it)
             }, checked = isDarkMode, colors = SwitchDefaults.colors(
-                checkedThumbColor = GlobalColors.extraColor1,
-                uncheckedThumbColor = GlobalColors.extraColor2,
-                checkedTrackColor = GlobalColors.extraColor2,
-                uncheckedTrackColor = GlobalColors.extraColor1,
-                checkedIconColor = GlobalColors.textColor,
-                uncheckedIconColor = GlobalColors.textColor
+                checkedThumbColor = CC.extraColor1(),
+                uncheckedThumbColor = CC.extraColor2(),
+                checkedTrackColor = CC.extraColor2(),
+                uncheckedTrackColor = CC.extraColor1(),
+                checkedIconColor = CC.textColor(),
+                uncheckedIconColor = CC.textColor()
             )
         )
     }
@@ -419,14 +419,14 @@ fun Notifications(context: Context) {
     ) {
         Box(
             modifier = Modifier
-                .background(GlobalColors.secondaryColor, CircleShape)
+                .background(CC.secondary(), CircleShape)
                 .size(50.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = iconDescription,
-                tint = GlobalColors.extraColor2
+                tint = CC.extraColor2()
             )
         }
         Text("Notifications", style = CC.descriptionTextStyle(context), fontSize = 20.sp)
@@ -439,12 +439,12 @@ fun Notifications(context: Context) {
                 isNotificationEnabled = notifications
                 updatePreferences(notifications)
             }, checked = isNotificationEnabled, colors = SwitchDefaults.colors(
-                checkedThumbColor = GlobalColors.extraColor1,
-                uncheckedThumbColor = GlobalColors.extraColor2,
-                checkedTrackColor = GlobalColors.extraColor2,
-                uncheckedTrackColor = GlobalColors.extraColor1,
-                checkedIconColor = GlobalColors.textColor,
-                uncheckedIconColor = GlobalColors.textColor
+                checkedThumbColor = CC.extraColor1(),
+                uncheckedThumbColor = CC.extraColor2(),
+                checkedTrackColor = CC.extraColor2(),
+                uncheckedTrackColor = CC.extraColor1(),
+                checkedIconColor = CC.textColor(),
+                uncheckedIconColor = CC.textColor()
             )
         )
     }
@@ -505,14 +505,14 @@ fun Biometrics(context: Context, mainActivity: MainActivity) {
     ) {
         Box(
             modifier = Modifier
-                .background(GlobalColors.secondaryColor, CircleShape)
+                .background(CC.secondary(), CircleShape)
                 .size(50.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = iconDescription,
-                tint = GlobalColors.extraColor2,
+                tint = CC.extraColor2(),
             )
         }
         Text(
@@ -536,12 +536,12 @@ fun Biometrics(context: Context, mainActivity: MainActivity) {
                     updatePreferences(false)
                 }
             }, checked = isBiometricsEnabled, colors = SwitchDefaults.colors(
-                checkedThumbColor = GlobalColors.extraColor1,
-                uncheckedThumbColor = GlobalColors.extraColor2,
-                checkedTrackColor = GlobalColors.extraColor2,
-                uncheckedTrackColor = GlobalColors.extraColor1,
-                checkedIconColor = GlobalColors.textColor,
-                uncheckedIconColor = GlobalColors.textColor
+                checkedThumbColor = CC.extraColor1(),
+                uncheckedThumbColor = CC.extraColor2(),
+                checkedTrackColor = CC.extraColor2(),
+                uncheckedTrackColor = CC.extraColor1(),
+                checkedIconColor = CC.textColor(),
+                uncheckedIconColor = CC.textColor()
             )
         )
     }
@@ -596,7 +596,7 @@ fun PasswordUpdateSection(context: Context) {
             Text(
                 "This section only applies to users who signed in using Email and Password",
                 style = CC.descriptionTextStyle(context),
-                color = GlobalColors.tertiaryColor,
+                color = CC.tertiary(),
                 textAlign = TextAlign.Center
             )
 
@@ -605,7 +605,7 @@ fun PasswordUpdateSection(context: Context) {
         Column(
             modifier = Modifier
                 .border(
-                    1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                    1.dp, CC.secondary(), RoundedCornerShape(10.dp)
                 )
                 .fillMaxWidth(0.8f)
                 .padding(16.dp)
@@ -679,7 +679,7 @@ fun PasswordUpdateSection(context: Context) {
                         Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                     }
                 }, modifier = Modifier.padding(top = 16.dp), colors = ButtonDefaults.buttonColors(
-                    containerColor = GlobalColors.tertiaryColor, contentColor = Color.White
+                    containerColor = CC.tertiary(), contentColor = Color.White
                 ), shape = RoundedCornerShape(10.dp)
             ) {
                 Row(
@@ -687,8 +687,8 @@ fun PasswordUpdateSection(context: Context) {
                 ) {
                     if (loading) {
                         CircularProgressIndicator(
-                            color = GlobalColors.primaryColor,
-                            trackColor = GlobalColors.tertiaryColor,
+                            color = CC.primary(),
+                            trackColor = CC.tertiary(),
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
@@ -716,12 +716,12 @@ fun PasswordTextField(
         enabled = isEditing,
         textStyle = CC.descriptionTextStyle(context),
         colors = TextFieldDefaults.colors(
-            focusedTextColor = GlobalColors.textColor,
-            disabledContainerColor = GlobalColors.secondaryColor,
-            focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedContainerColor = GlobalColors.primaryColor,
-            focusedIndicatorColor = GlobalColors.secondaryColor,
-            unfocusedIndicatorColor = GlobalColors.tertiaryColor,
+            focusedTextColor = CC.textColor(),
+            disabledContainerColor = CC.secondary(),
+            focusedContainerColor = CC.primary(),
+            unfocusedContainerColor = CC.primary(),
+            focusedIndicatorColor = CC.secondary(),
+            unfocusedIndicatorColor = CC.tertiary(),
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -761,16 +761,16 @@ fun MyAbout(context: Context) {
                 )
                 context.startActivity(intent)
             }, modifier = Modifier
-                .background(GlobalColors.extraColor1, CircleShape)
+                .background(CC.extraColor1(), CircleShape)
                 .size(35.dp)) {
-                Icon(Icons.Default.Call, "Call", tint = GlobalColors.tertiaryColor)
+                Icon(Icons.Default.Call, "Call", tint = CC.textColor())
             }
             Spacer(modifier = Modifier.width(16.dp))
             // GitHub Icon with Link
             IconButton(
                 onClick = { uriHandler.openUri("https://github.com/mikesplore") },
                 modifier = Modifier
-                    .background(GlobalColors.extraColor1, CircleShape)
+                    .background(CC.extraColor1(), CircleShape)
                     .size(35.dp)
             ) {
                 Image(
@@ -800,11 +800,11 @@ fun StarRating(
             val color = when {
                 i <= currentRating -> when (i) {
                     in 1..2 -> Color.Red
-                    3 -> GlobalColors.extraColor2
+                    3 -> CC.extraColor2()
                     else -> Color.Green
                 }
 
-                else -> GlobalColors.secondaryColor
+                else -> CC.secondary()
             }
             val animatedScale by animateFloatAsState(
                 targetValue = if (i <= currentRating) 1.2f else 1.0f,
@@ -949,8 +949,8 @@ fun RatingAndFeedbackScreen(context: Context) {
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.extraColor1,
-                        contentColor = GlobalColors.secondaryColor
+                        containerColor = CC.extraColor1(),
+                        contentColor = CC.secondary()
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -961,8 +961,8 @@ fun RatingAndFeedbackScreen(context: Context) {
                     ) {
                         if (loading) {
                             CircularProgressIndicator(
-                                color = GlobalColors.primaryColor,
-                                trackColor = GlobalColors.tertiaryColor,
+                                color = CC.primary(),
+                                trackColor = CC.tertiary(),
                                 modifier = Modifier.size(20.dp)
                             )
                         } else {
