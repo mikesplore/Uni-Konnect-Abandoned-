@@ -211,13 +211,13 @@ fun Appearance(navController: NavController, context: Context) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor,
-                    navigationIconContentColor = GlobalColors.textColor,
+                    containerColor = CC.primary(),
+                    titleContentColor = CC.textColor(),
+                    navigationIconContentColor = CC.textColor(),
                 )
             )
         },
-        containerColor = GlobalColors.primaryColor,
+        containerColor = CC.primary(),
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -280,7 +280,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .background(GlobalColors.primaryColor)
+            .background(CC.primary())
             .verticalScroll(rememberScrollState())
     ) {
         Row(
@@ -303,11 +303,11 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                     .padding(vertical = 8.dp)
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.secondaryColor,
+                        color = CC.secondary(),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .background(
-                        if (isSelected) GlobalColors.extraColor1 else GlobalColors.primaryColor,
+                        if (isSelected) CC.extraColor1() else CC.primary(),
                         RoundedCornerShape(12.dp)
                     )
                     .fillMaxWidth()
@@ -323,7 +323,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                     text = fontName,
                     fontFamily = fontFamily,
                     fontSize = 18.sp,
-                    color = if (isSelected) GlobalColors.primaryColor else GlobalColors.textColor
+                    color = if (isSelected) CC.primary() else CC.textColor()
                 )
             }
         }
@@ -344,7 +344,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                 .padding(vertical = 4.dp)
                 .border(
                     width = 1.dp,
-                    color = GlobalColors.secondaryColor,
+                    color = CC.secondary(),
                     shape = RoundedCornerShape(10.dp)
                 )
                 .fillMaxWidth()
@@ -355,7 +355,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                 text = "Debugging the complex algorithm required a thorough review of every line of code.",
                 fontFamily = selectedFontFamily,
                 fontSize = 16.sp,
-                color = GlobalColors.textColor,
+                color = CC.textColor(),
                 textAlign = TextAlign.Center
             )
         }
@@ -369,7 +369,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                 fontUpdated = !fontUpdated // Trigger recomposition in parent
                 Toast.makeText(context, "Font updated", Toast.LENGTH_SHORT).show()
             },
-            colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
+            colors = ButtonDefaults.buttonColors(CC.secondary()),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
