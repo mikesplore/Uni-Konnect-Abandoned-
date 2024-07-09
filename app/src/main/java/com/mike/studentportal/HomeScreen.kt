@@ -121,9 +121,7 @@ val OnlineImages = listOf(
 fun HomeScreen(context: Context, navController: NavController) {
     val courses = remember { mutableStateListOf<Course>() }
     val images = remember { mutableStateOf(OnlineImages) }
-    val announcements by remember { mutableStateOf(emptyList<Announcement>()) }
     var loading by remember { mutableStateOf(true) }
-    val events by remember { mutableStateOf<List<Event>?>(null) }
 
     LaunchedEffect(loading) {
         MyDatabase.fetchCourses { fetchedCourses ->
@@ -134,7 +132,7 @@ fun HomeScreen(context: Context, navController: NavController) {
     }
         Column(
             modifier = Modifier
-                .background(GlobalColors.primaryColor)
+                .background(CC.primary())
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -192,7 +190,7 @@ fun HomeScreen(context: Context, navController: NavController) {
                 )
                 Text("View All",
                     style = CC.descriptionTextStyle(context),
-                    color = GlobalColors.extraColor1,
+                    color = CC.extraColor1(),
                     fontSize = 15.sp,
                     modifier = Modifier.clickable {
                         navController.navigate("courses")
@@ -300,7 +298,7 @@ fun IconBox(
 
                 .background(Color.Transparent, CircleShape)
                 .size(60.dp)
-                .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape)
+                .border(1.dp, CC.tertiary(), shape = CircleShape)
                 .clickable {
                     CourseName.name.value = course.courseName
                     navController.navigate("course/${course.courseCode}")
@@ -313,7 +311,7 @@ fun IconBox(
             )
             Icon(
                 imageVector = Icons.Filled.School,
-                tint = GlobalColors.extraColor1,
+                tint = CC.extraColor1(),
                 contentDescription = course.courseName,
                 modifier = Modifier.size(60.dp / 2)
             )
@@ -325,7 +323,7 @@ fun IconBox(
                 course.courseName // Display full name if less than or equal to 10 characters
             },
             style = CC.descriptionTextStyle(context = context),
-            color = GlobalColors.textColor.copy(0.7f),
+            color = CC.textColor().copy(0.7f),
             modifier = Modifier.padding(top = 4.dp)
         )
     }
@@ -342,7 +340,7 @@ fun LoadingIconBox() {
             modifier = Modifier
                 .background(Color.Transparent, CircleShape)
                 .size(60.dp)
-                .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape)
+                .border(1.dp, CC.tertiary(), shape = CircleShape)
         ) {
             ColorProgressIndicator(
                 modifier = Modifier
@@ -376,7 +374,7 @@ fun EmptyIconBox(context: Context) {
             modifier = Modifier
                 .background(Color.Transparent, CircleShape)
                 .size(60.dp)
-                .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape),
+                .border(1.dp, CC.tertiary(), shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text("🕳️", style = CC.descriptionTextStyle(context))
@@ -434,9 +432,9 @@ fun TodayTimetable(context: Context) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .background(GlobalColors.primaryColor)
+                    .background(CC.primary())
                     .border(
-                        1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
+                        1.dp, CC.tertiary(), shape = RoundedCornerShape(16.dp)
                     )
                     .padding(16.dp), contentAlignment = Alignment.Center
             ) {
@@ -452,9 +450,9 @@ fun TodayTimetable(context: Context) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .background(GlobalColors.primaryColor)
+                        .background(CC.primary())
                         .border(
-                            1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
+                            1.dp, CC.tertiary(), shape = RoundedCornerShape(16.dp)
                         )
                         .padding(16.dp), contentAlignment = Alignment.Center
                 ) {
@@ -464,9 +462,9 @@ fun TodayTimetable(context: Context) {
                 LazyRow(
                     modifier = Modifier
                         .border(
-                            1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
+                            1.dp, CC.tertiary(), shape = RoundedCornerShape(16.dp)
                         )
-                        .background(GlobalColors.primaryColor)
+                        .background(CC.primary())
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
@@ -476,12 +474,12 @@ fun TodayTimetable(context: Context) {
                             modifier = Modifier
                                 .border(
                                     1.dp,
-                                    GlobalColors.tertiaryColor,
+                                    CC.tertiary(),
                                     shape = RoundedCornerShape(16.dp)
                                 )
-                                .width(300.dp)
+                                .width(350.dp)
                                 .height(200.dp)
-                                .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
+                                .background(CC.primary(), RoundedCornerShape(16.dp))
                                 .padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
@@ -496,7 +494,7 @@ fun TodayTimetable(context: Context) {
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
                                     contentDescription = "Event Date and Time",
-                                    tint = GlobalColors.secondaryColor
+                                    tint = CC.secondary()
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text(
@@ -511,7 +509,7 @@ fun TodayTimetable(context: Context) {
                                 Icon(
                                     imageVector = Icons.Default.Place,
                                     contentDescription = "Event Location",
-                                    tint = GlobalColors.secondaryColor
+                                    tint = CC.secondary()
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
@@ -547,13 +545,13 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
             .padding(8.dp)
             .width(250.dp)
             .height(260.dp)
-            .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp))
+            .border(1.dp, CC.secondary(), shape = RoundedCornerShape(16.dp))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
-                .background(GlobalColors.primaryColor, RoundedCornerShape(16.dp))
+                .background(CC.primary(), RoundedCornerShape(16.dp))
                 .fillMaxSize()
         ) {
             Row(
@@ -574,7 +572,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
             Column(
                 modifier = Modifier
                     .background(
-                        GlobalColors.secondaryColor.copy(0.5f),
+                        CC.secondary().copy(0.5f),
                         RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp)
                     )
                     .fillMaxSize(1f), verticalArrangement = Arrangement.SpaceBetween
@@ -583,7 +581,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                     text = course.courseCode,
                     style = CC.descriptionTextStyle(context),
                     textAlign = TextAlign.Left,
-                    color = GlobalColors.extraColor2,
+                    color = CC.extraColor2(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 5.dp, end = 5.dp)
@@ -609,7 +607,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                     Text(
                         text = visits,
                         style = CC.descriptionTextStyle(context),
-                        color = GlobalColors.textColor.copy(0.5f),
+                        color = CC.textColor().copy(0.5f),
                         textAlign = TextAlign.Left,
                         modifier = Modifier.weight(1f)
                     )
@@ -629,7 +627,7 @@ fun ImageBox(course: Course, image: Images, context: Context, navController: Nav
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = "Visit",
-                            tint = GlobalColors.extraColor1
+                            tint = CC.extraColor1()
                         )
                     }
                 }
@@ -663,7 +661,7 @@ fun ImageList(
                         .width(250.dp)
                         .height(250.dp)
                         .border(
-                            1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp)
+                            1.dp, CC.secondary(), shape = RoundedCornerShape(16.dp)
                         ), contentAlignment = Alignment.Center
                 ) {
                     Text("No image available")
@@ -681,7 +679,7 @@ fun LoadingImageBox() {
             .padding(8.dp)
             .width(250.dp)
             .height(250.dp)
-            .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp))
+            .border(1.dp, CC.secondary(), shape = RoundedCornerShape(16.dp))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -718,7 +716,7 @@ fun EmptyImageBox(context: Context) {
             .padding(8.dp)
             .width(250.dp)
             .height(250.dp)
-            .border(1.dp, GlobalColors.secondaryColor, shape = RoundedCornerShape(16.dp)),
+            .border(1.dp, CC.secondary(), shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
 
@@ -744,15 +742,15 @@ fun ColorProgressIndicator(modifier: Modifier = Modifier) {
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        GlobalColors.secondaryColor.copy(0.1f),
-                        GlobalColors.secondaryColor.copy(0.3f),
-                        GlobalColors.secondaryColor.copy(0.5f),
-                        GlobalColors.secondaryColor.copy(0.7f),
-                        GlobalColors.secondaryColor.copy(0.9f),
-                        GlobalColors.secondaryColor.copy(0.7f),
-                        GlobalColors.secondaryColor.copy(0.5f),
-                        GlobalColors.secondaryColor.copy(0.3f),
-                        GlobalColors.secondaryColor.copy(0.1f),
+                        CC.secondary().copy(0.1f),
+                        CC.secondary().copy(0.3f),
+                        CC.secondary().copy(0.5f),
+                        CC.secondary().copy(0.7f),
+                        CC.secondary().copy(0.9f),
+                        CC.secondary().copy(0.7f),
+                        CC.secondary().copy(0.5f),
+                        CC.secondary().copy(0.3f),
+                        CC.secondary().copy(0.1f),
                         Color.Transparent,
                         Color.Transparent,
                         Color.Transparent
@@ -778,10 +776,10 @@ fun MyBackground(modifier: Modifier = Modifier) {
     )
 
     val colors = listOf(
-        GlobalColors.secondaryColor,
-        GlobalColors.primaryColor,
-        GlobalColors.secondaryColor,
-        GlobalColors.primaryColor
+        CC.secondary(),
+        CC.primary(),
+        CC.secondary(),
+        CC.primary()
     )
 
     Box(
@@ -823,7 +821,7 @@ fun Background(context: Context) {
         columns = GridCells.Fixed(10),
         modifier = Modifier
             .fillMaxSize()
-            .background(GlobalColors.primaryColor)
+            .background(CC.primary())
             .padding(10.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
@@ -831,7 +829,7 @@ fun Background(context: Context) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = GlobalColors.secondaryColor.copy(0.5f),
+                tint = CC.secondary().copy(0.5f),
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -855,7 +853,7 @@ fun AnnouncementItem(context: Context) {
             .height(200.dp)
             .fillMaxWidth(0.9f)
             .border(
-                width = 1.dp, color = GlobalColors.tertiaryColor, shape = RoundedCornerShape(10.dp)
+                width = 1.dp, color = CC.tertiary(), shape = RoundedCornerShape(10.dp)
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -878,7 +876,7 @@ fun AnnouncementItem(context: Context) {
             val firstAnnouncement = announcements[announcements.lastIndex]
             Box(
                 modifier = Modifier.background(
-                    GlobalColors.primaryColor, RoundedCornerShape(10.dp)
+                    CC.primary(), RoundedCornerShape(10.dp)
                 )
             ) {
                 MyBackground(
@@ -911,7 +909,7 @@ fun AnnouncementItem(context: Context) {
                             .fillMaxWidth()
                             .fillMaxHeight(1f)
                             .background(
-                                GlobalColors.primaryColor.copy(alpha = 0.5f),
+                                CC.primary().copy(alpha = 0.5f),
                                 RoundedCornerShape(10.dp)
                             )
                     ) {
