@@ -48,8 +48,8 @@ fun MoreDetails(context: Context, navController: NavController) {
     var addloading by remember { mutableStateOf(false) }
     var brush  = Brush.verticalGradient(
         colors = listOf(
-            GlobalColors.primaryColor,
-            GlobalColors.secondaryColor
+            CC.primary(),
+            CC.secondary()
         )
     )
 
@@ -99,13 +99,13 @@ fun MoreDetails(context: Context, navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.ArrowBackIosNew,
                         contentDescription = "Back",
-                        tint = GlobalColors.textColor,
+                        tint = CC.textColor(),
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = CC.primary())
         )
-    }, containerColor = GlobalColors.primaryColor) {
+    }, containerColor = CC.primary()) {
             // main content
             Column(
                 modifier = Modifier
@@ -172,7 +172,7 @@ fun MoreDetails(context: Context, navController: NavController) {
 
                         }, modifier = Modifier
                             .width(275.dp),
-                        colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
+                        colors = ButtonDefaults.buttonColors(CC.secondary()),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Row(
@@ -181,8 +181,8 @@ fun MoreDetails(context: Context, navController: NavController) {
                         ) {
                             if (loading || addloading) {
                                 CircularProgressIndicator(
-                                    color = GlobalColors.primaryColor,
-                                    trackColor = GlobalColors.textColor,
+                                    color = CC.primary(),
+                                    trackColor = CC.textColor(),
                                     modifier = Modifier.size(30.dp)
                                 )
                                 Spacer(modifier = Modifier.width(20.dp))
