@@ -231,7 +231,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                         Icon(
                             imageVector = Icons.Default.ArrowBackIosNew,
                             contentDescription = "Back",
-                            tint = GlobalColors.textColor,
+                            tint = CC.textColor(),
                             modifier = Modifier.size(24.dp) // Adjust size as needed
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -243,7 +243,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                     }
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = CC.primary())
         )
     }, content = { paddingValues ->
         Box(
@@ -263,14 +263,14 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                             .fillMaxWidth()
                             .padding(8.dp),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GlobalColors.primaryColor,
-                            unfocusedIndicatorColor = GlobalColors.textColor,
-                            focusedIndicatorColor = GlobalColors.secondaryColor,
-                            unfocusedContainerColor = GlobalColors.primaryColor,
-                            focusedTextColor = GlobalColors.textColor,
-                            unfocusedTextColor = GlobalColors.textColor,
-                            focusedLabelColor = GlobalColors.secondaryColor,
-                            unfocusedLabelColor = GlobalColors.textColor
+                            focusedContainerColor = CC.primary(),
+                            unfocusedIndicatorColor = CC.textColor(),
+                            focusedIndicatorColor = CC.secondary(),
+                            unfocusedContainerColor = CC.primary(),
+                            focusedTextColor = CC.textColor(),
+                            unfocusedTextColor = CC.textColor(),
+                            focusedLabelColor = CC.secondary(),
+                            unfocusedLabelColor = CC.textColor()
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
@@ -291,7 +291,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                            CC.secondary(), RoundedCornerShape(10.dp)
                                         )
                                         .clip(RoundedCornerShape(10.dp)),
                                     contentAlignment = Alignment.Center
@@ -314,7 +314,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                            CC.secondary(), RoundedCornerShape(10.dp)
                                         )
                                         .clip(RoundedCornerShape(10.dp)),
                                     contentAlignment = Alignment.Center
@@ -324,7 +324,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                         modifier = Modifier.padding(5.dp),
                                         style = CC.descriptionTextStyle(context),
                                         textAlign = TextAlign.Center,
-                                        color = GlobalColors.textColor
+                                        color = CC.textColor()
                                     )
                                 }
                             }
@@ -365,7 +365,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                 message = ""
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
+                        colors = ButtonDefaults.buttonColors(containerColor = CC.extraColor2()),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Send,"Send")
@@ -395,7 +395,7 @@ fun MessageBubble(
     context: Context,
 ) {
     val alignment = if (isUser) Alignment.TopEnd else Alignment.TopStart
-    val backgroundColor = if (isUser) GlobalColors.extraColor1 else GlobalColors.extraColor2
+    val backgroundColor = if (isUser) CC.extraColor1() else CC.extraColor2()
     val bubbleShape = RoundedCornerShape(
         bottomStart = 16.dp,
         bottomEnd = 16.dp,
