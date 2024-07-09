@@ -77,7 +77,7 @@ fun TimetableScreen(context: Context) {
                 .tabIndicatorOffset(tabPositions[selectedTabIndex])
                 .height(4.dp)
                 .width(screenWidth / (days.size.coerceAtLeast(1))) // Avoid division by zero
-                .background(GlobalColors.secondaryColor, CircleShape)
+                .background(CC.secondary(), CircleShape)
         )
     }
     val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -149,7 +149,7 @@ fun TimetableScreen(context: Context) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
-                    color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
+                    color = CC.secondary(), trackColor = CC.textColor()
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text("Loading Days...Please wait", style = CC.descriptionTextStyle(context))
@@ -166,11 +166,11 @@ fun TimetableScreen(context: Context) {
 
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier.background(GlobalColors.primaryColor),
+                    modifier = Modifier.background(CC.primary()),
                     contentColor = Color.Black,
                     indicator = indicator,
                     edgePadding = 0.dp,
-                    containerColor = GlobalColors.primaryColor
+                    containerColor = CC.primary()
                 ) {
                     days.forEachIndexed { index, day ->
 
@@ -182,17 +182,17 @@ fun TimetableScreen(context: Context) {
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (selectedTabIndex == index) GlobalColors.secondaryColor else GlobalColors.primaryColor,
+                                        if (selectedTabIndex == index) CC.secondary() else CC.primary(),
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(8.dp), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = day.name,
-                                    color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                    color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                                 )
                             }
-                        }, modifier = Modifier.background(GlobalColors.primaryColor)
+                        }, modifier = Modifier.background(CC.primary())
                         )
                     }
                 }
@@ -223,7 +223,7 @@ fun DayList(dayid: String, context: Context) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CircularProgressIndicator(
-                color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
+                color = CC.secondary(), trackColor = CC.textColor()
             )
             Text("Loading Events...Please wait", style = CC.descriptionTextStyle(context))
             Text(
@@ -269,13 +269,13 @@ fun TimetableCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp), colors = CardDefaults.cardColors(
-            containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
+            containerColor = CC.secondary(), contentColor = CC.textColor()
         ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
     ) {
         Column(
             modifier = Modifier
                 .border(
-                    width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(8.dp)
+                    width = 1.dp, color = CC.textColor(), shape = RoundedCornerShape(8.dp)
                 )
                 .padding(16.dp)
         ) {
@@ -287,7 +287,7 @@ fun TimetableCard(
                 Text(
                     text = timetable.unitName,
                     style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
-                    color = GlobalColors.textColor
+                    color = CC.textColor()
                 )
 
             }
@@ -298,13 +298,13 @@ fun TimetableCard(
                     Icon(
                         Icons.Default.LocationOn,
                         contentDescription = "Venue",
-                        tint = GlobalColors.textColor
+                        tint = CC.textColor()
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = timetable.venue,
                         style = CC.descriptionTextStyle(context),
-                        color = GlobalColors.textColor
+                        color = CC.textColor()
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -312,13 +312,13 @@ fun TimetableCard(
                     Icon(
                         Icons.Default.Person,
                         contentDescription = "Lecturer",
-                        tint = GlobalColors.textColor
+                        tint = CC.textColor()
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = timetable.lecturer,
                         style = CC.descriptionTextStyle(context),
-                        color = GlobalColors.textColor
+                        color = CC.textColor()
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -326,13 +326,13 @@ fun TimetableCard(
                     Icon(
                         Icons.Default.Schedule,
                         contentDescription = "Time",
-                        tint = GlobalColors.textColor
+                        tint = CC.textColor()
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "${timetable.startTime} - ${timetable.endTime}",
                         style = CC.descriptionTextStyle(context),
-                        color = GlobalColors.textColor
+                        color = CC.textColor()
                     )
                 }
             }
