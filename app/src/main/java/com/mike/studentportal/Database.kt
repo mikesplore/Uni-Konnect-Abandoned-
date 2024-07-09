@@ -21,7 +21,6 @@ data class User(
     val email: String = "",
     val phoneNumber: String = "",
     val gender: String = "",
-    val isAdmin: Boolean = false
 )
 
 data class Timetable(
@@ -51,7 +50,6 @@ data class Chat(
     var senderID: String = "",
     var time: String = "",
     var date: String = "",
-    var isAdmin: Boolean = false
 
 )
 
@@ -501,14 +499,17 @@ object MyDatabase {
                             val lastName =
                                 userSnapshot.child("lastName").getValue(String::class.java) ?: ""
                             val phoneNumber =
-                                userSnapshot.child("firstName").getValue(String::class.java) ?: ""
+                                userSnapshot.child("phoneNumber").getValue(String::class.java) ?: ""
+                            val gender =
+                                userSnapshot.child("gender").getValue(String::class.java) ?: ""
                             callback(
                                 User(
                                     id = userId,
+                                    email = userEmail,
                                     firstName = firstName,
                                     lastName = lastName,
                                     phoneNumber = phoneNumber,
-                                    email = userEmail
+                                    gender = gender
                                 )
                             )
                             return
@@ -538,13 +539,16 @@ object MyDatabase {
                                 userSnapshot.child("lastName").getValue(String::class.java) ?: ""
                             val phoneNumber =
                                 userSnapshot.child("phoneNumber").getValue(String::class.java) ?: ""
+                            val gender =
+                                userSnapshot.child("gender").getValue(String::class.java) ?: ""
                             callback(
                                 User(
                                     id = userId,
+                                    email = userEmail,
                                     firstName = firstName,
                                     lastName = lastName,
                                     phoneNumber = phoneNumber,
-                                    email = userEmail
+                                    gender = gender
                                 )
                             )
                             return
