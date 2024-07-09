@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.OAuthProvider
+import com.mike.studentportal.CommonComponents as CC
 
 @Composable
 fun GoogleAuth(
@@ -60,10 +61,10 @@ fun GoogleAuth(
             }
             .border(
                 width = 1.dp,
-                color = GlobalColors.textColor,
+                color = CC.textColor(),
                 shape = RoundedCornerShape(10.dp)
             )
-            .background(GlobalColors.secondaryColor, shape = RoundedCornerShape(10.dp))
+            .background(CC.secondary(), shape = RoundedCornerShape(10.dp))
             .height(60.dp)
             .width(130.dp),
         contentAlignment = Alignment.Center
@@ -73,8 +74,8 @@ fun GoogleAuth(
             // Show CircularProgressIndicator when loading
             CircularProgressIndicator(
                 modifier = Modifier.size(30.dp),
-                color = GlobalColors.primaryColor,
-                trackColor = GlobalColors.textColor
+                color = CC.primary(),
+                trackColor = CC.textColor()
 
             )
         } else {
