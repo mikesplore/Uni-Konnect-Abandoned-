@@ -52,8 +52,11 @@ import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ModeNight
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.CalendarToday
@@ -67,6 +70,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -558,80 +563,77 @@ fun Dashboard(
                 .fillMaxHeight(0.8f)
                 .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
         ) {
-            Column(modifier = Modifier
-                .background(GlobalColors.extraColor2)
-                .height(200.dp)
-                .fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(150.dp)
-                    .padding(20.dp)
-                    .background(GlobalColors.secondaryColor, CircleShape)
-                    .border(1.dp, GlobalColors.primaryColor, CircleShape),
-                contentAlignment = Alignment.Center
+                    .background(GlobalColors.extraColor2)
+                    .height(200.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (currentUser?.photoUrl != null && currentUser.photoUrl.toString().isNotEmpty()) {
-                    AsyncImage(
-                        model = currentUser.photoUrl,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else if (selectedImageUri != null && signInMethod == "password") {
-                    AsyncImage(
-                        model = selectedImageUri,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Profile Picture",
-                        tint = Color.Gray,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
+                Box(
+                    modifier = Modifier
+                        .clickable { navController.navigate("profile") }
+                        .size(150.dp)
+                        .padding(20.dp)
+                        .background(GlobalColors.secondaryColor, CircleShape)
+                        .border(1.dp, GlobalColors.primaryColor, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (currentUser?.photoUrl != null && currentUser.photoUrl.toString()
+                            .isNotEmpty()
+                    ) {
+                        AsyncImage(
+                            model = currentUser.photoUrl,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (selectedImageUri != null && signInMethod == "password") {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile Picture",
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        user.firstName + " " + user.lastName,
+                        style = CC.descriptionTextStyle(context)
+                            .copy(fontWeight = FontWeight.ExtraBold)
                     )
                 }
             }
-                Column(modifier = Modifier
-                    .fillMaxWidth(0.9f),
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(user.firstName + " " + user.lastName,
-                    style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.ExtraBold))
-            }}
 
             Spacer(modifier = Modifier.height(20.dp))
 
             // Navigation items
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally) {
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Row(modifier = Modifier
                     .fillMaxWidth(0.9f)
-                    .clickable {
-                        navController.navigate("settings")
-                        scope.launch { drawerState.close() }
-                    }
-                    .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Profile",
-                        tint = GlobalColors.textColor
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text("Settings", style = CC.descriptionTextStyle(context))
-                }
-
-                Row(modifier = Modifier
-                    .fillMaxWidth()
                     .clickable {
                         navController.navigate("chat")
                         scope.launch { drawerState.close() }
@@ -647,7 +649,7 @@ fun Dashboard(
                 }
 
                 Row(modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.9f)
                     .clickable {
                         navController.navigate("statistics")
                         scope.launch { drawerState.close() }
@@ -663,21 +665,109 @@ fun Dashboard(
                 }
 
                 Row(modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.9f)
                     .clickable {
-                        auth.signOut()
-                        navController.navigate("login")
+                        navController.navigate("courses")
+                        scope.launch { drawerState.close() }
+                    }
+                    .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Collections,
+                        contentDescription = "Courses",
+                        tint = GlobalColors.textColor
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("My Courses", style = CC.descriptionTextStyle(context))
+                }
+
+                var darkMode by remember { mutableStateOf(false) }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Icon(
+                        Icons.Default.ModeNight,
+                        contentDescription = "Profile",
+                        tint = GlobalColors.textColor
+                    )
+                    Text("Mode", style = CC.descriptionTextStyle(context))
+                    Switch(
+                        checked = darkMode, modifier = Modifier.size(40.dp), onCheckedChange = {
+                            darkMode = it
+                            GlobalColors.saveColorScheme(context, it)
+                        }, colors = SwitchDefaults.colors(
+                            checkedThumbColor = GlobalColors.extraColor1,
+                            uncheckedThumbColor = GlobalColors.extraColor2,
+                            checkedTrackColor = GlobalColors.extraColor2,
+                            uncheckedTrackColor = GlobalColors.extraColor1,
+                            checkedIconColor = GlobalColors.textColor,
+                            uncheckedIconColor = GlobalColors.textColor
+                        )
+                    )
+                }
+                Row(modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .clickable {
+                        navController.navigate("settings")
                         scope.launch { drawerState.close() }
                     }
                     .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = "Exit",
+                        Icons.Default.Settings,
+                        contentDescription = "settings",
                         tint = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Sign Out", style = CC.descriptionTextStyle(context))
+                    Text("Settings", style = CC.descriptionTextStyle(context))
                 }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .clickable {
+                            val sendIntent: Intent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, "$currentName invited you to join Student Portal! Get organized and ace your studies. Download now: [https://github.com/mikesplore/Student-Portal/blob/main/app/release/StudentPortal.apk]") // Customize the text
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(sendIntent, null))
+                            scope.launch { drawerState.close() }
+                        }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Share,
+                        contentDescription = "share app",
+                        tint = GlobalColors.textColor
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Share", style = CC.descriptionTextStyle(context))
+                }
+
+
+            }
+            Row(modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .clickable {
+                    auth.signOut()
+                    navController.navigate("login")
+                    scope.launch { drawerState.close() }
+                }
+                .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "Exit",
+                    tint = GlobalColors.textColor
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("Sign Out", style = CC.descriptionTextStyle(context))
             }
         }
     }) {
