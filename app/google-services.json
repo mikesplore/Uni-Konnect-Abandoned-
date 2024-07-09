@@ -68,6 +68,14 @@
           }
         },
         {
+          "client_id": "545774727181-prtfrfn88j2qfnvjt97aopeiin62i2sc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mike.studentportal",
+            "certificate_hash": "3aee5494d1c4b090ce0de9b16f257bad01eb79f2"
+          }
+        },
+        {
           "client_id": "545774727181-rppab4vir1nc4iv9ip09dsc5fbncihv6.apps.googleusercontent.com",
           "client_type": 3
         }
