@@ -2,6 +2,8 @@ package com.mike.studentportal
 
 import android.content.Context
 import android.icu.util.Calendar
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,7 +33,7 @@ import java.util.Locale
 
 object CommonComponents {
     private val calendar: Calendar = Calendar.getInstance()
-    val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+    private val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
     @Composable
     fun PasswordTextField(
         modifier: Modifier = Modifier,
@@ -59,7 +61,7 @@ object CommonComponents {
                 IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                     Icon(
                         imageVector = if (passwordVisibility) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        tint = GlobalColors.textColor,
+                        tint = textColor(),
                         contentDescription = if (passwordVisibility) "Hide password" else "Show password"
                     )
                 }
@@ -118,20 +120,90 @@ object CommonComponents {
         )
     }
 
+    @Composable
+    fun primary(): Color {
+        val  color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.primaryColor
+            else GlobalColors.primaryColor,
+            label = "primaryBackgroundColor", // Provide a descriptive label
+            animationSpec = tween(500)
+        )
+        return color
+    }
+
+    @Composable
+    fun secondary(): Color {
+        val  color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.secondaryColor
+            else GlobalColors.secondaryColor,
+            label = "primaryBackgroundColor", // Provide a descriptive label
+            animationSpec = tween(500)
+        )
+        return color
+    }
+
+    @Composable
+    fun tertiary(): Color {
+        val  color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.tertiaryColor
+            else GlobalColors.tertiaryColor,
+            label = "primaryBackgroundColor", // Provide a descriptive label
+            animationSpec = tween(500)
+        )
+        return color
+    }
+
+    @Composable
+    fun textColor(): Color {
+        val  color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.textColor
+            else GlobalColors.textColor,
+            label = "primaryBackgroundColor", // Provide a descriptive label
+            animationSpec = tween(500)
+        )
+        return color
+    }
 
 
     @Composable
+    fun extraColor1(): Color {
+        val  color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.extraColor1
+            else GlobalColors.extraColor1,
+            label = "primaryBackgroundColor", // Provide a descriptive label
+            animationSpec = tween(500)
+        )
+        return color
+    }
+
+    @Composable
+    fun extraColor2(): Color {
+        val  color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.extraColor2
+            else GlobalColors.extraColor2,
+            label = "primaryBackgroundColor", // Provide a descriptive label
+            animationSpec = tween(500)
+        )
+        return color
+    }
+
+    @Composable
     fun descriptionTextStyle(context: Context): TextStyle {
+        val color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.textColor
+            else GlobalColors.textColor,
+            label = "",
+            animationSpec = tween(500)
+        )
         val currentFont = currentFontFamily(context) // Get initial font
         val selectedFontFamily by remember { mutableStateOf(currentFont) }
         return TextStyle(
             fontFamily = selectedFontFamily,
-            color = GlobalColors.textColor,
+            color = color,
             fontSize = 15.sp
         )
     }
 
-    val lastDate: String = SimpleDateFormat("EEE dd-yyyy", Locale.getDefault()).format(Date())
     fun currentDay(): String {
         return when (dayOfWeek) {
             Calendar.SUNDAY -> "Sunday"
@@ -161,11 +233,17 @@ object CommonComponents {
 
     @Composable
     fun titleTextStyle(context: Context): TextStyle {
+        val color by animateColorAsState(
+            targetValue = if (GlobalColors.isDarkMode) GlobalColors.textColor
+            else GlobalColors.textColor,
+            label = "",
+            animationSpec = tween(500)
+        )
         val currentFont = currentFontFamily(context) // Get initial font
         val selectedFontFamily by remember { mutableStateOf(currentFont) }
         return TextStyle(
             fontFamily = selectedFontFamily,
-            color = GlobalColors.textColor,
+            color = color,
             fontSize = 25.sp
         )
     }
@@ -179,11 +257,11 @@ object CommonComponents {
             unfocusedContainerColor = GlobalColors.primaryColor,
             focusedIndicatorColor = GlobalColors.tertiaryColor,
             unfocusedIndicatorColor = GlobalColors.secondaryColor,
-            focusedLabelColor = GlobalColors.textColor,
-            cursorColor = GlobalColors.textColor,
-            unfocusedLabelColor = GlobalColors.textColor,
-            focusedTextColor = GlobalColors.textColor,
-            unfocusedTextColor = GlobalColors.textColor
+            focusedLabelColor = textColor(),
+            cursorColor = textColor(),
+            unfocusedLabelColor = textColor(),
+            focusedTextColor = textColor(),
+            unfocusedTextColor = textColor()
         )
     }
 }
