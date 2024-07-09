@@ -8,16 +8,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -26,33 +22,37 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.Assignment
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.Book
@@ -61,21 +61,20 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -84,8 +83,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -102,18 +103,13 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerDefaults
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.firebase.auth.FirebaseAuth
-import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationError
-import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationFailed
-import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationNotSet
-import com.mike.studentportal.BiometricPromptManager.BiometricResult.AuthenticationSuccess
-import com.mike.studentportal.BiometricPromptManager.BiometricResult.FeatureUnavailable
-import com.mike.studentportal.BiometricPromptManager.BiometricResult.HardwareUnavailable
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import com.mike.studentportal.MyDatabase.getUpdate
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
@@ -139,17 +135,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_StudentPortal)
         super.onCreate(savedInstanceState)
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true)
-            .build()
-        val chatFetchRequest = PeriodicWorkRequestBuilder<ChatFetchWorker>(1, TimeUnit.SECONDS)
-            .setConstraints(constraints)
-            .build()
+        val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(true).build()
+        val chatFetchRequest =
+            PeriodicWorkRequestBuilder<ChatFetchWorker>(1, TimeUnit.SECONDS).setConstraints(
+                constraints
+            ).build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "ChatFetchWorker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            chatFetchRequest
+            "ChatFetchWorker", ExistingPeriodicWorkPolicy.KEEP, chatFetchRequest
         )
         if (Global.edgeToEdge.value) {
             enableEdgeToEdge()
@@ -158,45 +151,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
             MainScreen(this)
-            val biometricResult by promptManager.promptResult.collectAsState(initial = null)
-            val enrollLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.StartActivityForResult(),
-                onResult = {
-                    println("Result: $it")
-                }
-            )
-            LaunchedEffect(biometricResult) {
-                requestNotificationPermission()
-                if (biometricResult is AuthenticationNotSet) {
-                    if (Build.VERSION.SDK_INT >= 30) {
-                        val enrollIntent = Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
-                            putExtra(
-                                Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
-                                BIOMETRIC_STRONG or DEVICE_CREDENTIAL
-                            )
-                        }
-                        enrollLauncher.launch(enrollIntent)
-                    }
-                }
-            }
-            biometricResult?.let { result ->
-                Log.d(
-                    "Biometric Result",
-                    when (result) {
-                        is AuthenticationError ->
-                            result.error
 
-                        AuthenticationFailed -> "Authentication Failed"
-                        AuthenticationNotSet -> "Authentication Not Set"
-                        AuthenticationSuccess -> "Authentication Success"
-                        FeatureUnavailable -> "Feature Unavailable"
-                        HardwareUnavailable -> "Hardware Unavailable"
-                    }
-                )
-            }
-            if (biometricResult is AuthenticationSuccess){
-                Global.isAuthenticationSuccessful.value = true
-            }
 
         }
         createNotificationChannel(this)
@@ -310,8 +265,7 @@ fun MainScreen(mainActivity: MainActivity) {
                     modifier = Modifier.padding(bottom = 8.dp) // Add spacing below title
                 )
                 Text(
-                    "New version of this app is available. " +
-                            "The update contains bug fixes and addresses some of user-reported issues..",
+                    "New version of this app is available. " + "The update contains bug fixes and addresses some of user-reported issues..",
                     style = CC.descriptionTextStyle(context),
                     modifier = Modifier.padding(bottom = 16.dp) // Add spacing below description
                 )
@@ -352,161 +306,123 @@ fun MainScreen(mainActivity: MainActivity) {
     val navController = rememberNavController()
     NavHost(navController, startDestination = "dashboard") {
 
-        composable(
-            route = "login",
-            enterTransition = {
-                fadeIn(animationSpec = tween(1000))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }
-        ) {
+        composable(route = "login", enterTransition = {
+            fadeIn(animationSpec = tween(1000))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             LoginScreen(navController, context)
         }
 
-        composable(
-            route = "passwordreset",
-            enterTransition = {
-                fadeIn(animationSpec = tween(1000))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }
-        ) {
+        composable(route = "passwordreset", enterTransition = {
+            fadeIn(animationSpec = tween(1000))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             PasswordReset(navController, context)
         }
 
-        composable(
-            route = "splashscreen",
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
-                )
-            }
-        ) {
+        composable(route = "splashscreen", exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
+            )
+        }) {
             SplashScreen(navController, context)
         }
 
-        composable(
-            route = "dashboard",
-            enterTransition = {
-                fadeIn(animationSpec = tween(1000))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }
-        ) {
+        composable(route = "dashboard", enterTransition = {
+            fadeIn(animationSpec = tween(1000))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             Dashboard(navController, pagerState, coroutineScope, screens, context)
         }
 
-        composable(
-            route = "moredetails",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }
-        ) {
+        composable(route = "moredetails", enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+            )
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             MoreDetails(context, navController)
         }
 
-        composable("profile",
-            enterTransition = { slideIntoContainer(
+        composable("profile", enterTransition = {
+            slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(1000)
-            ) },
-            exitTransition = {
-                slideOutOfContainer(
+            )
+        }, exitTransition = {
+            slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(1000)
-                )
-            }
-            ){
+            )
+        }) {
             ProfileScreen(navController, context)
         }
 
-        composable("attendance",
-            enterTransition = {
-                fadeIn(animationSpec = tween(1000))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }) {
+        composable("attendance", enterTransition = {
+            fadeIn(animationSpec = tween(1000))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             SignAttendanceScreen(navController, context)
         }
 
-        composable(
-            route = "appearance",
-            enterTransition = {
-                fadeIn(animationSpec = tween(1000))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }
-        ) {
+        composable(route = "appearance", enterTransition = {
+            fadeIn(animationSpec = tween(1000))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             Appearance(navController, context)
         }
 
-        composable("chat",
-            enterTransition = {
-                fadeIn(animationSpec = tween(1000))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }) {
+        composable("chat", enterTransition = {
+            fadeIn(animationSpec = tween(1000))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             ChatScreen(navController, context)
         }
 
-        composable("courses",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Up, animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Down, animationSpec = tween(500)
-                )
-            }
+        composable("courses", enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Up, animationSpec = tween(500)
+            )
+        }, exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Down, animationSpec = tween(500)
+            )
+        }
 
         ) {
             CoursesScreen(navController = navController, context)
         }
 
-        composable("settings",
-            enterTransition = {
-                fadeIn(animationSpec = tween(500))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }) {
+        composable("settings", enterTransition = {
+            fadeIn(animationSpec = tween(500))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             Settings(navController, context, mainActivity)
         }
 
         composable("statistics") {
-            BarGraph(context)
+            BarGraph(navController, context)
         }
 
-        composable("users",
-            enterTransition = {
-                fadeIn(animationSpec = tween(500))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000))
-            }) {
+        composable("users", enterTransition = {
+            fadeIn(animationSpec = tween(500))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000))
+        }) {
             ParticipantsScreen(navController, context)
         }
 
-        composable(
-            "chat/{userId}",
-            enterTransition = {
-                fadeIn(animationSpec = tween(1000)) + slideInVertically(animationSpec = tween(1000)) { initialState -> initialState }
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(1000)) + slideOutVertically(animationSpec = tween(1000)) { finalState -> finalState }
-            },
-            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        composable("chat/{userId}", enterTransition = {
+            fadeIn(animationSpec = tween(1000)) + slideInVertically(animationSpec = tween(1000)) { initialState -> initialState }
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(1000)) + slideOutVertically(animationSpec = tween(1000)) { finalState -> finalState }
+        }, arguments = listOf(navArgument("userId") { type = NavType.StringType })
         ) { backStackEntry ->
             UserChatScreen(
                 navController,
@@ -515,12 +431,10 @@ fun MainScreen(mainActivity: MainActivity) {
             )
         }
 
-        composable(
-            "course/{courseCode}",
+        composable("course/{courseCode}",
             arguments = listOf(navArgument("courseCode") { type = NavType.StringType }),
             enterTransition = { fadeIn(animationSpec = tween(1000)) },
-            exitTransition = { fadeOut(animationSpec = tween(1000)) }
-        ) { backStackEntry ->
+            exitTransition = { fadeOut(animationSpec = tween(1000)) }) { backStackEntry ->
             val courseCode = backStackEntry.arguments?.getString("courseCode") ?: ""
             CourseScreen(courseCode = courseCode, context)
         }
@@ -540,7 +454,6 @@ fun Dashboard(
 ) {
     var user by remember { mutableStateOf(User()) }
     val auth = FirebaseAuth.getInstance()
-    var expanded by remember { mutableStateOf(false) }
     var currentName by remember { mutableStateOf("") }
     val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var timeSpent by remember { mutableLongStateOf(0L) }
@@ -556,8 +469,7 @@ fun Dashboard(
 
     DisposableEffect(Unit) {
         GlobalColors.loadColorScheme(context)
-        MyDatabase.writeScren(courseScreen = Screens(screenID, screenName)) {
-        }
+        MyDatabase.writeScren(courseScreen = Screens(screenID, screenName)) {}
         onDispose {
             // Fetch existing screen time
             MyDatabase.getScreenTime(screenID) { existingScreenTime ->
@@ -570,9 +482,7 @@ fun Dashboard(
 
                 // Create a new ScreenTime object
                 val screentime = ScreenTime(
-                    id = screenID,
-                    screenName = screenName,
-                    time = totalScreenTime
+                    id = screenID, screenName = screenName, time = totalScreenTime
                 )
 
                 // Save the updated screen time
@@ -584,6 +494,10 @@ fun Dashboard(
             }
         }
     }
+    val currentUser = auth.currentUser
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var signInMethod by remember { mutableStateOf("") }
+
     LaunchedEffect(key1 = Unit) { // Use a stable key
         while (true) {
             delay(10L) // Delay for 10 seconds
@@ -592,201 +506,349 @@ fun Dashboard(
                     fetchedUser?.let {
                         user = it
                         currentName = it.firstName
-                    }
-                }
-            }
-        }
-    }
-    Scaffold(
-        topBar = {
-            TopAppBar(title = {
-                Text(
-                    "${CC.getGreetingMessage()}, $currentName👋",
-                    style = CC.titleTextStyle(context),
-                    fontSize = 20.sp
-                )
-            }, actions = {
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(
-                        imageVector = Icons.Filled.Menu,
-                        contentDescription = "More Details",
-                        tint = GlobalColors.textColor
-                    )
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(
-                        GlobalColors.primaryColor
-                    )
-                ) {
-                    DropdownMenuItem(text = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Settings,
-                                contentDescription = "Profile",
-                                tint = GlobalColors.textColor
+                        MyDatabase.fetchPreferences(user.id) { preferences ->
+                            Log.d(
+                                "Shared Preferences",
+                                "Retrieved preferences for student ID: ${user.id}: $preferences"
                             )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Settings", style = CC.descriptionTextStyle(context))
-                        }
-                    }, onClick = {
-                        navController.navigate("settings")
-                        expanded = false
-                    })
-
-                    DropdownMenuItem(text = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Chat,
-                                contentDescription = "Chat",
-                                tint = GlobalColors.textColor
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Discussion", style = CC.descriptionTextStyle(context))
-                        }
-                    }, onClick = {
-                        navController.navigate("chat")
-                        expanded = false
-                    })
-
-                    DropdownMenuItem(text = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ExitToApp,
-                                contentDescription = "Exit",
-                                tint = GlobalColors.textColor
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Sign Out", style = CC.descriptionTextStyle(context))
-                        }
-                    }, onClick = {
-                        auth.signOut()
-                        navController.navigate("login")
-                        expanded = false
-                    })
-                }
-            }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = GlobalColors.primaryColor
-            )
-            )
-        },
-
-        floatingActionButton = {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.Transparent,
-                contentColor = Color.Transparent,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 30.dp)
-                        .fillMaxWidth()
-                        .height(75.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f)
-                            .align(Alignment.BottomCenter)
-                            .background(
-                                GlobalColors.extraColor1.copy(), RoundedCornerShape(40.dp)
-                            ),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        screens.forEachIndexed { index, screen ->
-                            val isSelected = pagerState.currentPage == index
-
-                            val iconColor by animateColorAsState(
-                                targetValue = if (isSelected) GlobalColors.extraColor2
-                                else GlobalColors.primaryColor,
-                                label = "",
-                                animationSpec = tween(1000)
-                            )
-                            val iconSize by animateFloatAsState(
-                                targetValue = if (isSelected) 40f else 25f, label = "",
-                                animationSpec = tween(2000)
-                            )
-                            val offsetY by animateDpAsState(
-                                targetValue = if (isSelected) (-10).dp else 0.dp, label = "",
-                                animationSpec = tween(1000)
-                            )
-
-                            Column(
-                                modifier = Modifier
-
-                                    .height(60.dp)
-                                    .offset(y = offsetY),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                    contentDescription = screen.name,
-                                    tint = iconColor,
-                                    modifier = Modifier
-                                        .clickable {
-                                            coroutineScope.launch {
-                                                pagerState.animateScrollToPage(index)
-                                            }
-                                        }
-                                        .size(iconSize.dp)
-                                )
-                                AnimatedVisibility(
-                                    visible = isSelected,
-                                    enter = fadeIn(animationSpec = tween(1000)) + slideInVertically(
-                                        animationSpec = tween(1000)
-                                    ) { initialState -> initialState },
-                                    exit = fadeOut(animationSpec = tween(1000)) + slideOutVertically(
-                                        animationSpec = tween(1000)
-                                    ) { initialState -> initialState }
-                                ) {
-                                    Text(
-                                        text = screen.name,
-                                        style = CC.descriptionTextStyle(context),
-                                        color = GlobalColors.extraColor2
-                                    )
-                                }
+                            preferences?.let {
+                                selectedImageUri = Uri.parse(preferences.profileImageLink)
                             }
                         }
                     }
                 }
             }
-        }, containerColor = GlobalColors.primaryColor
+        }
+    }
 
-    ) { innerPadding ->
 
-        HorizontalPager(
-            state = pagerState,
-            count = screens.size,
-            modifier = Modifier.padding(innerPadding),
-            flingBehavior = PagerDefaults.flingBehavior(state = pagerState)
-        ) { page ->
-            when (screens[page]) {
-                Screen.Home -> HomeScreen(context, navController)
-                Screen.Assignments -> AssignmentScreen(navController, context)
-                Screen.Announcements -> AnnouncementsScreen(navController, context)
-                Screen.Timetable -> TimetableScreen(context)
-                Screen.Attendance -> SignAttendanceScreen(navController, context)
 
+    LaunchedEffect(key1 = Unit) {
+        if (currentUser != null) {
+            for (userInfo in currentUser.providerData) {
+                when (userInfo.providerId) {
+                    "password" -> {
+                        // User signed in with email and password
+                        signInMethod = "password"
+                        Log.d("Auth", "User signed in with email/password")
+                    }
+
+                    "google.com" -> {
+                        // User signed in with Google
+                        signInMethod = "google.com"
+                        Log.d("Auth", "User signed in with Google")
+                    }
+
+                    "github.com" -> {
+                        // User signed in with GitHub
+                        signInMethod = "github.com"
+                        Log.d("Auth", "User signed in with GitHub")
+                    }
+                }
+            }
+        }
+    }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.5f)
+                .fillMaxHeight(0.8f)
+                .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
+        ) {
+            Column(modifier = Modifier
+                .background(GlobalColors.extraColor2)
+                .height(200.dp)
+                .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(20.dp)
+                    .background(GlobalColors.secondaryColor, CircleShape)
+                    .border(1.dp, GlobalColors.primaryColor, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (currentUser?.photoUrl != null && currentUser.photoUrl.toString().isNotEmpty()) {
+                    AsyncImage(
+                        model = currentUser.photoUrl,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (selectedImageUri != null && signInMethod == "password") {
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Profile Picture",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
+                }
+            }
+                Column(modifier = Modifier
+                    .fillMaxWidth(0.9f),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(user.firstName + " " + user.lastName,
+                    style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.ExtraBold))
+            }}
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Navigation items
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .clickable {
+                        navController.navigate("settings")
+                        scope.launch { drawerState.close() }
+                    }
+                    .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Profile",
+                        tint = GlobalColors.textColor
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Settings", style = CC.descriptionTextStyle(context))
+                }
+
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navController.navigate("chat")
+                        scope.launch { drawerState.close() }
+                    }
+                    .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Chat,
+                        contentDescription = "Chat",
+                        tint = GlobalColors.textColor
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Discussion", style = CC.descriptionTextStyle(context))
+                }
+
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navController.navigate("statistics")
+                        scope.launch { drawerState.close() }
+                    }
+                    .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.BarChart,
+                        contentDescription = "Statistics",
+                        tint = GlobalColors.textColor
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Statistics", style = CC.descriptionTextStyle(context))
+                }
+
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        auth.signOut()
+                        navController.navigate("login")
+                        scope.launch { drawerState.close() }
+                    }
+                    .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = "Exit",
+                        tint = GlobalColors.textColor
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Sign Out", style = CC.descriptionTextStyle(context))
+                }
+            }
+        }
+    }) {
+        Scaffold(
+            topBar = {
+                TopAppBar(title = {
+                    Row(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Hi, $currentName👋",
+                            style = CC.titleTextStyle(context)
+                                .copy(fontWeight = FontWeight.ExtraBold),
+                            fontSize = 25.sp,
+                            modifier = Modifier.padding(start = 20.dp)
+                        )
+                    }
+                },
+                    actions = {
+                        Row(
+                            modifier = Modifier.fillMaxHeight(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .padding(end = 20.dp)
+                                    .background(GlobalColors.secondaryColor, CircleShape)
+                                    .border(1.dp, GlobalColors.primaryColor, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (currentUser?.photoUrl != null && currentUser.photoUrl.toString()
+                                        .isNotEmpty()
+                                ) {
+                                    AsyncImage(
+                                        model = currentUser.photoUrl,
+                                        contentDescription = "Profile Picture",
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else if (selectedImageUri != null && signInMethod == "password") {
+                                    AsyncImage(
+                                        model = selectedImageUri,
+                                        contentDescription = "Profile Picture",
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountCircle,
+                                        contentDescription = "Profile Picture",
+                                        tint = Color.Gray,
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(CircleShape)
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor),
+                    modifier = Modifier.height(130.dp)
+                )
+
+            },
+
+            floatingActionButton = {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.Transparent,
+                    contentColor = Color.Transparent,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 30.dp)
+                            .fillMaxWidth()
+                            .height(75.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .align(Alignment.BottomCenter)
+                                .background(
+                                    GlobalColors.extraColor2.copy(), RoundedCornerShape(40.dp)
+                                ),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            screens.forEachIndexed { index, screen ->
+                                val isSelected = pagerState.currentPage == index
+
+                                val iconColor by animateColorAsState(
+                                    targetValue = if (isSelected) GlobalColors.extraColor1
+                                    else GlobalColors.primaryColor,
+                                    label = "",
+                                    animationSpec = tween(1000)
+                                )
+                                val iconSize by animateFloatAsState(
+                                    targetValue = if (isSelected) 40f else 25f,
+                                    label = "",
+                                    animationSpec = tween(2000)
+                                )
+                                val offsetY by animateDpAsState(
+                                    targetValue = if (isSelected) (-10).dp else 0.dp,
+                                    label = "",
+                                    animationSpec = tween(1000)
+                                )
+
+                                Column(
+                                    modifier = Modifier
+
+                                        .height(60.dp)
+                                        .offset(y = offsetY),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                                        contentDescription = screen.name,
+                                        tint = iconColor,
+                                        modifier = Modifier
+                                            .clickable {
+                                                coroutineScope.launch {
+                                                    pagerState.animateScrollToPage(index)
+                                                }
+                                            }
+                                            .size(iconSize.dp))
+                                    AnimatedVisibility(visible = isSelected,
+                                        enter = fadeIn(animationSpec = tween(1000)) + slideInVertically(
+                                            animationSpec = tween(1000)
+                                        ) { initialState -> initialState },
+                                        exit = fadeOut(animationSpec = tween(1000)) + slideOutVertically(
+                                            animationSpec = tween(1000)
+                                        ) { initialState -> initialState }) {
+                                        Text(
+                                            text = screen.name,
+                                            style = CC.descriptionTextStyle(context),
+                                            color = GlobalColors.extraColor1
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }, containerColor = GlobalColors.primaryColor
+
+        ) { innerPadding ->
+
+            HorizontalPager(
+                state = pagerState,
+                count = screens.size,
+                modifier = Modifier.padding(innerPadding),
+                flingBehavior = PagerDefaults.flingBehavior(state = pagerState)
+            ) { page ->
+                when (screens[page]) {
+                    Screen.Home -> HomeScreen(context, navController)
+                    Screen.Assignments -> AssignmentScreen(navController, context)
+                    Screen.Announcements -> AnnouncementsScreen(navController, context)
+                    Screen.Timetable -> TimetableScreen(context)
+                    Screen.Attendance -> SignAttendanceScreen(navController, context)
+                }
             }
         }
     }
 }
-
 
 
 
