@@ -89,7 +89,7 @@ fun ProfileScreen(navController: NavController, context: Context){
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = {navController.popBackStack()}) {
+                    IconButton(onClick = {navController.navigate("settings")}) {
                         Icon(
                             Icons.Default.ArrowBackIosNew,"Back",
                             tint = GlobalColors.textColor)
@@ -171,10 +171,13 @@ fun DisplayImage(context: Context) {
             fetchUserDataByEmail(it) { fetchedUser ->
                 fetchedUser?.let {
                     currentUser = it
-                    // Try to load image URI from SharedPreferences (if available)
-                    val sharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
-                    val imageUriString = sharedPreferences.getString("profile_image_uri", null)
-                    selectedImageUri = if (imageUriString != null) Uri.parse(imageUriString) else null
+                    MyDatabase.fetchPreferences(currentUser.id) { preferences ->
+                        Log.d("Shared Preferences", "Retrieved preferences for student ID: ${currentUser.id}: $preferences")
+                        preferences?.let {
+                            selectedImageUri = Uri.parse(preferences.profileImageLink)
+                        }
+                    }
+
                 }
             }
         }
@@ -235,8 +238,16 @@ fun DisplayImage(context: Context) {
     // Store image URI in SharedPreferences when it changes
     LaunchedEffect(selectedImageUri) {
         selectedImageUri?.let {
-            val sharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
-            sharedPreferences.edit().putString("profile_image_uri", it.toString()).apply()
+            MyDatabase.generateSharedPreferencesID { id ->
+                val preferences = UserPreferences(
+                    studentID = currentUser.id,
+                    id = id,
+                    profileImageLink = it.toString()
+                )
+               MyDatabase.writePreferences(preferences) {
+                   Log.d("Shared Preferences", "Image URI stored in SharedPreferences")
+               }
+            }
         }
     }
 }
