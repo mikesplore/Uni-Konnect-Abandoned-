@@ -90,27 +90,27 @@ fun CourseScreen(courseCode: String, context: Context) {
                         fontSize = 20.sp
                     )
                 }, colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor
+                    containerColor = CC.primary(),
+                    titleContentColor = CC.textColor()
                 )
             )
-        }, containerColor = GlobalColors.primaryColor
+        }, containerColor = CC.primary()
     ) {
         if (isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(GlobalColors.primaryColor),
+                    .background(CC.primary()),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = GlobalColors.textColor)
+                CircularProgressIndicator(color = CC.textColor())
             }
         } else {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .fillMaxSize()
-                    .background(GlobalColors.primaryColor)
+                    .background(CC.primary())
                     .padding(it)
             ) {
                 Section(
@@ -170,7 +170,7 @@ fun GridItemCard(item: GridItem, context: Context) {
             .width(200.dp)
             .padding(start = 15.dp),
         shape = RoundedCornerShape(8.dp),
-        color = GlobalColors.secondaryColor,
+        color = CC.secondary(),
         shadowElevation = 4.dp
     ) {
         Column(
@@ -204,7 +204,7 @@ fun GridItemCard(item: GridItem, context: Context) {
             Button(
                 onClick = { uriHandler.openUri(item.link) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.secondaryColor),
+                colors = ButtonDefaults.buttonColors(containerColor = CC.secondary()),
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text("Open", style = CC.descriptionTextStyle(context))
