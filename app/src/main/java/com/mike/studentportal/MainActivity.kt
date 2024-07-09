@@ -309,7 +309,7 @@ fun MainScreen(mainActivity: MainActivity) {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "settings") {
 
         composable(route = "login", enterTransition = {
             fadeIn(animationSpec = tween(1000))
