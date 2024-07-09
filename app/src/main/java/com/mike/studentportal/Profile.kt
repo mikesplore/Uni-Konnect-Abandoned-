@@ -2,15 +2,12 @@ package com.mike.studentportal
 
 import android.content.Context
 import android.net.Uri
-import android.service.controls.ControlsProviderService.TAG
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,11 +28,9 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
-import androidx.compose.material.icons.outlined.Female
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,12 +52,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import kotlin.random.Random
@@ -70,7 +65,7 @@ import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController, context: Context){
+fun ProfileScreen(navController: NavController, context: Context) {
     val auth = FirebaseAuth.getInstance()
     var currentUser by remember { mutableStateOf(User()) }
 
@@ -86,21 +81,17 @@ fun ProfileScreen(navController: NavController, context: Context){
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = {navController.navigate("settings")}) {
-                        Icon(
-                            Icons.Default.ArrowBackIosNew,"Back",
-                            tint = GlobalColors.textColor)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor
-                )
+            TopAppBar(title = {}, navigationIcon = {
+                IconButton(onClick = { navController.navigate("settings") }) {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew, "Back", tint = CC.textColor()
+                    )
+                }
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = CC.primary()
             )
-        },
-        containerColor = GlobalColors.primaryColor
+            )
+        }, containerColor = CC.primary()
     ) {
         Column(
             modifier = Modifier
@@ -109,11 +100,18 @@ fun ProfileScreen(navController: NavController, context: Context){
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row (modifier = Modifier
-                .height(100.dp)
-                .fillMaxWidth(0.9f),
-                verticalAlignment = Alignment.CenterVertically) {
-                Text("Profile", style = CC.titleTextStyle(context), fontSize = 40.sp, fontWeight = FontWeight.ExtraBold)
+            Row(
+                modifier = Modifier
+                    .height(100.dp)
+                    .fillMaxWidth(0.9f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Profile",
+                    style = CC.titleTextStyle(context),
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
             }
             Spacer(modifier = Modifier.height(10.dp))
             DisplayImage(context)
@@ -151,11 +149,13 @@ fun DisplayImage(context: Context) {
                         signInMethod = "password"
                         Log.d("Auth", "User signed in with email/password")
                     }
+
                     "google.com" -> {
                         // User signed in with Google
                         signInMethod = "google.com"
                         Log.d("Auth", "User signed in with Google")
                     }
+
                     "github.com" -> {
                         // User signed in with GitHub
                         signInMethod = "github.com"
@@ -172,7 +172,10 @@ fun DisplayImage(context: Context) {
                 fetchedUser?.let {
                     currentUser = it
                     MyDatabase.fetchPreferences(currentUser.id) { preferences ->
-                        Log.d("Shared Preferences", "Retrieved preferences for student ID: ${currentUser.id}: $preferences")
+                        Log.d(
+                            "Shared Preferences",
+                            "Retrieved preferences for student ID: ${currentUser.id}: $preferences"
+                        )
                         preferences?.let {
                             selectedImageUri = Uri.parse(preferences.profileImageLink)
                         }
@@ -227,7 +230,7 @@ fun DisplayImage(context: Context) {
             onClick = { launcher.launch("image/*") },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = GlobalColors.secondaryColor
+                containerColor = CC.secondary()
             ),
             enabled = selectedImageUri == null || signInMethod == "password"
         ) {
@@ -240,13 +243,11 @@ fun DisplayImage(context: Context) {
         selectedImageUri?.let {
             MyDatabase.generateSharedPreferencesID { id ->
                 val preferences = UserPreferences(
-                    studentID = currentUser.id,
-                    id = id,
-                    profileImageLink = it.toString()
+                    studentID = currentUser.id, id = id, profileImageLink = it.toString()
                 )
-               MyDatabase.writePreferences(preferences) {
-                   Log.d("Shared Preferences", "Image URI stored in SharedPreferences")
-               }
+                MyDatabase.writePreferences(preferences) {
+                    Log.d("Shared Preferences", "Image URI stored in SharedPreferences")
+                }
             }
         }
     }
@@ -254,40 +255,31 @@ fun DisplayImage(context: Context) {
 
 
 @Composable
-fun ProfileDetails(navController: NavController, context: Context){
+fun ProfileDetails(navController: NavController, context: Context) {
     val auth = FirebaseAuth.getInstance()
     val user = auth.currentUser
-    var currentUser by remember { mutableStateOf(User()) }
-    var currentFirstName by remember { mutableStateOf(currentUser.firstName) }
-    var currentLastName by remember { mutableStateOf(currentUser.lastName) }
-    var currentPhone by remember { mutableStateOf(currentUser.phoneNumber) }
+    var currentFirstName by remember { mutableStateOf("") }
+    var currentLastName by remember { mutableStateOf("") }
+    var currentPhone by remember { mutableStateOf("") }
     var isEditing by remember { mutableStateOf(false) }
-    var currentGender by remember { mutableStateOf(currentUser.gender) }
-    var currentEmail by remember { mutableStateOf(currentUser.email) }
-    var currentAdmissionNumber by remember { mutableStateOf(currentUser.id) }
+    var currentGender by remember { mutableStateOf("") }
+    var currentEmail by remember { mutableStateOf("") }
+    var currentAdmissionNumber by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        user?.email?.let { email ->
-            fetchUserDataByEmail(email) { fetchedUser ->
-                fetchedUser?.let {
-                    currentUser = it
-                    Log.d("Current Phone","fetched User  is: $it")
-                    currentFirstName = it.firstName
-                    Log.d("Current Phone","fetched first name  is: ${it.firstName}")
-                    currentLastName = it.lastName
-                    Log.d("Current Phone","fetched last name is: ${it.lastName}")
-                    currentPhone = it.phoneNumber
-                    Log.d("Current Phone","fetched phone number is: ${it.phoneNumber}")
-                    currentGender = it.gender
-                    Log.d("Current Phone","fetched gender is: ${it.gender}")
-                    currentEmail = it.email
-                    Log.d("Current Phone","fetched email is: ${it.email}")
-                    currentAdmissionNumber = it.id
-                    Log.d("Current Phone","fetched admission number is: ${it.id}")
-                }
+        fetchUserDataByEmail(user?.email!!) { fetchedUser ->
+            fetchedUser?.let {
+                currentEmail = it.email
+                currentPhone = it.phoneNumber
+                currentFirstName = it.firstName
+                currentLastName = it.lastName
+                currentGender = it.gender
+                currentAdmissionNumber = it.id
+                Log.d("Phone number:", currentPhone)
             }
         }
     }
+
 
     fun saveUserData() {
         MyDatabase.writeUsers(
@@ -298,17 +290,17 @@ fun ProfileDetails(navController: NavController, context: Context){
                 phoneNumber = currentPhone,
                 gender = currentGender,
                 email = currentEmail,
-                isAdmin = currentUser.isAdmin
             )
         ) {
             Toast.makeText(context, "Profile Updated", Toast.LENGTH_SHORT).show()
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxWidth(0.9f)) {
-        Row(modifier = Modifier
-            .fillMaxWidth(),
+    Column(
+        modifier = Modifier.fillMaxWidth(0.7f)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End
         ) {
@@ -321,7 +313,7 @@ fun ProfileDetails(navController: NavController, context: Context){
                 Icon(
                     if (isEditing) Icons.Filled.Check else Icons.Default.Edit,
                     contentDescription = "save",
-                    tint = GlobalColors.textColor
+                    tint = CC.textColor()
                 )
             }
         }
@@ -371,36 +363,46 @@ fun ProfileDetails(navController: NavController, context: Context){
 
 
 @Composable
-fun MyDetails(title: String, value: String, onValueChange: (String) -> Unit, context: Context, fontSize: TextUnit = 18.sp, isEditing: Boolean){
-    Row(modifier = Modifier
-        .height(60.dp)
-        .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween) {
-        Row(modifier = Modifier.width(100.dp)) {
-            Text(title, style = CC.descriptionTextStyle(context))
-        }
+fun MyDetails(
+    title: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    context: Context,
+    fontSize: TextUnit = 18.sp,
+    isEditing: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .height(100.dp)  // Adjusted height to accommodate both the title and text field
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = title,
+            style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 4.dp)  // Padding to separate the title from the text field
+        )
 
         TextField(
             value = value,
             textStyle = CC.titleTextStyle(context).copy(fontSize = fontSize),
-            onValueChange = onValueChange, // Pass the callback directly
+            onValueChange = onValueChange,
             colors = TextFieldDefaults.colors(
-                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-                focusedIndicatorColor = GlobalColors.tertiaryColor,
+                unfocusedIndicatorColor = CC.tertiary(),
+                focusedIndicatorColor = CC.tertiary(),
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = GlobalColors.textColor,
-                unfocusedTextColor = GlobalColors.textColor,
+                focusedTextColor = CC.textColor(),
+                unfocusedTextColor = CC.textColor(),
                 disabledContainerColor = Color.Transparent
             ),
             enabled = isEditing,
             modifier = Modifier
-                .fillMaxWidth(1f)
+                .fillMaxWidth()
                 .height(60.dp)
         )
     }
 }
+
 
 @Composable
 fun GenderRow(context: Context) {
@@ -412,18 +414,16 @@ fun GenderRow(context: Context) {
     var phoneNumber by remember { mutableStateOf(currentUser.phoneNumber) }
     val user = auth.currentUser
     var gender by remember { mutableStateOf("") }
-    gender = if(!selectedFemale && !selectedMale){
+    gender = if (!selectedFemale && !selectedMale) {
         "not set"
-    }else if(!selectedFemale ){
+    } else if (!selectedFemale) {
         "Male"
-    }
-    else{
+    } else {
         "Female"
     }
-    if (gender == "Male"){
+    if (gender == "Male") {
         selectedMale = true
-    }
-    else{
+    } else {
         selectedFemale = true
     }
 
@@ -438,70 +438,64 @@ fun GenderRow(context: Context) {
             }
         }
     }
-    if(save){
-        MyDatabase.writeUsers(
-            user = User(
-                id = currentUser.id,
-                firstName = currentUser.firstName,
-                lastName = currentUser.lastName,
-                phoneNumber = currentUser.phoneNumber,
-                gender = gender,
-                email = currentUser.email,
-                isAdmin = currentUser.isAdmin
-            ),{}
-        )
+    if (save) {
+        MyDatabase.writeUsers(user = User(
+            id = currentUser.id,
+            firstName = currentUser.firstName,
+            lastName = currentUser.lastName,
+            phoneNumber = currentUser.phoneNumber,
+            gender = gender,
+            email = currentUser.email,
+        ), {})
     }
     Row(
         modifier = Modifier
             .height(70.dp)
-            .fillMaxWidth(0.8f),
+            .fillMaxWidth(0.9f),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text("Gender", style = CC.descriptionTextStyle(context))
+        Text("Gender", style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold))
         Spacer(modifier = Modifier.width(10.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(1f),
-            horizontalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxWidth(1f), horizontalArrangement = Arrangement.Center
         ) {
             IconButton(
                 onClick = {
                     save = true
                     selectedMale = true
                     selectedFemale = false
-                },
-                modifier = Modifier
-                    .size(60.dp)
+                }, modifier = Modifier
+                    .size(40.dp)
                     .background(
-                        if (selectedMale) GlobalColors.extraColor1 else GlobalColors.secondaryColor,
+                        if (selectedMale) CC.extraColor1() else CC.secondary(),
                         CircleShape
                     )
             ) {
                 Icon(
                     imageVector = Icons.Default.Male,
                     contentDescription = "Male",
-                    tint = if (selectedMale) GlobalColors.extraColor2 else GlobalColors.extraColor1,
+                    tint = if (selectedMale) CC.extraColor2() else CC.extraColor1(),
                     modifier = Modifier.size(50.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(30.dp))
+            Spacer(modifier = Modifier.width(100.dp))
             IconButton(
                 onClick = {
                     save = true
                     selectedFemale = true
                     selectedMale = false
-                },
-                modifier = Modifier
-                    .size(60.dp)
+                }, modifier = Modifier
+                    .size(40.dp)
                     .background(
-                        if (selectedFemale) GlobalColors.extraColor1 else GlobalColors.secondaryColor,
+                        if (selectedFemale) CC.extraColor1() else CC.secondary(),
                         CircleShape
                     )
             ) {
                 Icon(
                     imageVector = Icons.Default.Female,
                     contentDescription = "Female",
-                    tint = if (selectedFemale) GlobalColors.extraColor2 else GlobalColors.extraColor1,
+                    tint = if (selectedFemale) CC.extraColor2() else CC.extraColor1(),
                     modifier = Modifier.size(50.dp)
                 )
             }
@@ -534,9 +528,13 @@ fun DangerZone(navController: NavController, context: Context) {
     }
 
     Spacer(modifier = Modifier.height(20.dp))
-    Column(modifier = Modifier.fillMaxWidth(0.9f)) {
+    Column(modifier = Modifier.fillMaxWidth(0.9f),
+        horizontalAlignment = Alignment.CenterHorizontally) {
         Row {
-            Text("Danger Zone", style = CC.titleTextStyle(context).copy(color = Color.Red.copy(0.7f)))
+            Text(
+                "Danger Zone",
+                style = CC.titleTextStyle(context).copy(color = Color.Red.copy(0.7f))
+            )
         }
         Spacer(modifier = Modifier.height(10.dp))
         Row {
@@ -546,37 +544,46 @@ fun DangerZone(navController: NavController, context: Context) {
         Button(
             onClick = {
                 showPuzzle = true
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = GlobalColors.secondaryColor
-            ),
-            shape = RoundedCornerShape(10.dp)
+            }, colors = ButtonDefaults.buttonColors(
+                containerColor = CC.secondary()
+            ), shape = RoundedCornerShape(10.dp)
         ) {
             Text("Solve a Puzzle before proceeding", style = CC.descriptionTextStyle(context))
         }
 
         if (showPuzzle) {
             Spacer(modifier = Modifier.height(10.dp))
-            Text("Please enter the following code to confirm account deletion:", style = CC.descriptionTextStyle(context))
+            Text(
+                "Please enter the following code to proceed with account deletion:",
+                style = CC.descriptionTextStyle(context).copy(textAlign = TextAlign.Center)
+            )
             Spacer(modifier = Modifier.height(10.dp))
-            Text(puzzleWords, style = CC.titleTextStyle(context), color = GlobalColors.tertiaryColor)
+            Text(
+                puzzleWords,
+                style = CC.titleTextStyle(context),
+                color = CC.tertiary()
+            )
             Spacer(modifier = Modifier.height(10.dp))
             TextField(
                 value = userInput,
-                textStyle = CC.titleTextStyle(context).copy(fontSize = 18.sp, color = if(isError) Color.Red else GlobalColors.textColor),
+                textStyle = CC.titleTextStyle(context).copy(
+                    fontSize = 18.sp,
+                    color = if (isError) Color.Red else CC.textColor()
+                ),
                 onValueChange = {
                     isError = false
-                    userInput = it },
+                    userInput = it
+                },
                 isError = isError,
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-                    focusedIndicatorColor = GlobalColors.tertiaryColor,
+                    unfocusedIndicatorColor = CC.tertiary(),
+                    focusedIndicatorColor = CC.tertiary(),
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
-                    focusedTextColor = GlobalColors.textColor,
-                    unfocusedTextColor = GlobalColors.textColor,
+                    focusedTextColor = CC.textColor(),
+                    unfocusedTextColor = CC.textColor(),
                     errorIndicatorColor = Color.Red,
-                    errorContainerColor = GlobalColors.primaryColor
+                    errorContainerColor = CC.primary()
                 ),
                 singleLine = true,
                 modifier = Modifier
@@ -584,41 +591,102 @@ fun DangerZone(navController: NavController, context: Context) {
                     .height(60.dp)
             )
             Spacer(modifier = Modifier.height(10.dp))
-            Button(
-                onClick = {
-                    if (userInput == puzzleWords) {
-                        showWarning = true
-                        puzzleWords = generateRandomNonsenseWord()
-                        userInput = ""
-                    } else{
-                        isError = true
-                        puzzleWords = generateRandomNonsenseWord()
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = GlobalColors.secondaryColor
-                ),
-                shape = RoundedCornerShape(10.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(0.9f),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Proceed", style = CC.descriptionTextStyle(context))
+                Button(
+                    onClick = {
+                        if (userInput == puzzleWords) {
+                            showWarning = true
+                            puzzleWords = generateRandomNonsenseWord()
+                            userInput = ""
+                        } else {
+                            isError = true
+                            puzzleWords = generateRandomNonsenseWord()
+                        }
+                    }, colors = ButtonDefaults.buttonColors(
+                        containerColor = CC.secondary()
+                    ), shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Proceed", style = CC.descriptionTextStyle(context))
+                }
+                Button(
+                    onClick = { showPuzzle = false }, colors = ButtonDefaults.buttonColors(
+                        containerColor = CC.secondary()
+                    ), shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Abort", style = CC.descriptionTextStyle(context))
+                }
             }
             if (showWarning) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(onClick = {
-                    deleteConfirmed = true
-                },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red
-                    ),
-                    shape = RoundedCornerShape(10.dp)
-                    ) {
-                    Text("Send Account Deletion Request", style = CC.descriptionTextStyle(context))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Important Notice: Account Deletion",
+                        style = CC.descriptionTextStyle(context).copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Red
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Deletion Timeline",
+                        style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                        text = "Your account will be permanently deleted within 3 days. You will have full access until then.",
+                        style = CC.descriptionTextStyle(context).copy(
+                            textAlign = TextAlign.Center,
+                            color = Color.Red.copy(0.5f)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Data Deletion",
+                        style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                        text = "Upon deletion, all associated data will be permanently erased, including profile information, user content, and settings.",
+                        style = CC.descriptionTextStyle(context).copy(
+                            textAlign = TextAlign.Center
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Account Reversal",
+                        style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                        text = "If you wish to reverse the deletion process, please contact our support team before the 3-day period expires.",
+                        style = CC.descriptionTextStyle(context).copy(
+                            textAlign = TextAlign.Center
+                        )
+                    )
                 }
-                Text(
-                    "Your account will be deleted within 3 days. You will have acces to your account upto that period",
-                    style = CC.descriptionTextStyle(context),
-                    color = Color.Red.copy(0.5f)
-                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = {
+                        deleteConfirmed = true
+                    }, colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red
+                    ), shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth(0.9f)
+                ) {
+                    if (loading) {
+                        CircularProgressIndicator(
+                            color = CC.primary(),
+                            modifier = Modifier.size(24.dp)
+                        )}
+                    else{
+                        Text(
+                            "Send Account Deletion Request",
+                            style = CC.descriptionTextStyle(context)
+                        )
+                    }
+                }
             }
         }
 
@@ -626,17 +694,14 @@ fun DangerZone(navController: NavController, context: Context) {
             loading = true
             MyDatabase.generateAccountDeletionID { id ->
                 val account = AccountDeletion(
-                    id = id,
-                    admissionNumber = currentAdmissionNumber,
-                    email = currentEmail
+                    id = id, admissionNumber = currentAdmissionNumber, email = currentEmail
 
                 )
                 MyDatabase.writeAccountDeletionData(account) {
-                    Log.d("Account Deletion Request", "Request sent Successfully!")
                     loading = false
                     showWarning = false
                     showPuzzle = false
-                    Toast.makeText(context, "Account Deletion Request Sent", Toast.LENGTH_SHORT).show()
+                    Log.d("Account Deletion Request", "Request sent Successfully!")
                 }
             }
         }
@@ -644,10 +709,11 @@ fun DangerZone(navController: NavController, context: Context) {
 }
 
 fun generateRandomNonsenseWord(length: Int = 6): String {
-    val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('!', '@', '#', '$', '%', '^', '&', '*')
-    return (1..length)
-        .map { allowedChars.random(Random) }
-        .joinToString("")
+    val allowedChars =
+        ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('!', '@', '#', '$', '%', '^', '&', '*')
+    return (1..length).map { allowedChars.random(Random) }.joinToString("")
 }
+
+
 
 
