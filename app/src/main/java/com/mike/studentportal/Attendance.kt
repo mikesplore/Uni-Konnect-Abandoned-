@@ -157,7 +157,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                     .tabIndicatorOffset(tabPositions[selectedTabIndex])
                     .height(4.dp)
                     .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
-                    .background(GlobalColors.secondaryColor, CircleShape)
+                    .background(CC.secondary(), CircleShape)
             )
         }
 
@@ -187,7 +187,7 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                     contentColor = Color.Black,
                     indicator = indicator,
                     edgePadding = 0.dp,
-                    containerColor = GlobalColors.primaryColor
+                    containerColor = CC.primary()
                 ) {
                     courses.forEachIndexed { index, course ->
                         Tab(selected = selectedTabIndex == index, onClick = {
@@ -196,17 +196,17 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (selectedTabIndex == index) GlobalColors.secondaryColor else GlobalColors.primaryColor,
+                                        if (selectedTabIndex == index) CC.secondary() else CC.primary(),
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(8.dp), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = course.courseName,
-                                    color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                    color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                                 )
                             }
-                        }, modifier = Modifier.background(GlobalColors.primaryColor)
+                        }, modifier = Modifier.background(CC.primary())
                         )
                     }
                 }
@@ -327,19 +327,19 @@ fun AttendanceList(
 
             },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.secondaryColor),
+            colors = ButtonDefaults.buttonColors(containerColor = CC.secondary()),
             enabled = attendanceState.state,
             shape = RoundedCornerShape(10.dp)
         ) {
             if (loading) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = GlobalColors.textColor)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = CC.textColor())
             } else if (attendanceState.state) {
                 Text("Sign Attendance", style = CC.descriptionTextStyle(context))
             } else {
                 Icon(
                     Icons.Default.Lock,
                     contentDescription = "Locked",
-                    tint = GlobalColors.tertiaryColor
+                    tint = CC.tertiary()
                 )
             }
         }
@@ -357,22 +357,22 @@ fun AttendanceList(
                 modifier = Modifier
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.secondaryColor,
+                        color = CC.secondary(),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .width(300.dp)
                     .padding(16.dp)
-                    .background(GlobalColors.secondaryColor.copy(alpha = 0.1f)),
+                    .background(CC.secondary().copy(alpha = 0.1f)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "Total Present:",
-                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                    style = CC.descriptionTextStyle(context).copy(color = CC.textColor())
                 )
                 Text(
                     text = "$presentCount",
-                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                    style = CC.descriptionTextStyle(context).copy(color = CC.textColor())
                 )
             }
 
@@ -382,22 +382,22 @@ fun AttendanceList(
                 modifier = Modifier
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.secondaryColor,
+                        color = CC.secondary(),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .width(300.dp)
                     .padding(16.dp)
-                    .background(GlobalColors.primaryColor.copy(alpha = 0.1f)),
+                    .background(CC.primary().copy(alpha = 0.1f)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "Total Absent:",
-                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                    style = CC.descriptionTextStyle(context).copy(color = CC.textColor())
                 )
                 Text(
                     text = "$absentCount",
-                    style = CC.descriptionTextStyle(context).copy(color = GlobalColors.textColor)
+                    style = CC.descriptionTextStyle(context).copy(color = CC.textColor())
                 )
             }
         }
@@ -407,7 +407,7 @@ fun AttendanceList(
 
 @Composable
 fun AttendanceCard(attendance: Attendance, context: Context, weekIndex: Int) {
-    val cardColor = if (attendance.status == "Present") GlobalColors.extraColor1 else GlobalColors.extraColor2
+    val cardColor = if (attendance.status == "Present") CC.extraColor1() else CC.extraColor2()
     val icon = if (attendance.status == "Present") Icons.Filled.Check else Icons.Filled.Close // Use Filled.Close for Absent
     val tint = if (attendance.status == "Present") Color.Green else Color.Red
 
