@@ -136,7 +136,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     .tabIndicatorOffset(tabPositions[selectedTabIndex])
                     .height(4.dp)
                     .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
-                    .background(GlobalColors.secondaryColor, CircleShape)
+                    .background(CC.secondary(), CircleShape)
             )
         }
 
@@ -166,11 +166,11 @@ fun AssignmentScreen(navController: NavController, context: Context) {
 
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier.background(GlobalColors.primaryColor),
-                    contentColor = GlobalColors.primaryColor,
+                    modifier = Modifier.background(CC.primary()),
+                    contentColor = CC.primary(),
                     indicator = indicator,
                     edgePadding = 0.dp,
-                    containerColor = GlobalColors.primaryColor
+                    containerColor = CC.primary()
                 ) {
                     courses.forEachIndexed { index, course ->
 
@@ -184,17 +184,17 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (selectedTabIndex == index) GlobalColors.secondaryColor else GlobalColors.primaryColor,
+                                        if (selectedTabIndex == index) CC.secondary() else CC.primary(),
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(8.dp), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = course.courseName,
-                                    color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                    color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                                 )
                             }
-                        }, modifier = Modifier.background(GlobalColors.primaryColor)
+                        }, modifier = Modifier.background(CC.primary())
                         )
                     }
                 }
@@ -274,14 +274,14 @@ fun AssignmentCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp), colors = CardDefaults.cardColors(
-                containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
+                containerColor = CC.secondary(), contentColor = CC.textColor()
             ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
         ) {
             Column(
                 modifier = Modifier
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(16.dp)
@@ -294,7 +294,7 @@ fun AssignmentCard(
                     Text(
                         text = assignment.name,
                         style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
-                        color = GlobalColors.textColor
+                        color = CC.textColor()
                     )
 
                 }
@@ -302,14 +302,14 @@ fun AssignmentCard(
                 Text(
                     text = "Author: ${Details.firstName.value}",
                     style = CC.descriptionTextStyle(context),
-                    color = GlobalColors.tertiaryColor
+                    color = CC.tertiary()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = assignment.description,
                     style = CC.descriptionTextStyle(context),
-                    color = GlobalColors.textColor
+                    color = CC.textColor()
                 )
 
             }
@@ -331,14 +331,14 @@ fun LoadingAssignmentCard() {
                 .height(100.dp)
                 .fillMaxWidth()
                 .padding(8.dp), colors = CardDefaults.cardColors(
-                containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
+                containerColor = CC.secondary(), contentColor = CC.textColor()
             ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
         ) {
             Column(
                 modifier = Modifier
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(16.dp)
