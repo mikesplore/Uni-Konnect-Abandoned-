@@ -132,14 +132,14 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
 
         Column(
             modifier = Modifier
-                .background(GlobalColors.primaryColor)
+                .background(CC.primary())
                 .fillMaxSize()
         ) {
             if (isLoading) {
                 Column(
                     modifier = Modifier
                         .padding(10.dp)
-                        .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
+                        .background(CC.primary(), RoundedCornerShape(10.dp))
                         .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -192,7 +192,7 @@ fun AnnouncementCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(GlobalColors.secondaryColor, shape = RoundedCornerShape(8.dp))
+            .background(CC.secondary(), shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
         Row(
@@ -211,14 +211,14 @@ fun AnnouncementCard(
                 text = announcement.title,
                 style = CC.descriptionTextStyle(context),
                 fontWeight = FontWeight.Bold,
-                color = GlobalColors.textColor,
+                color = CC.textColor(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
             Button(
                 onClick = { expanded = !expanded },
-                colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
+                colors = ButtonDefaults.buttonColors(containerColor = CC.primary())
             ) {
                 Text(text, style = CC.descriptionTextStyle(context))
             }
@@ -229,7 +229,7 @@ fun AnnouncementCard(
             Text(
                 text = announcement.description,
                 style = CC.descriptionTextStyle(context).copy(fontSize = 14.sp),
-                color = GlobalColors.textColor.copy(alpha = 0.8f),
+                color = CC.textColor().copy(alpha = 0.8f),
                 maxLines = if (expanded) Int.MAX_VALUE else 3,
                 overflow = TextOverflow.Ellipsis
             )
@@ -242,12 +242,12 @@ fun AnnouncementCard(
                 Text(
                     text = announcement.author,
                     style = CC.descriptionTextStyle(context).copy(fontSize = 12.sp),
-                    color = GlobalColors.textColor.copy(alpha = 0.6f),
+                    color = CC.textColor().copy(alpha = 0.6f),
                 )
                 Text(
                     text = announcement.date,
                     style = CC.descriptionTextStyle(context).copy(fontSize = 12.sp),
-                    color = GlobalColors.textColor.copy(alpha = 0.6f),
+                    color = CC.textColor().copy(alpha = 0.6f),
                 )
             }
         }
