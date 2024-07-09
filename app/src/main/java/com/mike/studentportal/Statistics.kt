@@ -3,8 +3,13 @@ package com.mike.studentportal
 import android.content.Context
 import android.graphics.Paint
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,15 +17,24 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -38,14 +52,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.mike.studentportal.MyDatabase.getAllScreenTimes
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -54,7 +71,7 @@ import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BarGraph(context: Context) {
+fun BarGraph(navController: NavController, context: Context) {
     val courses = remember { mutableStateListOf<Course>() }
     var animatedValues by remember { mutableStateOf(emptyList<Float>()) }
 
@@ -79,26 +96,48 @@ fun BarGraph(context: Context) {
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text("Statistics", style = CC.titleTextStyle(context)) },
+            title = {},
+            navigationIcon = {
+                IconButton(onClick = {navController.navigate("dashboard")}) {
+                    Icon(Icons.Default.ArrowBackIosNew, contentDescription = null,
+                        tint = GlobalColors.textColor)
+                }
+            },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
         )
     }, content = {
         Column(
             modifier = Modifier
-
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState())
                 .padding(paddingValues = it)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Course Visits", style = CC.titleTextStyle(context))
+            Row(modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth(0.9f))  {
+                Text("Statistics", style = CC.titleTextStyle(context).copy(fontSize = 40.sp, fontWeight = FontWeight.ExtraBold))
+            }
 
+            Text("Course Visits", style = CC.titleTextStyle(context).copy(fontWeight = FontWeight.ExtraBold))
+            Text(
+                "Number of visits to each course across all users",
+                style = CC.descriptionTextStyle(context)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
             Card(
-                modifier = Modifier.height(400.dp), shape = RoundedCornerShape(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(400.dp), shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = GlobalColors.primaryColor
+                )
             ) {
                 BarGraphContent(courses, animatedValues, context)
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Text("Screen Time", style = CC.titleTextStyle(context))
+            Text("Screen Time", style = CC.titleTextStyle(context), fontWeight = FontWeight.ExtraBold)
             Text(
                 "Time spent across different screens",
                 style = CC.descriptionTextStyle(context)
@@ -132,17 +171,16 @@ fun BarGraphContent(courses: List<Course>, animatedValues: List<Float>, context:
         .pointerInput(Unit) {
             detectTapGestures { offset ->
                 val canvasWidth = size.width
-                val canvasHeight = size.height
-                val graphWidth = canvasWidth * 0.7f
+                val graphWidth = canvasWidth * 0.6f
                 val leftPadding = canvasWidth * 0.1f
-                val barWidth = graphWidth / (courses.size * 2)
+                val barWidth = graphWidth / (courses.size * 4)
                 val spacing = barWidth / 2
                 val clickedIndex = ((offset.x - leftPadding) / (barWidth * 2 + spacing)).toInt()
                 if (clickedIndex in courses.indices) {
                     clickedBarIndex = if (clickedBarIndex == clickedIndex) -1 else clickedIndex
                 }
             }
-        }) {
+        },) {
         val canvasWidth = size.width
         val canvasHeight = size.height
         val graphWidth = canvasWidth * 0.7f
@@ -166,17 +204,17 @@ fun BarGraphContent(courses: List<Course>, animatedValues: List<Float>, context:
             strokeWidth = 2f
         )
 
-        // Draw Y-axis title
-        rotate(90f) {
-            drawContext.canvas.nativeCanvas.drawText("Total Visits",
-                canvasHeight / 2,
-                -leftPadding / 2,
-                Paint().apply {
-                    color = GlobalColors.textColor.toArgb()
-                    textAlign = android.graphics.Paint.Align.CENTER
-                    textSize = 14.sp.toPx()
-                })
-        }
+//        // Draw Y-axis title
+//        rotate(90f) {
+//            drawContext.canvas.nativeCanvas.drawText("Total Visits",
+//                canvasHeight / 2,
+//                -leftPadding / 2,
+//                Paint().apply {
+//                    color = GlobalColors.textColor.toArgb()
+//                    textAlign = android.graphics.Paint.Align.CENTER
+//                    textSize = 14.sp.toPx()
+//                })
+//        }
 
         // Draw X-axis title
         drawContext.canvas.nativeCanvas.drawText("Courses",
@@ -224,6 +262,7 @@ fun BarGraphContent(courses: List<Course>, animatedValues: List<Float>, context:
                     })
             }
 
+            //draw the bars
             drawRoundRect(
                 color = color, topLeft = Offset(
                     x = leftPadding + index * (barWidth * 2 + spacing),
@@ -231,20 +270,21 @@ fun BarGraphContent(courses: List<Course>, animatedValues: List<Float>, context:
                 ), size = Size(barWidth * 2, animatedHeight), cornerRadius = CornerRadius(10f, 10f)
             )
 
-            drawContext.canvas.nativeCanvas.drawText(course.courseCode,
-                leftPadding + index * (barWidth * 2 + spacing) + barWidth,
-                canvasHeight - bottomPadding + 15.dp.toPx(),
-                Paint().apply {
-                    val textStyle = TextStyle(
-                        color = GlobalColors.textColor,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 12.sp
-                    )
-                    color = textStyle.color // Extract color from TextStyle
-                    textAlign = android.graphics.Paint.Align.CENTER // Set text alignment
-                    textSize = textStyle.fontSize.toPx() // Extract font size from TextStyle
-
-                })
+//            //Draw the course code
+//            drawContext.canvas.nativeCanvas.drawText(course.courseCode,
+//                leftPadding + index * (barWidth * 2 + spacing) + barWidth,
+//                canvasHeight - bottomPadding + 15.dp.toPx(),
+//                Paint().apply {
+//                    val textStyle = TextStyle(
+//                        color = GlobalColors.textColor,
+//                        fontFamily = FontFamily.SansSerif,
+//                        fontSize = 12.sp
+//                    )
+//                    color = textStyle.color // Extract color from TextStyle
+//                    textAlign = android.graphics.Paint.Align.CENTER // Set text alignment
+//                    textSize = textStyle.fontSize.toPx() // Extract font size from TextStyle
+//
+//                })
 
             // Draw visit count inside the bar
             if (animatedHeight > 20.dp.toPx()) {
@@ -273,21 +313,27 @@ fun ScreenTimeList(context: Context) {
                 Log.d("fetched Screen time", "The screen times are: $fetchedScreenTimes")
                 screenTimes.clear()
                 screenTimes.addAll(fetchedScreenTimes)
+                // Sort the list in descending order of screen time
+                screenTimes.sortByDescending { it.time }
             }
         }
     }
 
-    LazyColumn(
+    // Display the screen times with animations
+    Column(
         modifier = Modifier
-            .background(GlobalColors.extraColor2, RoundedCornerShape(16.dp))
-            .border(
-                width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(16.dp)
-            )
             .padding(10.dp)
-            .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(screenTimes) { screenTime ->
-            ScreenTimeItem(screenTime, context)
+        for (screenTime in screenTimes) {
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn() + slideInVertically(),
+                exit = fadeOut() + slideOutVertically()
+            ) {
+                ScreenTimeItem(screenTime, context)
+            }
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -295,23 +341,30 @@ fun ScreenTimeList(context: Context) {
 
 @Composable
 fun ScreenTimeItem(screenTime: ScreenTime, context: Context) {
-    Row(
+    Column(
         modifier = Modifier
             .border(
-                width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(16.dp)
+                width = 1.dp,
+                color = GlobalColors.textColor,
+                shape = RoundedCornerShape(10.dp) // Use RectangleShape for a square
             )
-            .height(50.dp)
-            .background(GlobalColors.secondaryColor, RoundedCornerShape(16.dp))
+            .background(
+                GlobalColors.extraColor2.copy(0.5f),
+                RoundedCornerShape(10.dp)
+            )
             .fillMaxWidth(0.9f)
             .padding(16.dp)
     ) {
         Text(
             text = screenTime.screenName,
-            modifier = Modifier.weight(1f),
-            style = CC.descriptionTextStyle(context)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp), // Add padding between the two Text composables
+            style = CC.titleTextStyle(context)
         )
         Text(
-            text = convertToHoursMinutesSeconds(screenTime.time ?: 0L),
+            text = convertToHoursMinutesSeconds(screenTime.time),
+            modifier = Modifier.fillMaxWidth(),
             style = CC.descriptionTextStyle(context)
         )
     }
@@ -328,13 +381,13 @@ fun convertToHoursMinutesSeconds(timeInMillis: Long): String {
     // Build the formatted string based on non-zero values
     val timeComponents = mutableListOf<String>()
     if (hours > 0) {
-        timeComponents.add(String.format(Locale.getDefault(), "%02d hour(s)", hours))
+        timeComponents.add(String.format(Locale.getDefault(), "%02d hours", hours))
     }
     if (minutes > 0) {
-        timeComponents.add(String.format(Locale.getDefault(), "%02d minute(s)", minutes))
+        timeComponents.add(String.format(Locale.getDefault(), "%02d minutes", minutes))
     }
     if (seconds > 0 || timeComponents.isEmpty()) {
-        timeComponents.add(String.format(Locale.getDefault(), "%02d second(s)", seconds))
+        timeComponents.add(String.format(Locale.getDefault(), "%02d seconds", seconds))
     }
 
     // Join the components with a comma
