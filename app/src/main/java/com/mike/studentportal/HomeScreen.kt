@@ -2,6 +2,7 @@ package com.mike.studentportal
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -11,6 +12,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -127,15 +132,9 @@ fun HomeScreen(context: Context, navController: NavController) {
             loading = false // Set loading to false after fetching
         }
     }
-
-
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Background(context)
         Column(
             modifier = Modifier
-
+                .background(GlobalColors.primaryColor)
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -175,8 +174,12 @@ fun HomeScreen(context: Context, navController: NavController) {
 
                     }
                 } else {
+                    AnimatedVisibility(visible = !loading,
+                        enter = slideInHorizontally(animationSpec = tween(10000)) + fadeIn(animationSpec = tween(1000)),
+                        exit = slideOutHorizontally(animationSpec = tween(10000))+ fadeOut(animationSpec = tween(1000))
+                    ) {
                     IconList(courses, navController, context)
-                }
+                }}
             }
             Row(
                 modifier = Modifier
@@ -260,7 +263,7 @@ fun HomeScreen(context: Context, navController: NavController) {
             Spacer(modifier = Modifier.height(50.dp))
 
         }
-    }
+
 }
 
 
@@ -398,6 +401,7 @@ fun IconList(courses: List<Course>, navController: NavController, context: Conte
         contentPadding = PaddingValues(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         items(courses) { course ->
             IconBox(course, navController, context) // Pass course, navController to IconBox
         }
@@ -426,21 +430,32 @@ fun TodayTimetable(context: Context) {
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         if (loading) {
-            ColorProgressIndicator(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .height(100.dp)
-            )
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(GlobalColors.primaryColor)
+                    .border(
+                        1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
+                    )
+                    .padding(16.dp), contentAlignment = Alignment.Center
+            ) {
+                ColorProgressIndicator(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .fillMaxSize(),
+                )
+            }
         } else {
             if (timetables.isNullOrEmpty()) {
                 Box(
                     modifier = Modifier
-
+                        .fillMaxWidth()
+                        .height(200.dp)
                         .background(GlobalColors.primaryColor)
                         .border(
                             1.dp, GlobalColors.tertiaryColor, shape = RoundedCornerShape(16.dp)
                         )
-                        .fillMaxSize()
                         .padding(16.dp), contentAlignment = Alignment.Center
                 ) {
                     Text("No events", style = CC.titleTextStyle(context))
