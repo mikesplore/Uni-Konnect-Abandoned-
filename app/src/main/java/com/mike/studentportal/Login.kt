@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
+import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
 import com.mike.studentportal.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -50,6 +51,7 @@ fun LoginScreen(navController: NavController, context: Context) {
             GlobalColors.secondaryColor
         )
     )
+
 
     LaunchedEffect(Unit) {
         visible = true
@@ -308,9 +310,19 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     "Sign In successful!",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
+                                                Details.email.value = email
                                                 email = ""
                                                 password = ""
-                                                navController.navigate("dashboard")
+                                                auth.currentUser?.email?.let {
+                                                    fetchUserDataByEmail(it) { fetchedUser ->
+                                                       if(fetchedUser != null){
+                                                           navController.navigate("dashboard")
+                                                       }else{
+                                                           navController.navigate("moredetails")
+                                                       }
+                                                    }
+                                                }
+
                                                 FirebaseMessaging.getInstance().token.addOnCompleteListener(
                                                     OnCompleteListener { task ->
                                                         if (!task.isSuccessful) {
