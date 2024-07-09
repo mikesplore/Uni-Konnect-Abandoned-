@@ -51,8 +51,8 @@ fun PasswordReset(navController: NavController,context: Context) {
     var visible by remember { mutableStateOf(true) }
     val brush = Brush.verticalGradient(
         colors = listOf(
-            GlobalColors.primaryColor,
-            GlobalColors.secondaryColor
+            CC.primary(),
+            CC.secondary()
         )
     )
 
@@ -70,12 +70,12 @@ fun PasswordReset(navController: NavController,context: Context) {
                 TopAppBar(
                     title = { Text("Password Reset", style = CC.titleTextStyle(context), fontSize = 20.sp) },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = GlobalColors.primaryColor,
-                        titleContentColor = GlobalColors.textColor,
+                        containerColor = CC.primary(),
+                        titleContentColor = CC.textColor(),
                     )
                 )
             },
-            containerColor = GlobalColors.primaryColor
+            containerColor = CC.primary()
         ) {
             Column(
                 modifier = Modifier
@@ -124,8 +124,8 @@ fun PasswordReset(navController: NavController,context: Context) {
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.secondaryColor,
-                        contentColor = GlobalColors.tertiaryColor
+                        containerColor = CC.secondary(),
+                        contentColor = CC.tertiary()
                     ),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.width(200.dp)
@@ -135,8 +135,8 @@ fun PasswordReset(navController: NavController,context: Context) {
                 Spacer(modifier = Modifier.height(16.dp))
                 if (loading) {
                     CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor,
-                        trackColor = GlobalColors.textColor
+                        color = CC.secondary(),
+                        trackColor = CC.textColor()
                     )
                 }
                 Text(message)
