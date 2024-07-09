@@ -379,7 +379,7 @@ fun EmptyIconBox(context: Context) {
                 .border(1.dp, GlobalColors.tertiaryColor, shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text("Empty", style = CC.descriptionTextStyle(context))
+            Text("🕳️", style = CC.descriptionTextStyle(context))
         }
         Spacer(modifier = Modifier.height(5.dp))
         Row(
@@ -389,7 +389,7 @@ fun EmptyIconBox(context: Context) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text("Empty", style = CC.descriptionTextStyle(context))
+            Text("🕳️", style = CC.descriptionTextStyle(context))
         }
     }
 }
@@ -722,7 +722,7 @@ fun EmptyImageBox(context: Context) {
         contentAlignment = Alignment.Center
     ) {
 
-        Text("Empty", style = CC.descriptionTextStyle(context))
+        Text("🕳️", style = CC.descriptionTextStyle(context))
 
     }
 }
