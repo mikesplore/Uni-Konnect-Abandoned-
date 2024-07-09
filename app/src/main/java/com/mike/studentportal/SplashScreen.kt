@@ -70,8 +70,8 @@ fun SplashScreen(navController: NavController, context: Context) {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        GlobalColors.primaryColor, // Top color
-                        GlobalColors.secondaryColor  // Bottom color
+                        CC.primary(), // Top color
+                        CC.secondary()  // Bottom color
                     )
                 )
             )
@@ -84,7 +84,7 @@ fun SplashScreen(navController: NavController, context: Context) {
             Icon(
                 painter = painterResource(id = R.drawable.logo), // Replace with your logo
                 contentDescription = "App Logo",
-                tint = GlobalColors.extraColor2,
+                tint = CC.extraColor2(),
                 modifier = Modifier.size(120.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -100,8 +100,8 @@ fun SplashScreen(navController: NavController, context: Context) {
         }
 
         CircularProgressIndicator(
-            color = GlobalColors.textColor,
-            trackColor = GlobalColors.primaryColor,
+            color = CC.textColor(),
+            trackColor = CC.primary(),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 32.dp)
