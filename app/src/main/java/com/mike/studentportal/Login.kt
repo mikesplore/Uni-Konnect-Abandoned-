@@ -47,8 +47,8 @@ fun LoginScreen(navController: NavController, context: Context) {
     var loading by remember { mutableStateOf(false) }
     val brush = Brush.verticalGradient(
         colors = listOf(
-            GlobalColors.primaryColor,
-            GlobalColors.secondaryColor
+            CC.primary(),
+            CC.secondary()
         )
     )
 
@@ -76,16 +76,16 @@ fun LoginScreen(navController: NavController, context: Context) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBackIosNew,
                                 contentDescription = "Back",
-                                tint = GlobalColors.textColor
+                                tint = CC.textColor()
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = GlobalColors.primaryColor
+                        containerColor = CC.primary()
                     )
                 )
             },
-            containerColor = GlobalColors.primaryColor
+            containerColor = CC.primary()
         ) {
 
             Column(
@@ -188,7 +188,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Text(
                         text = "Or",
                         style = CC.descriptionTextStyle(context),
-                        color = GlobalColors.textColor
+                        color = CC.textColor()
                     )
                     Text(if(isSigningUp)"Sign up with your email and password" else "Sign in with your email and password", style = CC.descriptionTextStyle(context))
 
@@ -246,11 +246,11 @@ fun LoginScreen(navController: NavController, context: Context) {
                     modifier = Modifier
                         .border(
                             width = 1.dp,
-                            color = GlobalColors.textColor,
+                            color = CC.textColor(),
                             shape = RoundedCornerShape(10.dp)
                         )
                         .background(
-                            GlobalColors.secondaryColor,
+                            CC.secondary(),
                             shape = RoundedCornerShape(10.dp)
                         )
                         .height(50.dp)
@@ -360,8 +360,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                             if (loading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(30.dp),
-                                    color = GlobalColors.primaryColor,
-                                    trackColor = GlobalColors.textColor
+                                    color = CC.primary(),
+                                    trackColor = CC.textColor()
                                 )
                             } else {
                                 Text(if (isSigningUp) "Sign Up" else "Sign In", style = CC.descriptionTextStyle(context = context))
@@ -376,7 +376,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Text(
                         text = "Forgot Password? Reset",
                         fontSize = 16.sp,
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         modifier = Modifier.clickable { navController.navigate("passwordreset") }
                     )
                 }
@@ -393,13 +393,13 @@ fun LoginScreen(navController: NavController, context: Context) {
                         text = if (isSigningUp) "Already have an account? " else "Don't have an account?",
                         style = CC.descriptionTextStyle(context),
                         fontWeight = FontWeight.Bold,
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         modifier = Modifier.padding(5.dp)
                     )
                     Text(
                         text = if (isSigningUp) "Sign In" else "Sign Up",
                         style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold),
-                        color = GlobalColors.tertiaryColor
+                        color = CC.tertiary()
                     )
                 }
             }
