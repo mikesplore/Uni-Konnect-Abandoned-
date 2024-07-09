@@ -343,7 +343,6 @@ fun ChatScreen(
                             ChatBubble(
                                 chat = chat,
                                 isUser = chat.senderID == currentAdmissionNumber,
-                                isAdmin = chat.isAdmin == user.isAdmin,
                                 context = context,
                                 navController = navController
                             )
@@ -388,7 +387,7 @@ fun ChatScreen(
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun ChatBubble(
-    chat: Chat, isUser: Boolean, isAdmin: Boolean, context: Context, navController: NavController
+    chat: Chat, isUser: Boolean, context: Context, navController: NavController
 ) {
     val alignment = if (isUser) Alignment.TopEnd else Alignment.TopStart
     val backgroundColor = if (isUser) GlobalColors.extraColor1 else GlobalColors.extraColor2
@@ -417,7 +416,7 @@ fun ChatBubble(
                         horizontalArrangement = Arrangement.Start
                     ) {
                         Text(
-                            text = if(isAdmin) chat.senderName+ " "+"(Admin)" else chat.senderName,
+                            text = chat.senderName,
                             style = CC.descriptionTextStyle(context),
                             fontWeight = FontWeight.Bold,
                             color = GlobalColors.primaryColor
@@ -470,6 +469,6 @@ fun PreviewMyScreen() {
     ChatBubble(
         chat = Chat(
             senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01"
-        ), isUser = true, isAdmin = false, context = LocalContext.current, rememberNavController()
+        ), isUser = true, context = LocalContext.current, rememberNavController()
     )
 }
