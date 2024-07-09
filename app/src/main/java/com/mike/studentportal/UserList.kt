@@ -81,10 +81,10 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
                 actions = {
                     IconButton(onClick = {loading  = true}) {
                         Icon(Icons.Default.Refresh,"Refresh",
-                            tint = GlobalColors.textColor)
+                            tint = CC.textColor())
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = CC.primary())
             )
         },
         content = { paddingValues ->
@@ -97,7 +97,7 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
                 Background(context)
                 when {
                     loading -> {
-                        CircularProgressIndicator(color = GlobalColors.textColor)
+                        CircularProgressIndicator(color = CC.textColor())
                     }
                     errorMessage != null -> {
                         Text(
@@ -109,7 +109,7 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
                     users.isNullOrEmpty() -> {
                         Text(
                             text = "No participants found.",
-                            color = GlobalColors.textColor,
+                            color = CC.textColor(),
                             style = CC.descriptionTextStyle(context)
                         )
                     }
@@ -122,14 +122,14 @@ fun ParticipantsScreen(navController: NavController, context: Context) {
                         ) {
                             items(users!!) { user ->
                                 ProfileCard(user, navController, context)
-                                HorizontalDivider(color = GlobalColors.textColor)
+                                HorizontalDivider(color = CC.textColor())
                             }
                         }
                     }
                 }
             }
         },
-        containerColor = GlobalColors.primaryColor
+        containerColor = CC.primary()
     )
 }
 
@@ -156,7 +156,7 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
             .fillMaxWidth()
             .padding(vertical = 2.dp),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = GlobalColors.primaryColor)
+        colors = CardDefaults.cardColors(containerColor = CC.primary())
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -172,27 +172,22 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
             )
             Spacer(modifier = Modifier.width(16.dp))
             val displayName = if (user.id == currentMe.id) {
-                if (user.isAdmin) {
-                    "You (Admin)"
-                } else {
-                    "You"
-                }
-            } else if (user.isAdmin) {
-                user.firstName + " " + user.lastName + " (Admin)"
+                "You"
             } else {
-                user.firstName + " " + user.lastName
+                user.firstName
             }
+
             Text(
                 text = displayName,
                 style = CC.descriptionTextStyle(navController.context),
                 modifier = Modifier.weight(1f),
-                color = GlobalColors.textColor
+                color = CC.textColor()
             )
             Button(
                 onClick = {
                     navController.navigate("chat/${user.id}")
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
+                colors = ButtonDefaults.buttonColors(containerColor = CC.extraColor2()),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 if (user.id == currentMe.id) {
