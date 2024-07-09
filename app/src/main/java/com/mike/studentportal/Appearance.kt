@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -203,9 +204,9 @@ fun Appearance(navController: NavController, context: Context) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Colors and Font", style = CC.titleTextStyle(context)) },
+                title = {},
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate("dashboard") }) {
+                    IconButton(onClick = { navController.navigate("settings") }) {
                         Icon(Icons.Default.ArrowBackIosNew, "Back")
                     }
                 },
@@ -218,65 +219,20 @@ fun Appearance(navController: NavController, context: Context) {
         },
         containerColor = GlobalColors.primaryColor,
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()){
-            Background(context)
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(), horizontalArrangement = Arrangement.Center
-            ) {
-                Text("Theme Settings", style = CC.titleTextStyle(context))
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                modifier = Modifier
-                    .height(100.dp)
-                    .border(
-                        width = 1.dp,
-                        color = GlobalColors.secondaryColor,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Use Dark Theme", style = CC.descriptionTextStyle(context))
-                    Switch(
-                        checked = isDarkMode,
-                        onCheckedChange = {
-                            isDarkMode = it
-                            GlobalColors.saveColorScheme(context, it)
-                        }, colors = SwitchDefaults.colors(
-                            checkedThumbColor = GlobalColors.primaryColor,
-                            checkedTrackColor = GlobalColors.secondaryColor,
-                            uncheckedThumbColor = GlobalColors.primaryColor,
-                            uncheckedTrackColor = GlobalColors.secondaryColor
-                        )
-                    )
-                }
-            }
             Spacer(modifier = Modifier.height(10.dp))
             CustomTextStyle(context = LocalContext.current) { selectedFont ->
                 currentFont = selectedFont
                 fontUpdated = !fontUpdated // Toggle the state to trigger recomposition
             }
         }
-    }
+
     }
 }
 
@@ -312,81 +268,95 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
         "Caveat" to Caveat,
         "System" to FontFamily.Default
     )
-    Row(
-        modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth()
-            .height(40.dp),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(
-            "Font Styles",
-            style = CC.titleTextStyle(context)
-        )
+
+    // Load saved font preference on launch
+    LaunchedEffect(Unit) {
+        val savedFont = fontPrefs.getSelectedFont()
+        selectedFontFamily = fontFamilies[savedFont]
+        Log.d("CustomTextStyle", "Selected Font: $savedFont")
     }
+
     Column(
         modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
             .background(GlobalColors.primaryColor)
-            .fillMaxWidth()
-            .border(
-                width = 1.dp, color = GlobalColors.secondaryColor, shape = RoundedCornerShape(10.dp)
-            )
+            .verticalScroll(rememberScrollState())
     ) {
+        Row(
+            modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth(0.9f),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(
+                text = "Font Style",
+                style = CC.titleTextStyle(context),
+                fontSize = 40.sp,
+            )
+        }
 
         fontFamilies.forEach { (fontName, fontFamily) ->
+            val isSelected = selectedFontFamily == fontFamily
             Row(
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(vertical = 8.dp)
                     .border(
                         width = 1.dp,
                         color = GlobalColors.secondaryColor,
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .background(
+                        if (isSelected) GlobalColors.extraColor1 else GlobalColors.primaryColor,
+                        RoundedCornerShape(12.dp)
                     )
                     .fillMaxWidth()
-                    .height(40.dp)
-                    .clickable { selectedFontFamily = fontFamily },
-                verticalAlignment = Alignment.CenterVertically
+                    .height(60.dp)
+                    .clickable {
+                        selectedFontFamily = fontFamily
+                    }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    "$fontName - Michael Odhiambo",
+                    text = fontName,
                     fontFamily = fontFamily,
-                    fontSize = 16.sp,
-                    color = GlobalColors.textColor,
-                    modifier = Modifier.padding(start = 10.dp)
+                    fontSize = 18.sp,
+                    color = if (isSelected) GlobalColors.primaryColor else GlobalColors.textColor
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
+        Text(
+            text = "Selected Font Preview:",
+            style = CC.titleTextStyle(context),
+            fontSize = 18.sp,
             modifier = Modifier
-                .padding(10.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                "Selected Font Preview:", style = CC.titleTextStyle(context), fontSize = 18.sp
-            )
-        }
+                .align(Alignment.CenterHorizontally)
+                .padding(vertical = 16.dp)
+        )
 
         Row(
             modifier = Modifier
-                .padding(10.dp)
+                .padding(vertical = 4.dp)
                 .border(
                     width = 1.dp,
                     color = GlobalColors.secondaryColor,
                     shape = RoundedCornerShape(10.dp)
                 )
                 .fillMaxWidth()
-                .height(40.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 10.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "This is a preview of the selected font.",
+                text = "Debugging the complex algorithm required a thorough review of every line of code.",
                 fontFamily = selectedFontFamily,
                 fontSize = 16.sp,
                 color = GlobalColors.textColor,
-                modifier = Modifier.padding(start = 10.dp)
+                textAlign = TextAlign.Center
             )
         }
 
@@ -402,15 +372,16 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
             colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
-                .width(200.dp)
                 .align(Alignment.CenterHorizontally)
-                .padding(bottom = 16.dp)
+                .padding(vertical = 16.dp)
         ) {
             Text("Save", style = CC.descriptionTextStyle(context))
         }
     }
-
 }
+
+
+
 
 
 class FontPreferences(context: Context) {
