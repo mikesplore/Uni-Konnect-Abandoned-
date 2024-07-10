@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import android.net.Uri
@@ -59,9 +59,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
-import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import kotlin.random.Random
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
