@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import android.content.Intent
@@ -83,9 +83,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
-import com.mike.studentportal.MyDatabase.updatePassword
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.MyDatabase.updatePassword
+import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -743,7 +743,7 @@ fun MyAbout(context: Context) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Student Portal", style = CC.descriptionTextStyle(context).copy(
+            "Uni Konnect", style = CC.descriptionTextStyle(context).copy(
                 fontWeight = FontWeight.Bold, fontSize = 20.sp
             )
         )
