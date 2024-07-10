@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import android.util.Log
@@ -8,7 +8,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,8 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -52,14 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.mike.studentportal.ui.theme.Caveat
-import com.mike.studentportal.ui.theme.Crimson
-import com.mike.studentportal.ui.theme.Lora
-import com.mike.studentportal.ui.theme.ShadowIntoLight
-import com.mike.studentportal.ui.theme.IndieFlower
-import com.mike.studentportal.ui.theme.Zeyada
+import com.mike.unikonnect.ui.theme.Caveat
+import com.mike.unikonnect.ui.theme.Crimson
+import com.mike.unikonnect.ui.theme.Lora
+import com.mike.unikonnect.ui.theme.ShadowIntoLight
+import com.mike.unikonnect.ui.theme.IndieFlower
+import com.mike.unikonnect.ui.theme.Zeyada
 import kotlinx.coroutines.delay
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.CommonComponents as CC
 
 data class ColorScheme(
     val primaryColor: String,
