@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import androidx.compose.foundation.Image
@@ -46,8 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-import com.mike.studentportal.MyDatabase.readItems
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.MyDatabase.readItems
+import com.mike.unikonnect.CommonComponents as CC
 
 object CourseName {
     var name: MutableState<String> = mutableStateOf("")
