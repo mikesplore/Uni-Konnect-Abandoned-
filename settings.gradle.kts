@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Student Portal"
+rootProject.name = "Uni Konnect"
 include(":app")
  
