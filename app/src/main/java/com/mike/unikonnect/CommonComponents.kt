@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import android.icu.util.Calendar
@@ -17,18 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
 import java.time.LocalTime
-import java.util.Date
-import java.util.Locale
 
 
 object CommonComponents {
