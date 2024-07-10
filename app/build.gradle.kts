@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.mike.studentportal"
+    namespace = "com.mike.unikonnect"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.mike.studentportal"
+        applicationId = "com.mike.unikonnect"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -35,7 +35,7 @@ android {
         create("release") {
             keyAlias = "release"
             keyPassword = "mikemike"
-            storeFile = file("C:\\Users\\Mike\\Documents\\studentPortal.jks")
+            storeFile = file("C:\\Users\\Mike\\Documents\\unikonnect.jks")
             storePassword = "mikemike"
         }
     }
