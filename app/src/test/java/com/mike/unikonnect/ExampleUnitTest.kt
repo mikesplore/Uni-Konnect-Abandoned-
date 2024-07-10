@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import org.junit.Test
 
