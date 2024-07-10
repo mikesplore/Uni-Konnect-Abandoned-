@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import android.util.Log
@@ -57,7 +57,6 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -80,7 +79,6 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -89,8 +87,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.mike.studentportal.MyDatabase.getAnnouncements
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.MyDatabase.getAnnouncements
+import com.mike.unikonnect.CommonComponents as CC
 
 data class Images(val link: String, val description: String)
 
@@ -300,6 +298,15 @@ fun IconBox(
                 .size(60.dp)
                 .border(1.dp, CC.tertiary(), shape = CircleShape)
                 .clickable {
+                    val updatedCourse = Course(
+                        courseCode = course.courseCode,
+                        courseName = course.courseName,
+                        visits = course.visits + 1
+                    )
+                    // Save updated last date to preferences
+                    MyDatabase.writeCourse(updatedCourse) {
+                        Log.d("Updated Course:", "Updated Visit is ${updatedCourse.visits}")
+                    }
                     CourseName.name.value = course.courseName
                     navController.navigate("course/${course.courseCode}")
                 }, contentAlignment = Alignment.Center
@@ -472,11 +479,6 @@ fun TodayTimetable(context: Context) {
 
                         Column(
                             modifier = Modifier
-                                .border(
-                                    1.dp,
-                                    CC.tertiary(),
-                                    shape = RoundedCornerShape(16.dp)
-                                )
                                 .width(350.dp)
                                 .height(200.dp)
                                 .background(CC.primary(), RoundedCornerShape(16.dp))
@@ -494,7 +496,7 @@ fun TodayTimetable(context: Context) {
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
                                     contentDescription = "Event Date and Time",
-                                    tint = CC.secondary()
+                                    tint = CC.textColor()
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text(
@@ -509,7 +511,7 @@ fun TodayTimetable(context: Context) {
                                 Icon(
                                     imageVector = Icons.Default.Place,
                                     contentDescription = "Event Location",
-                                    tint = CC.secondary()
+                                    tint = CC.textColor()
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
