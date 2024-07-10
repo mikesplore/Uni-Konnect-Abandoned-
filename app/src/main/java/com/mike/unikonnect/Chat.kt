@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -66,13 +66,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.CommonComponents as CC
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -249,7 +249,7 @@ fun ChatScreen(
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = CC.primary())
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
         )
     }, snackbarHost = { SnackbarHost(snackbarHostState) }, content = { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -270,14 +270,14 @@ fun ChatScreen(
                             .fillMaxWidth()
                             .padding(8.dp),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = CC.primary(),
+                            focusedContainerColor = GlobalColors.primaryColor,
                             unfocusedIndicatorColor = CC.textColor(),
-                            focusedIndicatorColor = CC.secondary(),
-                            unfocusedContainerColor = CC.primary(),
+                            focusedIndicatorColor = GlobalColors.secondaryColor,
+                            unfocusedContainerColor = GlobalColors.primaryColor,
                             focusedTextColor = CC.textColor(),
-                            unfocusedTextColor = CC.textColor(),
-                            focusedLabelColor = CC.secondary(),
-                            unfocusedLabelColor = CC.textColor()
+                            unfocusedTextColor = GlobalColors.textColor,
+                            focusedLabelColor = GlobalColors.secondaryColor,
+                            unfocusedLabelColor = GlobalColors.textColor
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
@@ -297,7 +297,7 @@ fun ChatScreen(
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            CC.secondary(), RoundedCornerShape(10.dp)
+                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
                                         )
                                         .clip(RoundedCornerShape(10.dp)),
                                     contentAlignment = Alignment.Center
@@ -320,7 +320,7 @@ fun ChatScreen(
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            CC.secondary(), RoundedCornerShape(10.dp)
+                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
                                         )
                                         .clip(RoundedCornerShape(10.dp)),
                                     contentAlignment = Alignment.Center
@@ -330,7 +330,7 @@ fun ChatScreen(
                                         modifier = Modifier.padding(5.dp),
                                         style = CC.descriptionTextStyle(context),
                                         textAlign = TextAlign.Center,
-                                        color = CC.textColor()
+                                        color = GlobalColors.textColor
                                     )
                                 }
                             }
@@ -372,7 +372,7 @@ fun ChatScreen(
                                 message = ""
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = CC.extraColor2()),
+                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Send, "Send")
@@ -390,7 +390,7 @@ fun ChatBubble(
     chat: Chat, isUser: Boolean, context: Context, navController: NavController
 ) {
     val alignment = if (isUser) Alignment.TopEnd else Alignment.TopStart
-    val backgroundColor = if (isUser) CC.extraColor1() else CC.extraColor2()
+    val backgroundColor = if (isUser) GlobalColors.extraColor1 else GlobalColors.extraColor2
     val bubbleShape = RoundedCornerShape(
         bottomStart = 16.dp,
         bottomEnd = 16.dp,
@@ -419,7 +419,7 @@ fun ChatBubble(
                             text = chat.senderName,
                             style = CC.descriptionTextStyle(context),
                             fontWeight = FontWeight.Bold,
-                            color = CC.primary()
+                            color = GlobalColors.primaryColor
                         )
                     }
                 }
@@ -445,7 +445,7 @@ fun ChatBubble(
                 }
                 .offset(x = (-16).dp, y = (-16).dp)
                 .size(24.dp)
-                .background(CC.primary(), CircleShape)
+                .background(GlobalColors.primaryColor, CircleShape)
                 .padding(4.dp),
                 contentAlignment = Alignment.Center) {
 
