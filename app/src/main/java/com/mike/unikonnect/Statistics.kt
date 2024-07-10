@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import android.graphics.Paint
@@ -58,11 +58,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.mike.studentportal.MyDatabase.getAllScreenTimes
+import com.mike.unikonnect.MyDatabase.getAllScreenTimes
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.math.roundToInt
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
