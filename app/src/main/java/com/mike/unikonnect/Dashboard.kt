@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
 import android.content.Intent
@@ -67,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,12 +78,13 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerDefaults
 import com.google.accompanist.pager.PagerState
 import com.google.firebase.auth.FirebaseAuth
-import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.mike.studentportal.CommonComponents as CC
+import java.util.Locale
+import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class, ExperimentalSnapperApi::class)
 @Composable
@@ -91,7 +93,8 @@ fun Dashboard(
     pagerState: PagerState,
     coroutineScope: CoroutineScope,
     screens: List<Screen>,
-    context: Context
+    context: Context,
+    mainActivity: MainActivity
 ) {
     var user by remember { mutableStateOf(User()) }
     val auth = FirebaseAuth.getInstance()
@@ -100,6 +103,8 @@ fun Dashboard(
     var timeSpent by remember { mutableLongStateOf(0L) }
     val screenID = "SC10"
     val screenName = "Dashboard Screen"
+    val promptManager = remember { BiometricPromptManager(mainActivity) }
+
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -208,7 +213,18 @@ fun Dashboard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(modifier = Modifier
-                    .clickable { navController.navigate("profile") }
+                    .clickable {
+                        promptManager.showBiometricPrompt(
+                            title = "Authenticate",
+                            description = "Confirm you are $currentName",
+                            onResult = { result ->
+                                if (result) {
+                                    navController.navigate("profile")
+                                    scope.launch { drawerState.close() }
+                                }
+                            }
+                        )
+                    }
                     .size(150.dp)
                     .padding(20.dp)
                     .background(CC.secondary(), CircleShape)
@@ -274,8 +290,20 @@ fun Dashboard(
                 Row(modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .clickable {
-                        navController.navigate("chat")
-                        scope.launch { drawerState.close() }
+                        promptManager.showBiometricPrompt(
+                            title = "Authenticate",
+                            description = "Confirm you are ${currentName.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.ROOT
+                                ) else it.toString()
+                            }}",
+                            onResult = { result ->
+                                if (result) {
+                                    navController.navigate("chat")
+                                    scope.launch { drawerState.close() }
+                                }
+                            }
+                        )
                     }
                     .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -350,8 +378,21 @@ fun Dashboard(
                 Row(modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .clickable {
-                        navController.navigate("settings")
-                        scope.launch { drawerState.close() }
+                        promptManager.showBiometricPrompt(
+                            title = "Authenticate",
+                            description = "Confirm you are ${currentName.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.ROOT
+                                ) else it.toString()
+                            }}",
+                            onResult = { result ->
+                                if (result) {
+                                    navController.navigate("settings")
+                                    scope.launch { drawerState.close() }
+                                }
+                            }
+                        )
+
                     }
                     .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -370,7 +411,7 @@ fun Dashboard(
                             action = Intent.ACTION_SEND
                             putExtra(
                                 Intent.EXTRA_TEXT,
-                                "$currentName invites you to join Student Portal! Get organized and ace your studies.\n Download now: https://github.com/mikesplore/Student-Portal/blob/main/app/release/StudentPortal.apk"
+                                "$currentName invites you to join Uni Konnect! Get organized and ace your studies.\n Download now: https://github.com/mikesplore/Student-Portal/blob/main/app/release/StudentPortal.apk"
                             ) // Customize the text
                             type = "text/plain"
                         }
@@ -417,7 +458,11 @@ fun Dashboard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Hi, $currentName 👋",
+                            text = "Hi, ${currentName.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.ROOT
+                                ) else it.toString()
+                            }} 👋",
                             style = CC.titleTextStyle(context)
                                 .copy(fontWeight = FontWeight.ExtraBold),
                             fontSize = 25.sp,
