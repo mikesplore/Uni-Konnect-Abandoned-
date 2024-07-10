@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
@@ -50,6 +50,7 @@ data class Chat(
     var senderID: String = "",
     var time: String = "",
     var date: String = "",
+
 
 )
 
