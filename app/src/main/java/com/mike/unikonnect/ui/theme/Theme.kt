@@ -1,4 +1,4 @@
-package com.mike.studentportal.ui.theme
+package com.mike.unikonnect.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import com.mike.studentportal.R
+import com.mike.unikonnect.R
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -62,7 +62,7 @@ val Caveat = FontFamily(
 
 
 @Composable
-fun StudentPortalTheme(
+fun UniKonnectTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
