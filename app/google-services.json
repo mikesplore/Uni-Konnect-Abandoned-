@@ -53,26 +53,26 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:545774727181:android:b760f9df883d39f60aa544",
+        "mobilesdk_app_id": "1:545774727181:android:71918b92a3f150300aa544",
         "android_client_info": {
-          "package_name": "com.mike.studentportal"
+          "package_name": "com.mike.unikonnect"
         }
       },
       "oauth_client": [
         {
-          "client_id": "545774727181-3q54r5oh4io8cq6l1usus4j771lco3e4.apps.googleusercontent.com",
+          "client_id": "545774727181-06q4bvs8e21gjjjprl6gibjm55t7vhc8.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.mike.studentportal",
+            "package_name": "com.mike.unikonnect",
             "certificate_hash": "2eb31aa87f916ac74208ba6e415c738c7929a180"
           }
         },
         {
-          "client_id": "545774727181-prtfrfn88j2qfnvjt97aopeiin62i2sc.apps.googleusercontent.com",
+          "client_id": "545774727181-6f54i8tksjq24hlluf1apgq7s9qujgss.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.mike.studentportal",
-            "certificate_hash": "3aee5494d1c4b090ce0de9b16f257bad01eb79f2"
+            "package_name": "com.mike.unikonnect",
+            "certificate_hash": "4f98c932ba492d1349416be285c4fbe2fb6138bb"
           }
         },
         {
