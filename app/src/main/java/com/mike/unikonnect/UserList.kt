@@ -1,16 +1,13 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Refresh
@@ -27,10 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.mike.studentportal.MyDatabase.fetchUserDataByEmail
-import com.mike.studentportal.MyDatabase.getUsers
-import kotlinx.coroutines.delay
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.MyDatabase.getUsers
+import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
