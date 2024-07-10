@@ -1,4 +1,4 @@
-package com.mike.studentportal.ui.theme
+package com.mike.unikonnect.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
