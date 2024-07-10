@@ -1,4 +1,4 @@
-package com.mike.studentportal
+package com.mike.unikonnect
 
 import android.Manifest
 import android.content.Context
@@ -74,16 +74,15 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
-import com.mike.studentportal.MyDatabase.getUpdate
+import com.mike.unikonnect.MyDatabase.getUpdate
 import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit
-import com.mike.studentportal.CommonComponents as CC
+import com.mike.unikonnect.CommonComponents as CC
 
 object Global {
     val showAlert: MutableState<Boolean> = mutableStateOf(false)
     val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
     var loading: MutableState<Boolean> = mutableStateOf(true)
-    var isBiometricsEnabled: MutableState<Boolean> = mutableStateOf(true)
 }
 
 class MainActivity : AppCompatActivity() {
@@ -93,7 +92,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Theme_StudentPortal)
+        setTheme(R.style.Theme_UniKonnect)
         super.onCreate(savedInstanceState)
         val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED)
             .setRequiresBatteryNotLow(true).build()
@@ -263,7 +262,7 @@ fun MainScreen(mainActivity: MainActivity) {
         }
     }
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "splashscreen") {
 
         composable(route = "login", enterTransition = {
             fadeIn(animationSpec = tween(1000))
@@ -294,7 +293,7 @@ fun MainScreen(mainActivity: MainActivity) {
         }, exitTransition = {
             fadeOut(animationSpec = tween(1000))
         }) {
-            Dashboard(navController, pagerState, coroutineScope, screens, context)
+            Dashboard(navController, pagerState, coroutineScope, screens, context, mainActivity)
         }
 
         composable(route = "moredetails", enterTransition = {
@@ -331,6 +330,10 @@ fun MainScreen(mainActivity: MainActivity) {
             fadeOut(animationSpec = tween(1000))
         }) {
             Appearance(navController, context)
+        }
+
+        composable("authentication"){
+            AuthenticationScreen(navController, context, mainActivity)
         }
 
         composable("chat", enterTransition = {
