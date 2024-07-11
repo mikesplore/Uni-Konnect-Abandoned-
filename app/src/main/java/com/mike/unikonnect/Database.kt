@@ -50,8 +50,6 @@ data class Chat(
     var senderID: String = "",
     var time: String = "",
     var date: String = "",
-
-
 )
 
 data class Message(
@@ -113,14 +111,6 @@ data class Announcement(
     val author: String = ""
 )
 
-data class Event(
-    val id: String = "",
-    val date: String = "",
-    val title: String = "",
-    val description: String = "",
-    val author: String = "",
-    val venue: String = ""
-)
 
 data class Attendance(
     val id: String = "", val date: String = "", val status: String = "", val studentId: String = ""
@@ -576,7 +566,7 @@ object MyDatabase {
 
     // Items functions
     fun readItems(courseId: String, section: Section, onItemsRead: (List<GridItem>) -> Unit) {
-        database.child("Courses").child(courseId).child(section.name)
+        database.child("Course Resources").child(courseId).child(section.name)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val items = snapshot.children.mapNotNull { it.getValue(GridItem::class.java) }
