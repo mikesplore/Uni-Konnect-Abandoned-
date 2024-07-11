@@ -318,7 +318,7 @@ fun IconBox(
             )
             Icon(
                 imageVector = Icons.Filled.School,
-                tint = CC.extraColor1(),
+                tint = CC.extraColor2(),
                 contentDescription = course.courseName,
                 modifier = Modifier.size(60.dp / 2)
             )
@@ -419,12 +419,11 @@ fun TodayTimetable(context: Context) {
     var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
     var loading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(loading) {
+    LaunchedEffect(Unit) {
         MyDatabase.getCurrentDayTimetable(CC.currentDay()) { timetable ->
             timetables = timetable
+            loading = false
         }
-        loading = false
-
     }
 
     Card(
