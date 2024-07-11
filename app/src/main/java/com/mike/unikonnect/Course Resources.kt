@@ -61,8 +61,6 @@ fun CourseScreen(courseCode: String, context: Context) {
     val pastPapers = remember { mutableStateListOf<GridItem>() }
     val resources = remember { mutableStateListOf<GridItem>() }
     var isLoading by remember { mutableStateOf(true) }
-    var showAddDialog by remember { mutableStateOf(false) }
-    var addItemToSection by remember { mutableStateOf<Section?>(null) }
 
     LaunchedEffect(courseCode) {
         isLoading = true
