@@ -396,6 +396,7 @@ fun MyDetails(
                 disabledContainerColor = Color.Transparent
             ),
             enabled = isEditing,
+            singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp)
