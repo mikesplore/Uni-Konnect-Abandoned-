@@ -79,21 +79,21 @@ object GlobalColors {
     private const val THEME_MODE_KEY = "theme_mode"
 
     private val lightScheme = ColorScheme(
-        primaryColor = "#FFFFFF",
-        secondaryColor = "#EEEEEE",
-        tertiaryColor = "#DDDDDD",
-        textColor = "#000000",
-        extraColor1 = "#135D66",
-        extraColor2 = "#77B0AA"
-    )
+    primaryColor = "#E3F2FD", // Light Blue
+    secondaryColor = "#BBDEFB", // Slightly Darker Blue
+    tertiaryColor = "#90CAF9", // Blue Accent
+    textColor = "#212121", // Dark Gray for Text
+    extraColor1 = "#B39DDB", // Grayish Blue
+    extraColor2 = "#9575CD"  // Light Gray
+)
 
     private val darkScheme = ColorScheme(
-        primaryColor = "#121212",
-        secondaryColor = "#333333",
-        tertiaryColor = "#666666",
-        textColor = "#FFFFFF",
-        extraColor1 = "#B0EBB4",
-        extraColor2 = "#1679AB"
+        primaryColor = "#15202B", // Deep Blue
+        secondaryColor = "#192734", // Slightly Lighter Blue
+        tertiaryColor = "#22303C", // Blue Accent
+        textColor = "#E1E8ED", // Light Gray for Text
+        extraColor1 = "#38444D", // Darker Gray
+        extraColor2 = "#506775"  // Bluish Gray
     )
 
     private var currentScheme by mutableStateOf(lightScheme)
