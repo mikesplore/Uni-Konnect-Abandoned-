@@ -235,7 +235,7 @@ fun MainScreen(mainActivity: MainActivity) {
                         onClick = {
                             val intent = Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/mikesplore/Student-Portal/blob/main/app/release/app-release.apk")
+                                Uri.parse("https://github.com/mikesplore/Uni-Konnect/releases/tag/V1.2.6")
                             )
                             context.startActivity(intent)
                             update = false
