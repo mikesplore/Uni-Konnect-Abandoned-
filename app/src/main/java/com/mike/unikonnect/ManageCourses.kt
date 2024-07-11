@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,7 +93,7 @@ fun CoursesScreen(navController: NavController, context: Context) {
             }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                "Select a course to view its details", style = CC.descriptionTextStyle(context)
+                "Flip a course to view its details", style = CC.descriptionTextStyle(context)
             )
             Spacer(modifier = Modifier.height(20.dp))
             if (loading) {
@@ -148,7 +149,7 @@ fun CourseCard(course: Course, navController: NavController, context: Context) {
             .background(CC.extraColor2())
     ) {
         if (rotation <= 90f) {
-            FrontCardContent(course.courseName, navController, course.courseCode, context)
+            FrontCardContent(course.courseName,  context)
         } else {
             BackCardContent(course.courseCode, course.visits.toString(), context)
         }
@@ -156,34 +157,20 @@ fun CourseCard(course: Course, navController: NavController, context: Context) {
 }
 
 @Composable
-fun FrontCardContent(courseTitle: String, navController: NavController, courseCode: String, context: Context) {
+fun FrontCardContent(courseTitle: String, context: Context) {
         Column(
             modifier = Modifier
                 .padding(10.dp)
                 .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = courseTitle,
                 style = CC.titleTextStyle(context).copy(fontWeight = FontWeight.Bold, fontSize = 20.sp),
+                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth(0.9f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
-                Text(
-                    text = "View course materials",
-                    style = CC.descriptionTextStyle(context).copy(fontSize = 16.sp)
-                )
-                IconButton(onClick = { navController.navigate("course/$courseCode") }) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = "View Course")
-                }
-            }
-
-
         }
 
 
