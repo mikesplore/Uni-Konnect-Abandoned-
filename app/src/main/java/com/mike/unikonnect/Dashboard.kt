@@ -32,11 +32,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Collections
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.ModeNight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -44,6 +48,7 @@ import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -197,7 +202,9 @@ fun Dashboard(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
+    ModalNavigationDrawer(drawerState = drawerState,
+
+        drawerContent = {
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
@@ -260,6 +267,7 @@ fun Dashboard(
                                 .clip(CircleShape)
                         )
                     }
+
                 }
                 Column(
                     modifier = Modifier.fillMaxWidth(0.9f),
@@ -277,7 +285,6 @@ fun Dashboard(
                     )
                 }
             }
-
             Spacer(modifier = Modifier.height(20.dp))
 
             // Navigation items
@@ -299,7 +306,7 @@ fun Dashboard(
                             }}",
                             onResult = { result ->
                                 if (result) {
-                                    navController.navigate("chat")
+                                    navController.navigate("users")
                                     scope.launch { drawerState.close() }
                                 }
                             }
@@ -312,7 +319,35 @@ fun Dashboard(
                         tint = CC.textColor()
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Discussion", style = CC.descriptionTextStyle(context))
+                    Text("Uni Chat", style = CC.descriptionTextStyle(context))
+                }
+
+                Row(modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .clickable {
+                        promptManager.showBiometricPrompt(
+                            title = "Authenticate",
+                            description = "Confirm you are ${currentName.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.ROOT
+                                ) else it.toString()
+                            }}",
+                            onResult = { result ->
+                                if (result) {
+                                    navController.navigate("chat")
+                                    scope.launch { drawerState.close() }
+                                }
+                            }
+                        )
+                    }
+                    .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Groups,
+                        contentDescription = "Discussion",
+                        tint = CC.textColor()
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Discussions", style = CC.descriptionTextStyle(context))
                 }
 
                 Row(modifier = Modifier
@@ -411,7 +446,7 @@ fun Dashboard(
                             action = Intent.ACTION_SEND
                             putExtra(
                                 Intent.EXTRA_TEXT,
-                                "$currentName invites you to join Uni Konnect! Get organized and ace your studies.\n Download now: https://github.com/mikesplore/Student-Portal/blob/main/app/release/StudentPortal.apk"
+                                "$currentName invites you to join Uni Konnect! Get organized and ace your studies.\n Download now: https://github.com/mikesplore/Uni-Konnect/releases/tag/V1.2.6"
                             ) // Customize the text
                             type = "text/plain"
                         }
@@ -453,10 +488,15 @@ fun Dashboard(
         Scaffold(
             topBar = {
                 TopAppBar(title = {
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxHeight(),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.Center
                     ) {
+                        Icon(Icons.Default.Menu,"",
+                            tint = CC.textColor(),
+                            modifier = Modifier.clickable {
+                                scope.launch { drawerState.open() }
+                            })
                         Text(
                             text = "Hi, ${currentName.replaceFirstChar {
                                 if (it.isLowerCase()) it.titlecase(
