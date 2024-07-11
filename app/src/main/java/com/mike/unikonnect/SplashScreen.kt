@@ -90,7 +90,7 @@ fun SplashScreen(navController: NavController, context: Context) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Connecting Students to Success",
+                text = "Your Ultimate Educational Companion",
                 style = CC.descriptionTextStyle(context)
             )
         }
