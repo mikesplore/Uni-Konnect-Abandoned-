@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -155,7 +157,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     LaunchedEffect(conversationId) {
         while (true) {
             fetchMessages(conversationId)
-            delay(10) // Adjust the delay as needed
+            delay(10) // delay for a tenth of a second
         }
     }
     // Format the date string
@@ -266,6 +268,8 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                             focusedLabelColor = CC.secondary(),
                             unfocusedLabelColor = CC.textColor()
                         ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         shape = RoundedCornerShape(10.dp)
                     )
                 }
