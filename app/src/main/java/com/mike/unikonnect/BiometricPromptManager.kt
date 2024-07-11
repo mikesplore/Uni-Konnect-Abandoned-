@@ -55,6 +55,8 @@ class BiometricPromptManager(
                     super.onAuthenticationFailed()
                     onResult(false)
                 }
+
+
             }
         )
         prompt.authenticate(promptInfo)
