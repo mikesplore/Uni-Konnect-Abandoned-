@@ -361,7 +361,7 @@ fun ChatScreen(
                         onValueChange = { message = it },
                         label = "Message",
                         enabled = true,
-                        singleLine = true,
+                        singleLine = false,
                         context = context
                     )
                     Spacer(modifier = Modifier.width(8.dp))
