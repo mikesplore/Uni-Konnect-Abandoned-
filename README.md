@@ -1,7 +1,7 @@
 # Uni-Konnect
 ## Documentation
 
-### GitHub Authentication (GitAuth)
+### GitHub Authentication ([GitAuth](app/src/main/java/com/mike/unikonnect/GithubAuth.kt))
 
 The GitAuth composable allows users to authenticate with GitHub using [Firebase Authentication](https://firebase.google.com/docs/auth). Here's how it works:
 
