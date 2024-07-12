@@ -18,7 +18,7 @@ _visible_: Controls visibility animation for the main content.
 Sets visible to true to trigger the entrance animation when the composable is first launched.
 AnimatedVisibility:
 
-Controls the slide-in and slide-out animations of the main content.\
+Controls the slide-in and slide-out animations of the main content.
 
 ##### Scaffold:
 

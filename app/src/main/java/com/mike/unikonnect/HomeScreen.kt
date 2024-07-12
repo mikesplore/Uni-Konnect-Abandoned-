@@ -114,7 +114,7 @@ val OnlineImages = listOf(
     ), Images("https://images.slideplayer.com/25/7665857/slides/slide_11.jpg", "CSE 4301")
 )
 
-@OptIn(ExperimentalPagerApi::class)
+
 @Composable
 fun HomeScreen(context: Context, navController: NavController) {
     val courses = remember { mutableStateListOf<Course>() }
