@@ -44,6 +44,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.Assignment
@@ -55,6 +56,9 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.BorderColor
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.School
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -88,6 +92,13 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.mike.unikonnect.MyDatabase.getAnnouncements
+import kotlinx.serialization.encodeToString
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
+import java.io.File
+import kotlinx.serialization.json.Json
+import java.io.IOException
 import com.mike.unikonnect.CommonComponents as CC
 
 data class Images(val link: String, val description: String)
@@ -115,19 +126,83 @@ val OnlineImages = listOf(
 )
 
 
+
+
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(context: Context, navController: NavController) {
     val courses = remember { mutableStateListOf<Course>() }
     val images = remember { mutableStateOf(OnlineImages) }
-    var loading by remember { mutableStateOf(true) }
+    var loading by remember { mutableStateOf(false) }
+    var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
+    val announcements = remember { mutableStateListOf<Announcement>() }
+    var isRefreshing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(loading) {
+    val refreshState = rememberPullRefreshState(isRefreshing, {
         MyDatabase.fetchCourses { fetchedCourses ->
-            courses.clear() // Clear existing courses
-            courses.addAll(fetchedCourses) // Add fetched courses
-            loading = false // Set loading to false after fetching
+            courses.clear()
+            courses.addAll(fetchedCourses)
+            saveDataToFile(context, "courses.txt", fetchedCourses.joinToString("\n") { "${it.courseCode},${it.courseName},${it.visits}" })
         }
+        getAnnouncements { fetchedAnnouncements ->
+            announcements.clear()
+            announcements.addAll(fetchedAnnouncements ?: emptyList())
+            saveDataToFile(context, "announcements.txt", fetchedAnnouncements?.joinToString("\n") { "${it.id},${it.description},${it.title},${it.date},${it.author}" } ?: "")
+        }
+        MyDatabase.getCurrentDayTimetable(CC.currentDay()) { timetable ->
+            timetables = timetable
+            saveDataToFile(context, "timetables.txt", timetable?.joinToString("\n") { "${it.id}:${it.unitName},${it.startTime},${it.endTime},${it.lecturer},${it.venue}" } ?: "")
+            loading = false
+        }
+        isRefreshing = false
+    })
+
+    LaunchedEffect(Unit) {
+        loadDataFromFile(context, "courses.txt")?.let { savedCourses ->
+            courses.clear()
+            courses.addAll(savedCourses.split("\n").mapNotNull { line ->
+                val parts = line.split(",")
+                if (parts.size == 3) {
+                    Course(parts[0], parts[1], parts[2].toIntOrNull() ?: 0)
+                } else {
+                    Log.e("HomeScreen", "Malformed course data: $line")
+                    null
+                }
+            })
+        }
+        loadDataFromFile(context, "announcements.txt")?.let { savedAnnouncements ->
+            announcements.clear()
+            announcements.addAll(savedAnnouncements.split("\n").mapNotNull { line ->
+                val parts = line.split(",")
+                if (parts.size == 5) {
+                    Announcement(parts[0], parts[1], parts[2], parts[3], parts[4])
+                } else {
+                    Log.e("HomeScreen", "Malformed announcement data: $line")
+                    null
+                }
+            })
+        }
+        loadDataFromFile(context, "timetables.txt")?.let { savedTimetables ->
+            timetables = savedTimetables.split("\n").mapNotNull { line ->
+                val parts = line.split(":", limit = 2)
+                if (parts.size == 2) {
+                    val subParts = parts[1].split(",")
+                    if (subParts.size == 5) {
+                        Timetable(parts[0], subParts[0], subParts[1], subParts[2], subParts[3], subParts[4])
+                    } else {
+                        Log.e("HomeScreen", "Malformed timetable subParts data: ${parts[1]}")
+                        null
+                    }
+                } else {
+                    Log.e("HomeScreen", "Malformed timetable data: $line")
+                    null
+                }
+            }
+        }
+        loading = false
     }
+
+    Box(modifier = Modifier.pullRefresh(refreshState)) {
         Column(
             modifier = Modifier
                 .background(CC.primary())
@@ -135,48 +210,40 @@ fun HomeScreen(context: Context, navController: NavController) {
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             if (loading) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
                 ) {
-                    LoadingIconBox()
-                    LoadingIconBox()
-                    LoadingIconBox()
-                    LoadingIconBox()
-                    LoadingIconBox()
-                    LoadingIconBox()
+                    repeat(6) { LoadingIconBox() }
                 }
-
-
             } else {
                 if (courses.isEmpty()) {
                     Row(
                         modifier = Modifier
                             .horizontalScroll(rememberScrollState())
                             .height(90.dp)
-                            .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        EmptyIconBox(context)
-                        EmptyIconBox(context)
-                        EmptyIconBox(context)
-                        EmptyIconBox(context)
-                        EmptyIconBox(context)
-                        EmptyIconBox(context)
-                        EmptyIconBox(context)
-
-
+                        repeat(7) { EmptyIconBox(context) }
                     }
                 } else {
-                    AnimatedVisibility(visible = !loading,
-                        enter = slideInHorizontally(animationSpec = tween(10000)) + fadeIn(animationSpec = tween(1000)),
-                        exit = slideOutHorizontally(animationSpec = tween(10000))+ fadeOut(animationSpec = tween(1000))
+                    AnimatedVisibility(
+                        visible = !loading,
+                        enter = slideInHorizontally(animationSpec = tween(10000)) + fadeIn(
+                            animationSpec = tween(1000)
+                        ),
+                        exit = slideOutHorizontally(animationSpec = tween(10000)) + fadeOut(
+                            animationSpec = tween(1000)
+                        )
                     ) {
-                    IconList(courses, navController, context)
-                }}
+                        IconList(courses, navController, context)
+                    }
+                }
             }
+
             Row(
                 modifier = Modifier
                     .padding(15.dp)
@@ -186,29 +253,25 @@ fun HomeScreen(context: Context, navController: NavController) {
                 Text(
                     "Popular courses", style = CC.titleTextStyle(context), fontSize = 20.sp
                 )
-                Text("View All",
+                Text(
+                    "View All",
                     style = CC.descriptionTextStyle(context),
                     color = CC.extraColor1(),
                     fontSize = 15.sp,
                     modifier = Modifier.clickable {
                         navController.navigate("courses")
-                    })
+                    }
+                )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+
+            Row(modifier = Modifier.fillMaxWidth()) {
                 if (loading) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState())
                     ) {
-                        LoadingImageBox()
-                        LoadingImageBox()
-                        LoadingImageBox()
-                        LoadingImageBox()
-                        LoadingImageBox()
-                        LoadingImageBox()
+                        repeat(6) { LoadingImageBox() }
                     }
                 } else if (courses.isEmpty()) {
                     Row(
@@ -216,20 +279,15 @@ fun HomeScreen(context: Context, navController: NavController) {
                             .horizontalScroll(rememberScrollState())
                             .fillMaxWidth()
                     ) {
-                        EmptyImageBox(context)
-                        EmptyImageBox(context)
-                        EmptyImageBox(context)
-                        EmptyImageBox(context)
-                        EmptyImageBox(context)
+                        repeat(5) { EmptyImageBox(context) }
                     }
                 } else {
-
                     ImageList(courses, context, images.value, navController)
                 }
-
-
             }
+
             Spacer(modifier = Modifier.height(10.dp))
+
             Row(
                 modifier = Modifier
                     .padding(15.dp)
@@ -237,12 +295,12 @@ fun HomeScreen(context: Context, navController: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("Latest Announcement", style = CC.titleTextStyle(context), fontSize = 20.sp)
-
             }
 
-            AnnouncementItem(context)
+            AnnouncementItem(announcements, context, loading)
 
             Spacer(modifier = Modifier.height(10.dp))
+
             Row(
                 modifier = Modifier
                     .padding(15.dp)
@@ -255,15 +313,49 @@ fun HomeScreen(context: Context, navController: NavController) {
                     fontSize = 20.sp
                 )
             }
-            TodayTimetable(context)
-            Spacer(modifier = Modifier.height(50.dp))
 
+            TodayTimetable(context, timetables, loading)
+
+            Spacer(modifier = Modifier.height(50.dp))
         }
 
+        PullRefreshIndicator(
+            isRefreshing,
+            refreshState,
+            Modifier.align(Alignment.TopCenter),
+            backgroundColor = CC.textColor(),
+            contentColor = CC.tertiary()
+        )
+    }
+}
+
+fun saveDataToFile(context: Context, fileName: String, data: String) {
+    val file = File(context.filesDir, fileName)
+    try {
+        file.writeText(data)
+    } catch (e: IOException) {
+        Log.e("HomeScreen", "Error writing to file: $fileName", e)
+    }
+}
+
+fun loadDataFromFile(context: Context, fileName: String): String? {
+    val file = File(context.filesDir, fileName)
+    return try {
+        if (file.exists()) {
+            file.readText()
+        } else {
+            null
+        }
+    } catch (e: IOException) {
+        Log.e("HomeScreen", "Error reading from file: $fileName", e)
+        null
+    }
 }
 
 
-@OptIn(ExperimentalComposeUiApi::class)
+
+
+
 @Composable
 fun IconBox(
     course: Course,
@@ -415,16 +507,7 @@ fun IconList(courses: List<Course>, navController: NavController, context: Conte
 }
 
 @Composable
-fun TodayTimetable(context: Context) {
-    var timetables by remember { mutableStateOf<List<Timetable>?>(null) }
-    var loading by remember { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        MyDatabase.getCurrentDayTimetable(CC.currentDay()) { timetable ->
-            timetables = timetable
-            loading = false
-        }
-    }
+fun TodayTimetable(context: Context, timetables: List<Timetable>? = null, loading: Boolean) {
 
     Card(
         modifier = Modifier
@@ -536,10 +619,6 @@ fun TodayTimetable(context: Context) {
 
 @Composable
 fun ImageBox(course: Course, image: Images, context: Context, navController: NavController) {
-
-    LaunchedEffect(course.courseCode) {
-
-    }
 
     Box(
         modifier = Modifier
@@ -838,15 +917,10 @@ fun Background(context: Context) {
 }
 
 @Composable
-fun AnnouncementItem(context: Context) {
-    var loading by remember { mutableStateOf(true) }
-    val announcements = remember { mutableStateListOf<Announcement>() }
+fun AnnouncementItem(announcements: List<Announcement>, context: Context, loading: Boolean) {
     LaunchedEffect(Unit) {
         GlobalColors.loadColorScheme(context)
-        getAnnouncements { fetchedAnnouncements ->
-            announcements.addAll(fetchedAnnouncements ?: emptyList())
-            loading = false
-        }
+
     }
     Column(
         modifier = Modifier
