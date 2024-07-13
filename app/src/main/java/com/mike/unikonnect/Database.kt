@@ -13,7 +13,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
-
 data class User(
     var id: String = "", // Use a mutable 'var'
     val firstName: String = "",
