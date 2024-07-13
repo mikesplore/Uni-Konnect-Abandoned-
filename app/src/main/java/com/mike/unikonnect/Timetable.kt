@@ -62,7 +62,7 @@ import com.mike.unikonnect.CommonComponents as CC
 
 @Composable
 fun TimetableScreen(context: Context) {
-    var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID()) }
+    var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID()-1) }
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
