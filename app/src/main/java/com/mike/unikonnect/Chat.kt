@@ -204,7 +204,7 @@ fun ChatScreen(
                     senderName = currentName,
                     senderID = currentAdmissionNumber,
                     time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
-                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date()),
                 )
                 MyDatabase.sendMessage(newChat) { success ->
                     if (success) {
@@ -468,7 +468,7 @@ fun PreviewMyScreen() {
     // ChatScreen(rememberNavController(), LocalContext.current)
     ChatBubble(
         chat = Chat(
-            senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01"
+            senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01",
         ), isUser = true, context = LocalContext.current, rememberNavController()
     )
 }
