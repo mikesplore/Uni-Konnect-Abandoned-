@@ -1,18 +1,26 @@
 package com.mike.unikonnect
 
 import android.Manifest
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -44,11 +52,13 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -91,18 +101,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var sharedPreferences: SharedPreferences
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_UniKonnect)
         super.onCreate(savedInstanceState)
-        val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true).build()
-        val chatFetchRequest =
-            PeriodicWorkRequestBuilder<ChatFetchWorker>(1, TimeUnit.SECONDS).setConstraints(
-                constraints
-            ).build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "ChatFetchWorker", ExistingPeriodicWorkPolicy.KEEP, chatFetchRequest
-        )
         if (Global.edgeToEdge.value) {
             enableEdgeToEdge()
         }
@@ -110,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
             MainScreen(this)
+
 
         }
         createNotificationChannel(this)
@@ -180,6 +183,8 @@ fun MainScreen(mainActivity: MainActivity) {
     var update by remember { mutableStateOf(false) }
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
     val versionName = packageInfo.versionName
+    var isDownloading by remember { mutableStateOf(false) }
+    var downloadId by remember { mutableLongStateOf(-1L) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -201,51 +206,138 @@ fun MainScreen(mainActivity: MainActivity) {
     val screens = listOf(
         Screen.Home, Screen.Announcements, Screen.Assignments, Screen.Timetable, Screen.Attendance
     )
+    fun installApk(context: Context, uri: Uri) {
+        val installIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        }
+        context.startActivity(installIntent)
+    }
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+     fun startDownload(context: Context, url: String, onProgress: (Int, Long) -> Unit) {
+        val request = DownloadManager.Request(Uri.parse(url))
+            .setTitle("UniKonnect Update")
+            .setDescription("Downloading update")
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "UniKonnect.apk")
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setAllowedOverMetered(true)
+            .setAllowedOverRoaming(true)
+
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val downloadid = downloadManager.enqueue(request)
+
+        // Registering receiver for download complete
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (id == downloadid) {
+                    context.unregisterReceiver(this)
+                    val apkUri = downloadManager.getUriForDownloadedFile(id)
+                    installApk(context, apkUri)
+                }
+            }
+        }
+        context.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED)
+
+        // Track progress
+        val progressHandler = Handler(Looper.getMainLooper())
+        progressHandler.post(object : Runnable {
+            override fun run() {
+                val query = DownloadManager.Query().setFilterById(downloadId)
+                val cursor: Cursor? = downloadManager.query(query)
+
+                cursor?.use {
+                    if (it.moveToFirst()) {
+                        val bytesDownloadedIndex = it.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                        val bytesTotalIndex = it.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+
+                        if (bytesDownloadedIndex != -1 && bytesTotalIndex != -1) {
+                            val bytesDownloaded = it.getLong(bytesDownloadedIndex)
+                            val bytesTotal = it.getLong(bytesTotalIndex)
+
+                            // Log for debugging
+                            Log.d("DownloadManager", "Downloaded: $bytesDownloaded, Total: $bytesTotal")
+
+                            if (bytesTotal > 0) {
+                                val progress = ((bytesDownloaded * 100) / bytesTotal).toInt()
+                                onProgress(progress, downloadId)
+
+                                // Update progress in UI
+                                Log.d("DownloadProgress", "Progress: $progress%")
+
+                                if (progress < 100) {
+                                    progressHandler.postDelayed(this, 1000)
+                                }
+                            }
+                        } else {
+                            Log.e("DownloadManager", "Column index not found")
+                        }
+                    }
+                }
+                cursor?.close()
+            }
+        })
+    }
+
+
+
 
     if (update) {
         BasicAlertDialog(
-            onDismissRequest = { update = false }, modifier = Modifier.background(
+            onDismissRequest = {
+                isDownloading = false
+                update = false },
+            modifier = Modifier.background(
                 Color.Transparent, RoundedCornerShape(10.dp)
             )
         ) {
             Column(
                 modifier = Modifier
-                    .background(
-                        CC.secondary(), RoundedCornerShape(10.dp)
-                    )
-                    .padding(24.dp), // Add padding for better visual spacing
+                    .background(CC.secondary(), RoundedCornerShape(10.dp))
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     "New Update available!", style = CC.titleTextStyle(context).copy(
                         fontSize = 18.sp, fontWeight = FontWeight.Bold
-                    ), // Make title bolder
-                    modifier = Modifier.padding(bottom = 8.dp) // Add spacing below title
+                    ),
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    "New version of this app is available. " + "The update contains bug fixes and addresses some of user-reported issues..",
+                    "A new version of this app is available. The update contains bug fixes and improvements.",
                     style = CC.descriptionTextStyle(context),
-                    modifier = Modifier.padding(bottom = 16.dp) // Add spacing below description
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
+                if (isDownloading) {
+                    Text(
+                        "Downloading update...please wait",
+                        style = CC.descriptionTextStyle(context),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    LinearProgressIndicator(
+                        color = CC.textColor(),
+                        trackColor = CC.extraColor1()
+                    )
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
                         onClick = {
-                            val intent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/mikesplore/Uni-Konnect/releases/tag/V1.2.6")
-                            )
-                            context.startActivity(intent)
-                            update = false
-
-                        }, modifier = Modifier.weight(1f), // Make buttons take equal width
+                            if (!isDownloading) {
+                                startDownload(context, "https://github.com/mikesplore/Uni-Konnect/releases/download/V1.2.7/UniKonnect.apk") { progress, id ->
+                                    downloadId = id
+                                    isDownloading = progress < 100
+                                }
+                                isDownloading = true
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = CC.primary())
                     ) {
-                        Text(
-                            "Update", style = CC.descriptionTextStyle(context)
-                        )
+                        Text("Update", style = CC.descriptionTextStyle(context))
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(
@@ -253,14 +345,13 @@ fun MainScreen(mainActivity: MainActivity) {
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
                     ) {
-                        Text(
-                            "Cancel", color = CC.primary()
-                        )
+                        Text("Cancel", color = CC.primary())
                     }
                 }
             }
         }
     }
+
     val navController = rememberNavController()
     NavHost(navController, startDestination = "splashscreen") {
 
