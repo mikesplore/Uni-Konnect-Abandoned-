@@ -754,7 +754,7 @@ fun MyAbout(context: Context) {
         Row(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
         ) {
-            // Google Icon with Link
+            //Phone Icon
             IconButton(onClick = {
                 val intent = Intent(
                     Intent.ACTION_DIAL, Uri.parse("tel:+254799013845")
