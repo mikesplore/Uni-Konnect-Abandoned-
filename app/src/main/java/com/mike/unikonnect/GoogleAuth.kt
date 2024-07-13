@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +38,7 @@ fun GoogleAuth(
     val activity = LocalContext.current as Activity
     val provider = OAuthProvider.newBuilder("google.com")
     var isLoading by remember { mutableStateOf(false) }
+    var success by remember { mutableStateOf(false) }
     provider.scopes = listOf(
         "profile",    // Required for display name and profile picture
         "email",      // Required for email address
@@ -49,6 +53,7 @@ fun GoogleAuth(
                     .startActivityForSignInWithProvider(activity, provider.build())
                     .addOnSuccessListener {
                         // Navigate to more details screen to add details
+                        success = true
                         isLoading = false // Stop loading on success
                         onSignInSuccess()
                     }
@@ -77,11 +82,18 @@ fun GoogleAuth(
                 trackColor = CC.textColor()
 
             )
-        } else {
-            // Show Google image when not loading
+        } else if (success){
+            //show a check to indicate successful authentication
+            Icon(
+                Icons.Default.Check,"Success",
+                tint = CC.textColor(),
+                modifier = Modifier.size(50.dp))
+        }
+        else {
+            // Show GitHub image when not loading
             Image(
                 painter = painterResource(R.drawable.google),
-                contentDescription = "",
+                contentDescription = "Google",
                 modifier = Modifier.size(50.dp)
             )
         }
