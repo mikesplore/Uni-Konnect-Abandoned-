@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,7 +69,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
     LaunchedEffect(Unit) {
         while (true) {
             timeSpent = System.currentTimeMillis() - startTime
-            delay(1000) // Update every second (adjust as needed)
+            delay(1000)
         }
     }
 
@@ -121,7 +123,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     courses.addAll(fetchedCourses)
                     loading = false
                 }
-                delay(10) // Wait for 5 seconds
+                delay(10)
             }
         }
 
@@ -256,59 +258,57 @@ fun AssignmentsList(courseCode: String, context: Context) {
 
 
 @Composable
-fun AssignmentCard(
-    assignment: Assignment, context: Context
-) {
-    AnimatedVisibility(
-        visible = true,
-        enter = slideInVertically(tween(1000)),
-        exit = slideOutVertically(tween(1000))
+fun AssignmentCard(assignment: Assignment, context: Context) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(containerColor = CC.secondary()),
+        elevation = CardDefaults.elevatedCardElevation(),
+        shape = RoundedCornerShape(12.dp) // Slightly more rounded corners
     ) {
-
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp), colors = CardDefaults.cardColors(
-                containerColor = CC.secondary(), contentColor = CC.textColor()
-            ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = CC.textColor(),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(16.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Column { // Group assignment name and author
                     Text(
                         text = assignment.name,
-                        style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
-                        color = CC.textColor()
+                        style = CC.titleTextStyle(context).copy(
+                            fontSize = 18.sp,
+                        )
                     )
-
+                    Text(
+                        text = "By ${Details.firstName.value}",
+                        style = CC.descriptionTextStyle(context),
+                        color = CC.extraColor1()
+                    )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Author: ${Details.firstName.value}",
-                    style = CC.descriptionTextStyle(context),
-                    color = CC.tertiary()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
 
+                // Deadline section (add formatting as needed)
                 Text(
-                    text = assignment.description,
+                    text = "Due: ${assignment.dueDate}", // Assuming assignment has a deadline property
                     style = CC.descriptionTextStyle(context),
-                    color = CC.textColor()
+                    color =  CC.textColor() // Change color if overdue
                 )
-
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Assignment description (optional expansion)
+            var expanded by remember { mutableStateOf(false) }
+            Text(
+                text = assignment.description,
+                style = CC.descriptionTextStyle(context),
+                maxLines = if (expanded) Int.MAX_VALUE else 2, // Show 2 lines initially, expandable
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { if (it.hasVisualOverflow && !expanded) expanded = true }, // Auto-expand if needed
+                modifier = Modifier.clickable { expanded = !expanded } // Toggle expansion
+            )
         }
     }
 }
