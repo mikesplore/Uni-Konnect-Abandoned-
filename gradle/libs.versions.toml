@@ -25,6 +25,8 @@ coilCompose = "2.4.0"
 firebaseFirestoreKtx = "25.0.0"
 firebaseMessagingKtx = "24.0.0"
 playServicesAuth = "21.2.0"
+playServicesLocation = "latest-version"
+playServicesMaps = "latest-version"
 workRuntimeKtx = "2.9.0"
 appcompat = "1.7.0"
 
@@ -61,6 +63,8 @@ firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-fires
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
