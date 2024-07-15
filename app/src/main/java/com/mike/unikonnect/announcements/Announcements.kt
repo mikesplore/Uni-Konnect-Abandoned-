@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.announcements
 
 
 import android.content.Context
@@ -45,7 +45,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.mike.unikonnect.homescreen.ColorProgressIndicator
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.getAnnouncements
+import com.mike.unikonnect.R
+import com.mike.unikonnect.classes.Announcement
+import com.mike.unikonnect.classes.ScreenTime
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
@@ -120,7 +126,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                 announcements.addAll(fetchedAnnouncements ?: emptyList())
                 isLoading = false
             }
-            delay(10) // Wait for 5 seconds
+            delay(10)
         }
     }
 
