@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.chat
 
 import android.content.Context
 import android.util.Log
@@ -29,16 +29,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.MyDatabase.fetchUserToUserMessages
 import com.mike.unikonnect.MyDatabase.getUsers
-import com.mike.unikonnect.MyDatabase.sendUserToUserMessage
+import com.mike.unikonnect.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.classes.Message
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -235,14 +236,25 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
             modifier = Modifier.padding(10.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.student), // Replace with your profile icon
-                contentDescription = "Profile Icon",
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(CircleShape)
-                    .background(Color.Gray)
-            )
+            if (user.profileImageLink.isNotBlank()) {
+                Image(
+                    painter = rememberAsyncImagePainter(user.profileImageLink),
+                    contentDescription = "Profile Image",
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.student), // Replace with your profile icon
+                    contentDescription = "Profile Icon",
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray)
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column(
                 modifier = Modifier.weight(1f)
