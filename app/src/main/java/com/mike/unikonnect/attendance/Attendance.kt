@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.attendance
 
 import android.content.Context
 import android.util.Log
@@ -31,11 +31,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.homescreen.ColorProgressIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.mike.unikonnect.CommonComponents as CC
 import java.text.SimpleDateFormat
+import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.classes.Course
+import com.mike.unikonnect.classes.AttendanceState
+import com.mike.unikonnect.classes.Attendance
+import com.mike.unikonnect.classes.ScreenTime
 import java.util.*
 
 
@@ -121,7 +129,10 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
                             }
                         }
 
-                        MyDatabase.fetchAttendances(currentAdmissionNumber, course.courseCode) { fetchedAttendances ->
+                        MyDatabase.fetchAttendances(
+                            currentAdmissionNumber,
+                            course.courseCode
+                        ) { fetchedAttendances ->
                             attendanceRecordsMap[course.courseCode] = fetchedAttendances
                         }
                     }
@@ -303,16 +314,24 @@ fun AttendanceList(
                     MyDatabase.signAttendance(studentID, courseCode, "Present") { success ->
                         if (success) {
                             // Update attendance state after signing
-                            MyDatabase.fetchAttendances(studentID, courseCode) { fetchedAttendance ->
+                            MyDatabase.fetchAttendances(
+                                studentID,
+                                courseCode
+                            ) { fetchedAttendance ->
                                 attendanceState.state = fetchedAttendance.any { it.date == today }
-                                Log.d("Comparison result","$attendanceState")
-                                Log.d("Comparison result","Signing today for $courseCode")
+                                Log.d("Comparison result", "$attendanceState")
+                                Log.d("Comparison result", "Signing today for $courseCode")
                                 // Reset hasSignedToday to true after successfully signing attendance
                                 hasSignedToday.value = true
-                                Toast.makeText(context, "Attendance signed successfully", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Attendance signed successfully",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } else {
-                            Toast.makeText(context, "Already signed attendance", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Already signed attendance", Toast.LENGTH_SHORT)
+                                .show()
                         }
                         loading = false
                     }
