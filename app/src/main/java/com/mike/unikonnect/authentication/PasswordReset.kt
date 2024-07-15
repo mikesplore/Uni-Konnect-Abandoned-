@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.authentication
 
 import android.content.Context
 import android.widget.Toast
