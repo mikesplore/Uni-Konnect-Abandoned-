@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.chat
 
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,6 +8,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.mike.unikonnect.MainActivity
+import com.mike.unikonnect.R
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
