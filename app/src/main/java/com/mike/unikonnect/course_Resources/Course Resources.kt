@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.course_Resources
 
 import android.content.Context
 import androidx.compose.foundation.Image
@@ -46,7 +46,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.mike.unikonnect.courses.CoursesScreen
 import com.mike.unikonnect.MyDatabase.readItems
+import com.mike.unikonnect.R
+import com.mike.unikonnect.classes.GridItem
+import com.mike.unikonnect.classes.Section
 import com.mike.unikonnect.CommonComponents as CC
 
 object CourseName {
