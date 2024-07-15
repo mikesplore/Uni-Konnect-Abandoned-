@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.chat
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,8 +24,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -66,7 +69,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.homescreen.Background
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.classes.Chat
+import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.classes.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -197,7 +206,7 @@ fun ChatScreen(
 
     fun sendMessage(message: String) {
         try {
-            MyDatabase.generateChatID {  chatId ->
+            MyDatabase.generateChatID { chatId ->
                 val newChat = Chat(
                     id = chatId,
                     message = message,
@@ -205,6 +214,7 @@ fun ChatScreen(
                     senderID = currentAdmissionNumber,
                     time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
                     date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date()),
+                    profileImageLink = ""
                 )
                 MyDatabase.sendMessage(newChat) { success ->
                     if (success) {
@@ -214,7 +224,8 @@ fun ChatScreen(
                             snackbarHostState.showSnackbar("Failed to send message")
                         }
                     }
-                }}
+                }
+            }
         } catch (e: Exception) {
             errorMessage = e.message
             scope.launch {
@@ -256,6 +267,8 @@ fun ChatScreen(
             Background(context)
             Column(
                 modifier = Modifier
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(8.dp)
@@ -282,7 +295,28 @@ fun ChatScreen(
                         shape = RoundedCornerShape(10.dp)
                     )
                 }
-
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                            )
+                            .clip(RoundedCornerShape(10.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "To maintain a positive learning environment, group chats are moderated by admins",
+                            modifier = Modifier.padding(5.dp),
+                            style = CC.descriptionTextStyle(context),
+                            textAlign = TextAlign.Center,
+                            color = GlobalColors.textColor
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
                 LazyColumn(
                     modifier = Modifier.weight(1f)
                 ) {
@@ -312,29 +346,6 @@ fun ChatScreen(
                                 }
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .background(
-                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-                                        )
-                                        .clip(RoundedCornerShape(10.dp)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "To maintain a positive learning environment, group chats are moderated by admins",
-                                        modifier = Modifier.padding(5.dp),
-                                        style = CC.descriptionTextStyle(context),
-                                        textAlign = TextAlign.Center,
-                                        color = GlobalColors.textColor
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
                         }
 
                         items(chatsForDate.filter {
@@ -468,7 +479,7 @@ fun PreviewMyScreen() {
     // ChatScreen(rememberNavController(), LocalContext.current)
     ChatBubble(
         chat = Chat(
-            senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01",
+            senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01", profileImageLink = ""
         ), isUser = true, context = LocalContext.current, rememberNavController()
     )
 }
