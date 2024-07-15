@@ -7,138 +7,30 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.mike.unikonnect.classes.Chat
+import com.mike.unikonnect.classes.Update
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
-
-data class User(
-    var id: String = "", // Use a mutable 'var'
-    val firstName: String = "",
-    val lastName: String = "",
-    val email: String = "",
-    val phoneNumber: String = "",
-    val gender: String = "",
-)
-
-data class Timetable(
-    val id: String = "",
-    val startTime: String = "",
-    val endTime: String = "",
-    val unitName: String = "",
-    val venue: String = "",
-    val lecturer: String = "",
-    val dayId: String = ""
-)
-
-data class UserPreferences(
-    val studentID: String = "",
-    val id: String = "",
-    val profileImageLink: String = "",
-    val biometrics: String = "disabled",
-    val darkMode: String = "disabled",
-    val notifications: String = "disabled"
-
-)
-
-data class Chat(
-    var id: String = "",
-    var message: String = "",
-    var senderName: String = "",
-    var senderID: String = "",
-    var time: String = "",
-    var date: String = "",
-)
-
-data class Message(
-    var id: String = "",
-    var message: String = "",
-    var senderName: String = "",
-    var senderID: String = "",
-    var time: String = "",
-    var date: String = "",
-    var recipientID: String = ""
-
-)
-
-
-data class AttendanceState(
-    val courseID: String = "", val courseName: String = "", var state: Boolean = false
-)
-
-data class Update(
-    val id: String = "", val version: String = ""
-)
-
-data class Course(
-    val courseCode: String = "",
-    val courseName: String = "",
-    var visits: Int = 0,
-)
-
-data class Feedback(
-    val id: String = "",
-    val rating: Int = 0,
-    val message: String = "",
-    val sender: String = "",
-    val admissionNumber: String = ""
-)
-
-data class AccountDeletion(
-    val id: String = "", val admissionNumber: String = "", val email: String = ""
-)
-
-data class Assignment(
-    val id: String = "",
-    val name: String = "",
-    val description: String = "",
-    val dueDate: String = "",
-    val courseCode: String = ""
-)
-
-data class Day(
-    val id: String = "", val name: String = ""
-)
-
-enum class Section { NOTES, PAST_PAPERS, RESOURCES }
-data class Announcement(
-    val id: String = "",
-    val date: String = "",
-    val title: String = "",
-    val description: String = "",
-    val author: String = ""
-)
-
-
-data class Attendance(
-    val id: String = "", val date: String = "", val status: String = "", val studentId: String = ""
-)
-
-data class Fcm(val id: String = "", val token: String = "")
-
-
-data class GridItem(
-    val title: String = "",
-    val description: String = "",
-    val thumbnail: String = "",
-    val link: String = "",
-    var fileType: String = "image"
-)
-
-data class MyCode(
-    val id: String = UUID.randomUUID().toString(), var code: Int = 0
-)
-
-data class ScreenTime(
-    val id: String = "", val screenName: String = "", val time: Long = 0
-)
-
-data class Screens(
-    val screenId: String = "",
-    val screenName: String = "",
-
-    )
+import com.mike.unikonnect.classes.MyCode
+import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.classes.Course
+import com.mike.unikonnect.classes.AccountDeletion
+import com.mike.unikonnect.classes.Day
+import com.mike.unikonnect.classes.AttendanceState
+import com.mike.unikonnect.classes.Announcement
+import com.mike.unikonnect.classes.Assignment
+import com.mike.unikonnect.classes.Screens
+import com.mike.unikonnect.classes.Attendance
+import com.mike.unikonnect.classes.Fcm
+import com.mike.unikonnect.classes.Feedback
+import com.mike.unikonnect.classes.Message
+import com.mike.unikonnect.classes.GridItem
+import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.classes.Section
+import com.mike.unikonnect.classes.Timetable
+import com.mike.unikonnect.classes.UserPreferences
 
 
 object MyDatabase {
@@ -494,6 +386,9 @@ object MyDatabase {
                                 userSnapshot.child("phoneNumber").getValue(String::class.java) ?: ""
                             val gender =
                                 userSnapshot.child("gender").getValue(String::class.java) ?: ""
+                            val profileImageLink =
+                                userSnapshot.child("profileImageLink").getValue(String::class.java) ?: ""
+
                             callback(
                                 User(
                                     id = userId,
@@ -501,7 +396,9 @@ object MyDatabase {
                                     firstName = firstName,
                                     lastName = lastName,
                                     phoneNumber = phoneNumber,
-                                    gender = gender
+                                    gender = gender,
+                                    profileImageLink = profileImageLink
+
                                 )
                             )
                             return
@@ -533,6 +430,8 @@ object MyDatabase {
                                 userSnapshot.child("phoneNumber").getValue(String::class.java) ?: ""
                             val gender =
                                 userSnapshot.child("gender").getValue(String::class.java) ?: ""
+                            val profileImageLink =
+                                userSnapshot.child("profileImageLink").getValue(String::class.java) ?: ""
                             callback(
                                 User(
                                     id = userId,
@@ -540,7 +439,8 @@ object MyDatabase {
                                     firstName = firstName,
                                     lastName = lastName,
                                     phoneNumber = phoneNumber,
-                                    gender = gender
+                                    gender = gender,
+                                    profileImageLink = profileImageLink
                                 )
                             )
                             return
