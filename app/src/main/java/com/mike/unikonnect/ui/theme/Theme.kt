@@ -41,20 +41,14 @@ val IndieFlower = FontFamily(
 
     )
 
-val Lora = FontFamily(
-    Font(R.font.lora, FontWeight.Normal)
-)
-
 val ShadowIntoLight = FontFamily(
     Font(R.font.shadowintolight, FontWeight.Normal)
 )
 
-val Crimson = FontFamily(
-    Font(R.font.crimson, FontWeight.Normal)
+val DancingScript = FontFamily(
+    Font(R.font.dancingscript, FontWeight.Normal)
 )
-val Zeyada = FontFamily(
-    Font(R.font.zeyada, FontWeight.Normal)
-)
+
 val Caveat = FontFamily(
     Font(R.font.caveat, FontWeight.Normal)
 )
