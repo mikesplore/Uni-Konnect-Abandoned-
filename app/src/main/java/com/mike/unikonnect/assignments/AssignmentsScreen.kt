@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.assignments
 
 import android.content.Context
 import android.util.Log
@@ -50,6 +50,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MyDatabase
+import com.mike.unikonnect.announcements.Details
+import com.mike.unikonnect.classes.Assignment
+import com.mike.unikonnect.classes.Course
+import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.homescreen.ColorProgressIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.mike.unikonnect.CommonComponents as CC
