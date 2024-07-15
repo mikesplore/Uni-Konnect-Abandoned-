@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.timetble
 
 import android.content.Context
 import android.util.Log
@@ -56,6 +56,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mike.unikonnect.classes.Day
+import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.classes.Timetable
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MyDatabase
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
@@ -221,12 +226,7 @@ fun DayList(dayid: String, context: Context) {
             CircularProgressIndicator(
                 color = CC.secondary(), trackColor = CC.textColor()
             )
-            Text("Loading Events...Please wait", style = CC.descriptionTextStyle(context))
-            Text(
-                "If this takes longer, please check your internet connection",
-                style = CC.descriptionTextStyle(context),
-                textAlign = TextAlign.Center
-            )
+            Text("Loading Events...", style = CC.descriptionTextStyle(context))
         }
     } else {
         LazyColumn {
