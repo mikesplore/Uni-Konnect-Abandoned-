@@ -17,7 +17,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.announcements.Details
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +28,8 @@ import com.mike.unikonnect.CommonComponents as CC
 fun MoreDetails(context: Context, navController: NavController) {
     val database = MyDatabase.database.child("Users")
     var users by remember { mutableStateOf<List<User>?>(null) }
+    val auth = FirebaseAuth.getInstance()
+    val imageLink by remember { mutableStateOf(auth.currentUser?.photoUrl) }
 
     fun checkEmailExists(email: String, onResult: (Boolean) -> Unit) {
         val query = database.orderByChild("email").equalTo(email) // Query for the email
@@ -153,7 +158,7 @@ fun MoreDetails(context: Context, navController: NavController) {
                         onClick = {
                             addloading = true
                             MyDatabase.generateIndexNumber { indexNumber ->
-                                val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, phoneNumber = "", email = Details.email.value)
+                                val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, phoneNumber = "", email = Details.email.value, profileImageLink = imageLink.toString())
                                 MyDatabase.writeUsers(user) { success ->
                                     if (success) {
                                         Toast.makeText(context, "Added successfully", Toast.LENGTH_SHORT).show()
