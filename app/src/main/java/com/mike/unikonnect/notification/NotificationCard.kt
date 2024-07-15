@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.notification
 
 import android.content.Context
 import androidx.compose.foundation.Image
@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mike.unikonnect.R
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import com.mike.unikonnect.CommonComponents as CC
