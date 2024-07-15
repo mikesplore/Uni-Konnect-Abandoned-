@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.settings
 
 import android.content.Context
 import android.content.Intent
@@ -83,8 +83,16 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ui.theme.FontPreferences
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MainActivity
+import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.MyDatabase.updatePassword
+import com.mike.unikonnect.R
+import com.mike.unikonnect.classes.Feedback
+import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.classes.UserPreferences
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
