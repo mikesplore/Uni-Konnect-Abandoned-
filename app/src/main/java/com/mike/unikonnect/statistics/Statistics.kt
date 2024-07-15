@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.statistics
 
 import android.content.Context
 import android.graphics.Paint
@@ -58,10 +58,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.getAllScreenTimes
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.mike.unikonnect.classes.Course
+import com.mike.unikonnect.classes.ScreenTime
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
