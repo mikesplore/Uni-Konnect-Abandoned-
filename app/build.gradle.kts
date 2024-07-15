@@ -60,6 +60,8 @@ android {
 }
 
 dependencies {
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.24.12-rc")
+    implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation (libs.androidx.biometric)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.core.ktx)
