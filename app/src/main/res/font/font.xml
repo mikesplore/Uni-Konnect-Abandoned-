@@ -11,13 +11,6 @@
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
-        android:font="@font/crimson" />
-    <font
-        android:fontStyle="normal"
-        android:fontWeight="400"
-        android:font="@font/lora" />
-    <font
-        android:fontStyle="normal"
-        android:fontWeight="400"
-        android:font="@font/zeyada" />
+        android:font="@font/dancingscript" />
+
 </font-family>
