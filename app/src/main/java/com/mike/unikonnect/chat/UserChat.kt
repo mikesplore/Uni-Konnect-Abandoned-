@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.chat
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -26,16 +27,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.homescreen.Background
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByAdmissionNumber
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.MyDatabase.fetchUserToUserMessages
 import com.mike.unikonnect.MyDatabase.sendUserToUserMessage
+import com.mike.unikonnect.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.classes.Message
+import com.mike.unikonnect.classes.ScreenTime
 import com.mike.unikonnect.CommonComponents as CC
 
 
@@ -178,24 +187,25 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     fun sendMessage(messageContent: String) {
         try {
             MyDatabase.generateChatID { chatId ->
-            val newMessage = Message(
-                id = chatId,
-                message = messageContent,
-                senderName = user.firstName,
-                senderID = currentAdmissionNumber,
-                recipientID = targetUserId,
-                time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
-                date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-            )
-            sendUserToUserMessage(newMessage, conversationId) { success ->
-                if (success) {
-                    fetchMessages(conversationId)
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Failed to send message")
+                val newMessage = Message(
+                    id = chatId,
+                    message = messageContent,
+                    senderName = user.firstName,
+                    senderID = currentAdmissionNumber,
+                    recipientID = targetUserId,
+                    time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
+                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date()),
+                    profileImageLink = ""
+                )
+                sendUserToUserMessage(newMessage, conversationId) { success ->
+                    if (success) {
+                        fetchMessages(conversationId)
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Failed to send message")
+                        }
                     }
                 }
-            }
             }
         } catch (e: Exception) {
             errorMessage = e.message
@@ -231,11 +241,25 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                             modifier = Modifier.size(24.dp) // Adjust size as needed
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Image(
-                            painter = painterResource(R.drawable.student),
-                            contentDescription = "student",
-                            modifier = Modifier.size(50.dp) // Match the Icon size
-                        )
+                        if (user.profileImageLink.isNotBlank()) {
+                            Image(
+                                painter = rememberAsyncImagePainter(user.profileImageLink),
+                                contentDescription = "Profile Image",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+
+                            )
+                        } else {
+                            Image(
+                                painter = painterResource(id = R.drawable.student), // Replace with your profile icon
+                                contentDescription = "Profile Icon",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+
+                            )
+                        }
                     }
                 }
             },
