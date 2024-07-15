@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.ui.theme
 
 import android.content.Context
 import android.util.Log
@@ -48,12 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.mike.unikonnect.ui.theme.Caveat
-import com.mike.unikonnect.ui.theme.Crimson
-import com.mike.unikonnect.ui.theme.Lora
-import com.mike.unikonnect.ui.theme.ShadowIntoLight
-import com.mike.unikonnect.ui.theme.IndieFlower
-import com.mike.unikonnect.ui.theme.Zeyada
+import com.mike.unikonnect.MyDatabase
+import com.mike.unikonnect.classes.ScreenTime
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
@@ -141,7 +137,6 @@ fun Appearance(navController: NavController, context: Context) {
     var isDarkMode by remember { mutableStateOf(GlobalColors.isDarkMode) }
     var currentFont by remember { mutableStateOf<FontFamily?>(null) }
     var fontUpdated by remember { mutableStateOf(false) }
-    val isSystemInDarkTheme = isSystemInDarkTheme()
     val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var timeSpent by remember { mutableLongStateOf(0L) }
     val screenID = "SC2"
@@ -241,10 +236,8 @@ fun currentFontFamily(context: Context): FontFamily {
 
     return when (selectedFontName) {
         "Indie Flower" -> IndieFlower
-        "Lora" -> Lora
+        "Dancing Script" -> DancingScript
         "Shadow Into Light" -> ShadowIntoLight
-        "Crimson" -> Crimson
-        "Zeyada" -> Zeyada
         "Caveat" -> Caveat
         else -> FontFamily.Default // Use system font if no preference is saved
     }
@@ -258,9 +251,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
     val fontFamilies = mapOf(
         "Indie Flower" to IndieFlower,
         "Shadow Into Light" to ShadowIntoLight,
-        "Lora" to Lora,
-        "Crimson" to Crimson,
-        "Zeyada" to Zeyada,
+        "Dancing Script" to DancingScript,
         "Caveat" to Caveat,
         "System" to FontFamily.Default
     )
