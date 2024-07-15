@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.dashboard
 
 import android.content.Context
 import android.content.Intent
@@ -78,12 +78,25 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerDefaults
 import com.google.accompanist.pager.PagerState
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.MainActivity
+import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
+import com.mike.unikonnect.attendance.SignAttendanceScreen
+import com.mike.unikonnect.announcements.AnnouncementsScreen
+import com.mike.unikonnect.assignments.AssignmentScreen
+import com.mike.unikonnect.classes.Screen
+import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.classes.Screens
+import com.mike.unikonnect.homescreen.HomeScreen
+import com.mike.unikonnect.settings.BiometricPromptManager
+import com.mike.unikonnect.timetble.TimetableScreen
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
+import com.mike.unikonnect.classes.User
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class, ExperimentalSnapperApi::class)
