@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.notification
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -10,6 +10,8 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.mike.unikonnect.MainActivity
+import com.mike.unikonnect.R
 
 const val CHANNEL_ID = "classportal_channel_id"
 private var notificationIdCounter = 0
