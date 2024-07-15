@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.authentication
 
 import android.app.Activity
 import android.util.Log
@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.OAuthProvider
+import com.mike.unikonnect.R
 import com.mike.unikonnect.CommonComponents as CC
 
 @Composable
