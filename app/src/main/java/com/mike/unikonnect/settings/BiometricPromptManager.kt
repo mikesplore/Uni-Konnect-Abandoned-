@@ -1,4 +1,4 @@
-package com.mike.unikonnect
+package com.mike.unikonnect.settings
 
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
