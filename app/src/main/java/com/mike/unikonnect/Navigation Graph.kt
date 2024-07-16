@@ -66,8 +66,8 @@ import com.mike.unikonnect.authentication.PasswordReset
 import com.mike.unikonnect.chat.ChatScreen
 import com.mike.unikonnect.chat.ParticipantsScreen
 import com.mike.unikonnect.chat.UserChatScreen
-import com.mike.unikonnect.classes.Screen
-import com.mike.unikonnect.classes.Update
+import com.mike.unikonnect.model.Screen
+import com.mike.unikonnect.model.Update
 import com.mike.unikonnect.course_Resources.CourseScreen
 import com.mike.unikonnect.courses.CoursesScreen
 import com.mike.unikonnect.dashboard.Dashboard
@@ -80,7 +80,7 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(mainActivity: MainActivity) {
+fun NavigationGraph(mainActivity: MainActivity) {
     val context = LocalContext.current
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
