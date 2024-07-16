@@ -60,10 +60,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
-import com.mike.unikonnect.classes.AccountDeletion
+import com.mike.unikonnect.model.AccountDeletion
 import kotlin.random.Random
-import com.mike.unikonnect.classes.User
-import com.mike.unikonnect.classes.UserPreferences
+import com.mike.unikonnect.model.User
+import com.mike.unikonnect.model.UserPreferences
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
