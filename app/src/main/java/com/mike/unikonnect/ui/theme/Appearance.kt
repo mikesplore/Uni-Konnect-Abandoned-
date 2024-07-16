@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,7 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.mike.unikonnect.MyDatabase
-import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.model.ScreenTime
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
