@@ -29,11 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -80,6 +82,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(targetUserId) {
+        GlobalColors.loadColorScheme(context)
         currentUser?.email?.let { email ->
             fetchUserDataByEmail(email) { fetchedUser ->
                 fetchedUser?.let {
@@ -419,11 +422,12 @@ fun ChatTextField(
             .height(56.dp),
         placeholder = { Text(text = "Message", style = CC.descriptionTextStyle(context)) },
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = CC.secondary(),
+            focusedContainerColor = CC.primary(),
             unfocusedIndicatorColor = CC.textColor(),
             focusedIndicatorColor = CC.secondary(),
             focusedTextColor = CC.textColor(),
-            unfocusedTextColor = CC.textColor()
+            unfocusedTextColor = CC.textColor(),
+            unfocusedContainerColor = CC.primary(),
 
         ),
         shape = RoundedCornerShape(24.dp),
@@ -431,7 +435,21 @@ fun ChatTextField(
     )
 }
 
+@Preview
+@Composable
+fun MyChatPreview()
+{
+    ChatInput(
+        modifier = Modifier
+            .width(300.dp)
+            .height(48.dp)
+        ,
+        onMessageChange = {},
+        sendMessage = {},
+        LocalContext.current
 
+    )
+}
 
 
 @Composable

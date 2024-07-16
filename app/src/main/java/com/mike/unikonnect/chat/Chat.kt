@@ -91,6 +91,7 @@ import com.mike.unikonnect.CommonComponents as CC
 class ChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GlobalColors.loadColorScheme(this)
         setContent {
             MyChatApp(this, rememberNavController())
         }
@@ -131,6 +132,7 @@ fun ChatScreen(
     val scrollState = rememberLazyListState()
 
     LaunchedEffect(currentUser?.email) {
+        GlobalColors.loadColorScheme(context)
         currentUser?.email?.let { email ->
             fetchUserDataByEmail(email) { fetchedUser ->
                 fetchedUser?.let {
