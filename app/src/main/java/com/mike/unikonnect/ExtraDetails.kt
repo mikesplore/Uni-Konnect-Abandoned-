@@ -19,8 +19,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.mike.unikonnect.classes.User
-import com.mike.unikonnect.announcements.Details
+import com.mike.unikonnect.model.User
+import com.mike.unikonnect.model.Details
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
