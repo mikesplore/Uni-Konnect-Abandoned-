@@ -69,9 +69,9 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
-import com.mike.unikonnect.classes.Chat
-import com.mike.unikonnect.classes.ScreenTime
-import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.model.Chat
+import com.mike.unikonnect.model.ScreenTime
+import com.mike.unikonnect.model.User
 import com.mike.unikonnect.homescreen.Background
 import com.mike.unikonnect.ui.theme.GlobalColors
 import kotlinx.coroutines.delay
@@ -113,43 +113,11 @@ fun ChatScreen(
     }
 
 
-    DisposableEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
-        onDispose {
-            // Fetch the screen details
-            MyDatabase.getScreenDetails(screenID) { screenDetails ->
-                if (screenDetails != null) {
-                    MyDatabase.writeScren(courseScreen = screenDetails) {}
-                    // Fetch existing screen time
-                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
-                        val totalScreenTime = if (existingScreenTime != null) {
-                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
-                            existingScreenTime.time + timeSpent
-                        } else {
-                            timeSpent
-                        }
-
-                        // Create a new ScreenTime object
-                        val screentime = ScreenTime(
-                            id = screenID,
-                            screenName = screenDetails.screenName,
-                            time = totalScreenTime
-                        )
-
-                        // Save the updated screen time
-                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
-                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
-                        }, onFailure = {
-                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
-                        })
-                    }
-
-                } else {
-                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
-                }
-            }
-        }
-    }
+    ExitScreen(
+        context = context,
+        screenID = screenID,
+        timeSpent = timeSpent
+    )
 
 
     // Fetch user data when the composable is launched
