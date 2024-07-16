@@ -175,10 +175,6 @@ fun DisplayImage(context: Context) {
                 fetchedUser?.let {
                     currentUser = it
                     MyDatabase.fetchPreferences(currentUser.id) { preferences ->
-                        Log.d(
-                            "Shared Preferences",
-                            "Retrieved preferences for student ID: ${currentUser.id}: $preferences"
-                        )
                         preferences?.let {
                             selectedImageUri = Uri.parse(preferences.profileImageLink)
                         }
