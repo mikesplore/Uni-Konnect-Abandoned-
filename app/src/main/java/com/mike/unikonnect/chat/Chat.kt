@@ -108,7 +108,7 @@ fun ChatScreen(
     LaunchedEffect(Unit) {
         while (true) {
             timeSpent = System.currentTimeMillis() - startTime
-            delay(1000) // Update every second (adjust as needed)
+            delay(1000)
         }
     }
 
