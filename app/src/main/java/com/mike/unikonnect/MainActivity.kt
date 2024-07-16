@@ -12,9 +12,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.rememberNavController
 import com.mike.unikonnect.notification.createNotificationChannel
 import com.mike.unikonnect.settings.BiometricPromptManager
 
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
             MainScreen(this)
-            //ChatScreen()
+            //Chat()
 
 
         }
