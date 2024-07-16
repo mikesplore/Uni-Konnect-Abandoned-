@@ -12,18 +12,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
+import com.mike.unikonnect.model.Global
 import com.mike.unikonnect.notification.createNotificationChannel
 import com.mike.unikonnect.settings.BiometricPromptManager
-
-
-object Global {
-    val showAlert: MutableState<Boolean> = mutableStateOf(false)
-    val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
-    var loading: MutableState<Boolean> = mutableStateOf(true)
-}
 
 class MainActivity : AppCompatActivity() {
     val promptManager by lazy {
@@ -36,13 +28,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_UniKonnect)
         super.onCreate(savedInstanceState)
-        if (Global.edgeToEdge.value) {
-            enableEdgeToEdge()
-        }
+        enableEdgeToEdge()
 
         setContent {
             sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
-            MainScreen(this)
+            NavigationGraph(this)
         }
         createNotificationChannel(this)
     }
