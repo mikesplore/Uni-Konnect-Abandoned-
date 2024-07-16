@@ -260,7 +260,7 @@ fun MainScreen(mainActivity: MainActivity) {
 @Composable
 fun MyNavHost(context: Context,pagerState: PagerState,coroutineScope: CoroutineScope, screens: List<Screen>, mainActivity: MainActivity){
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "chat") {
 
         composable(route = "login", enterTransition = {
             fadeIn(animationSpec = tween(1000))
@@ -408,3 +408,4 @@ fun MyNavHost(context: Context,pagerState: PagerState,coroutineScope: CoroutineS
     }
 
 }
+
