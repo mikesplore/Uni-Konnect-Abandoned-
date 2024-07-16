@@ -38,8 +38,8 @@ import com.mike.unikonnect.MyDatabase.getUsers
 import com.mike.unikonnect.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.mike.unikonnect.classes.User
-import com.mike.unikonnect.classes.Message
+import com.mike.unikonnect.model.User
+import com.mike.unikonnect.model.Message
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
