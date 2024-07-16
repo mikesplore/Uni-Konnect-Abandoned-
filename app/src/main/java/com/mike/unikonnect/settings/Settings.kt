@@ -105,6 +105,7 @@ fun Settings(navController: NavController, context: Context, mainActivity: MainA
     var signInMethod by remember { mutableStateOf("") }
     val fontPrefs = remember { FontPreferences(context) }
     var savedFont by remember { mutableStateOf("system") }
+
     LaunchedEffect(Unit) {
         savedFont = fontPrefs.getSelectedFont().toString()
     }
