@@ -8,7 +8,6 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -90,17 +89,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.mike.unikonnect.MyDatabase.getAnnouncements
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import com.mike.unikonnect.course_Resources.CourseName
 import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase
 import java.io.File
 import java.io.IOException
-import com.mike.unikonnect.classes.Course
-import com.mike.unikonnect.classes.Timetable
-import com.mike.unikonnect.classes.Announcement
-import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.model.Course
+import com.mike.unikonnect.model.Timetable
+import com.mike.unikonnect.model.Announcement
 import com.mike.unikonnect.CommonComponents as CC
 
 data class Images(val link: String, val description: String)
@@ -373,10 +369,6 @@ fun IconBox(
     modifier: Modifier = Modifier,
     animationDelay: Int = 0
 ) {
-    var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.9f else 1f, label = ""
-    )
     val offsetX by animateDpAsState(
         targetValue = 0.dp, // Initially off-screen
         animationSpec = tween(
