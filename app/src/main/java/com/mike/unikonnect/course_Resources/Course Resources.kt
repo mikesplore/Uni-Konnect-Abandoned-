@@ -49,8 +49,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.mike.unikonnect.courses.CoursesScreen
 import com.mike.unikonnect.MyDatabase.readItems
 import com.mike.unikonnect.R
-import com.mike.unikonnect.classes.GridItem
-import com.mike.unikonnect.classes.Section
+import com.mike.unikonnect.model.GridItem
+import com.mike.unikonnect.model.Section
 import com.mike.unikonnect.CommonComponents as CC
 
 object CourseName {
