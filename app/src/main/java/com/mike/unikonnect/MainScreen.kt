@@ -96,7 +96,6 @@ fun MainScreen(mainActivity: MainActivity) {
                     if (localUpdate.id != versionName) {
                         update = true
                     }
-                } else {
                 }
             }
             delay(60000) // Wait for 60 seconds

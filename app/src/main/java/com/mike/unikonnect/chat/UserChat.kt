@@ -180,6 +180,13 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                     .padding(16.dp),
 
             ) {
+                TopAppBarComponent(
+                    name,
+                    navController,
+                    context,
+                    user,
+                    onValueChange = {isSearchVisible = !isSearchVisible}
+                )
                 if (isSearchVisible) {
                     SearchTextField(
                         searchQuery = searchQuery,
