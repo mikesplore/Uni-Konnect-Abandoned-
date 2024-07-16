@@ -28,9 +28,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
-import com.mike.unikonnect.announcements.Details
-import com.mike.unikonnect.classes.Fcm
-import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.model.Details
+import com.mike.unikonnect.model.Fcm
+import com.mike.unikonnect.model.User
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
