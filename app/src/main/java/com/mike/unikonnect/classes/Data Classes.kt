@@ -76,7 +76,9 @@ data class AttendanceState(
 )
 
 data class Update(
-    val id: String = "", val version: String = ""
+    val id: String = "",
+    val version: String = "",
+    val updateLink: String = ""
 )
 
 data class Course(
