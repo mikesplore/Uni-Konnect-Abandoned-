@@ -52,15 +52,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mike.unikonnect.classes.Day
-import com.mike.unikonnect.classes.ScreenTime
-import com.mike.unikonnect.classes.Timetable
+import com.mike.unikonnect.model.Day
+import com.mike.unikonnect.model.ScreenTime
+import com.mike.unikonnect.model.Timetable
 import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase
+import com.mike.unikonnect.chat.ExitScreen
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
@@ -92,44 +92,12 @@ fun TimetableScreen(context: Context) {
         }
     }
 
+    ExitScreen(
+        context = context,
+        screenID = screenID,
+        timeSpent = timeSpent
+    )
 
-    DisposableEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
-        onDispose {
-            // Fetch the screen details
-            MyDatabase.getScreenDetails(screenID) { screenDetails ->
-                if (screenDetails != null) {
-                    MyDatabase.writeScren(courseScreen = screenDetails) {}
-                    // Fetch existing screen time
-                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
-                        val totalScreenTime = if (existingScreenTime != null) {
-                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
-                            existingScreenTime.time + timeSpent
-                        } else {
-                            timeSpent
-                        }
-
-                        // Create a new ScreenTime object
-                        val screentime = ScreenTime(
-                            id = screenID,
-                            screenName = screenDetails.screenName,
-                            time = totalScreenTime
-                        )
-
-                        // Save the updated screen time
-                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
-                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
-                        }, onFailure = {
-                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
-                        })
-                    }
-
-                } else {
-                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
-                }
-            }
-        }
-    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
