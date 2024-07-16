@@ -52,10 +52,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase
-import com.mike.unikonnect.announcements.Details
-import com.mike.unikonnect.classes.Assignment
-import com.mike.unikonnect.classes.Course
-import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.chat.ExitScreen
+import com.mike.unikonnect.model.Details
+import com.mike.unikonnect.model.Assignment
+import com.mike.unikonnect.model.Course
+import com.mike.unikonnect.model.ScreenTime
 import com.mike.unikonnect.homescreen.ColorProgressIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -80,43 +81,11 @@ fun AssignmentScreen(navController: NavController, context: Context) {
         }
     }
 
-    DisposableEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
-        onDispose {
-            // Fetch the screen details
-            MyDatabase.getScreenDetails(screenID) { screenDetails ->
-                if (screenDetails != null) {
-                    MyDatabase.writeScren(courseScreen = screenDetails) {}
-                    // Fetch existing screen time
-                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
-                        val totalScreenTime = if (existingScreenTime != null) {
-                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
-                            existingScreenTime.time + timeSpent
-                        } else {
-                            timeSpent
-                        }
-
-                        // Create a new ScreenTime object
-                        val screentime = ScreenTime(
-                            id = screenID,
-                            screenName = screenDetails.screenName,
-                            time = totalScreenTime
-                        )
-
-                        // Save the updated screen time
-                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
-                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
-                        }, onFailure = {
-                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
-                        })
-                    }
-
-                } else {
-                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
-                }
-            }
-        }
-    }
+    ExitScreen(
+        context = context,
+        screenID = screenID,
+        timeSpent = timeSpent
+    )
 
     Column(
         modifier = Modifier.fillMaxSize(),
