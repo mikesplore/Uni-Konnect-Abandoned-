@@ -85,9 +85,10 @@ import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.attendance.SignAttendanceScreen
 import com.mike.unikonnect.announcements.AnnouncementsScreen
 import com.mike.unikonnect.assignments.AssignmentScreen
-import com.mike.unikonnect.classes.Screen
-import com.mike.unikonnect.classes.ScreenTime
-import com.mike.unikonnect.classes.Screens
+import com.mike.unikonnect.chat.ExitScreen
+import com.mike.unikonnect.model.Screen
+import com.mike.unikonnect.model.ScreenTime
+import com.mike.unikonnect.model.Screens
 import com.mike.unikonnect.homescreen.HomeScreen
 import com.mike.unikonnect.settings.BiometricPromptManager
 import com.mike.unikonnect.timetble.TimetableScreen
@@ -96,7 +97,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
-import com.mike.unikonnect.classes.User
+import com.mike.unikonnect.model.User
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class, ExperimentalSnapperApi::class)
@@ -126,33 +127,12 @@ fun Dashboard(
         }
     }
 
-    DisposableEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
-        MyDatabase.writeScren(courseScreen = Screens(screenID, screenName)) {}
-        onDispose {
-            // Fetch existing screen time
-            MyDatabase.getScreenTime(screenID) { existingScreenTime ->
-                val totalScreenTime = if (existingScreenTime != null) {
-                    Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
-                    existingScreenTime.time + timeSpent
-                } else {
-                    timeSpent
-                }
+    ExitScreen(
+        context = context,
+        screenID = screenID,
+        timeSpent = timeSpent
+    )
 
-                // Create a new ScreenTime object
-                val screentime = ScreenTime(
-                    id = screenID, screenName = screenName, time = totalScreenTime
-                )
-
-                // Save the updated screen time
-                MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
-                    Log.d("Screen Time", "Saved $totalScreenTime to the database")
-                }, onFailure = {
-                    Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
-                })
-            }
-        }
-    }
     val currentUser = auth.currentUser
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var signInMethod by remember { mutableStateOf("") }
