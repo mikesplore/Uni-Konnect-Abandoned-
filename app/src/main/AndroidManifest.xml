@@ -22,29 +22,10 @@
         android:appCategory="productivity"
         android:theme="@style/Theme.UniKonnect"
         tools:targetApi="tiramisu">
-        <activity
-            android:name=".chat.ChatActivity"
-            android:exported="true"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.SplashTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="app"
-                    android:host="com.mike.unikonnect"
-                    android:pathPattern="/dashboard/.*" />
-            </intent-filter>
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

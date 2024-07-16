@@ -62,6 +62,7 @@ import com.mike.unikonnect.MyDatabase.getUpdate
 import com.mike.unikonnect.attendance.SignAttendanceScreen
 import com.mike.unikonnect.authentication.LoginScreen
 import com.mike.unikonnect.authentication.PasswordReset
+import com.mike.unikonnect.chat.ChatScreen
 import com.mike.unikonnect.chat.ParticipantsScreen
 import com.mike.unikonnect.chat.UserChatScreen
 import com.mike.unikonnect.classes.Screen
@@ -92,13 +93,10 @@ fun MainScreen(mainActivity: MainActivity) {
             GlobalColors.loadColorScheme(context) // Assuming this is necessary for each check
             getUpdate { localUpdate ->
                 if (localUpdate != null) {
-                    Log.d("Package Update", "New version available: $localUpdate")
                     if (localUpdate.id != versionName) {
-
                         update = true
                     }
                 } else {
-                    Log.d("Package Update", "No information found regarding the update")
                 }
             }
             delay(60000) // Wait for 60 seconds
@@ -260,13 +258,14 @@ fun MainScreen(mainActivity: MainActivity) {
 @Composable
 fun MyNavHost(context: Context,pagerState: PagerState,coroutineScope: CoroutineScope, screens: List<Screen>, mainActivity: MainActivity){
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "chat") {
+    NavHost(navController, startDestination = "dashboard") {
 
         composable(route = "login", enterTransition = {
             fadeIn(animationSpec = tween(1000))
         }, exitTransition = {
             fadeOut(animationSpec = tween(1000))
-        }) {
+        }
+        ) {
             LoginScreen(navController, context)
         }
 
@@ -335,7 +334,7 @@ fun MyNavHost(context: Context,pagerState: PagerState,coroutineScope: CoroutineS
         }, exitTransition = {
             fadeOut(animationSpec = tween(1000))
         }) {
-            com.mike.unikonnect.chat.ChatScreen(navController, context)
+            ChatScreen(navController, context)
         }
 
         composable("courses",

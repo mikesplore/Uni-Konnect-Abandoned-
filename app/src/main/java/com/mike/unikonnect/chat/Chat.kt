@@ -1,20 +1,20 @@
+
 package com.mike.unikonnect.chat
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,17 +24,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +45,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,9 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -88,25 +81,8 @@ import java.util.Date
 import java.util.Locale
 import com.mike.unikonnect.CommonComponents as CC
 
-class ChatActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        GlobalColors.loadColorScheme(this)
-        setContent {
-            MyChatApp(this, rememberNavController())
-        }
-    }
-}
 
-@Composable
-fun MyChatApp(context: Context, navController: NavController){
-    val isSearchVisible by remember { mutableStateOf(false) }
-    Column(modifier = Modifier.fillMaxSize()) {
-       TopBar(context, navController, isSearchVisible, onValuechange = {!isSearchVisible})
-       ChatScreen(navController, context)
-    }
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     navController: NavController, context: Context
@@ -114,7 +90,7 @@ fun ChatScreen(
     var user by remember { mutableStateOf(User()) }
     var message by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-
+    var isSearchVisible by remember { mutableStateOf(false) }
     var previousChatSize by remember { mutableIntStateOf(0) }
     var chats by remember { mutableStateOf(emptyList<Chat>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -129,10 +105,55 @@ fun ChatScreen(
     var timeSpent by remember { mutableLongStateOf(0L) }
     val screenID = "SC6"
 
-    val scrollState = rememberLazyListState()
+    LaunchedEffect(Unit) {
+        while (true) {
+            timeSpent = System.currentTimeMillis() - startTime
+            delay(1000) // Update every second (adjust as needed)
+        }
+    }
 
-    LaunchedEffect(currentUser?.email) {
+
+    DisposableEffect(Unit) {
         GlobalColors.loadColorScheme(context)
+        onDispose {
+            // Fetch the screen details
+            MyDatabase.getScreenDetails(screenID) { screenDetails ->
+                if (screenDetails != null) {
+                    MyDatabase.writeScren(courseScreen = screenDetails) {}
+                    // Fetch existing screen time
+                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
+                        val totalScreenTime = if (existingScreenTime != null) {
+                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
+                            existingScreenTime.time + timeSpent
+                        } else {
+                            timeSpent
+                        }
+
+                        // Create a new ScreenTime object
+                        val screentime = ScreenTime(
+                            id = screenID,
+                            screenName = screenDetails.screenName,
+                            time = totalScreenTime
+                        )
+
+                        // Save the updated screen time
+                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
+                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
+                        }, onFailure = {
+                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
+                        })
+                    }
+
+                } else {
+                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
+                }
+            }
+        }
+    }
+
+
+    // Fetch user data when the composable is launched
+    LaunchedEffect(currentUser?.email) {
         currentUser?.email?.let { email ->
             fetchUserDataByEmail(email) { fetchedUser ->
                 fetchedUser?.let {
@@ -143,17 +164,7 @@ fun ChatScreen(
                 }
             }
         }
-        while (true) {
-            timeSpent = System.currentTimeMillis() - startTime
-            delay(1000) // Update every second (adjust as needed)
-        }
     }
-
-    ExitScreen(
-        context,
-        screenID,
-        timeSpent
-    )
 
     fun fetchChats() {
         try {
@@ -177,17 +188,11 @@ fun ChatScreen(
             }
         }
     }
-
-    LaunchedEffect(chats.size) {
-        if (chats.isNotEmpty()) {
-            scrollState.animateScrollToItem(chats.size - 1)
-        }
-    }
-
     fun formatDate(dateString: String): String {
         val today = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
         val yesterday = SimpleDateFormat(
-            "dd-MM-yyyy", Locale.getDefault()
+            "dd-MM-yyyy",
+            Locale.getDefault()
         ).format(Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)) // Yesterday's date
 
         return when (dateString) {
@@ -206,8 +211,7 @@ fun ChatScreen(
                     senderName = currentName,
                     senderID = currentAdmissionNumber,
                     time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
-                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date()),
-                    profileImageLink = ""
+                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
                 )
                 MyDatabase.sendMessage(newChat) { success ->
                     if (success) {
@@ -227,76 +231,165 @@ fun ChatScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Background(context)
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize()
-                .padding(16.dp)
-                .padding(8.dp)
-        ) {
+    Scaffold(topBar = {
+        TopAppBar(
+            title = { Text("Group Discussions", style = CC.titleTextStyle(context)) },
+            actions = {
+                IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Search",
+                        tint = CC.textColor()
+                    )
+                }
+                IconButton(onClick = {navController.navigate("users")}) {
+                    Icon(Icons.Filled.Person, "Participants",
+                        tint = CC.textColor())
+                }
+            },
 
-            RowMessage(context)
-            Spacer(modifier = Modifier.height(10.dp))
-
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp),
-                state = scrollState
+            navigationIcon = {
+                IconButton(onClick = { navController.navigate("dashboard") }) {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Back",
+                        tint = CC.textColor()
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
+        )
+    }, snackbarHost = { SnackbarHost(snackbarHostState) }, content = { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            Background(context)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(8.dp)
             ) {
-                val groupedChats = chats.groupBy { it.date }
+                AnimatedVisibility(
+                    visible = isSearchVisible, enter = fadeIn(), exit = fadeOut()
+                ) {
+                    TextField(value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text("Search Chats") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = GlobalColors.primaryColor,
+                            unfocusedIndicatorColor = CC.textColor(),
+                            focusedIndicatorColor = GlobalColors.secondaryColor,
+                            unfocusedContainerColor = GlobalColors.primaryColor,
+                            focusedTextColor = CC.textColor(),
+                            unfocusedTextColor = GlobalColors.textColor,
+                            focusedLabelColor = GlobalColors.secondaryColor,
+                            unfocusedLabelColor = GlobalColors.textColor
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                }
 
-                groupedChats.forEach { (date, chatsForDate) ->
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-                                    )
-                                    .clip(RoundedCornerShape(10.dp)),
-                                contentAlignment = Alignment.Center
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    val groupedChats = chats.groupBy { it.date }
+
+                    groupedChats.forEach { (date, chatsForDate) ->
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Text(
-                                    text = formatDate(date),
-                                    modifier = Modifier.padding(5.dp),
-                                    style = CC.descriptionTextStyle(context),
-                                    fontSize = 13.sp,
-                                    textAlign = TextAlign.Center
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                        )
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = formatDate(date),
+                                        modifier = Modifier.padding(5.dp),
+                                        style = CC.descriptionTextStyle(context),
+                                        fontSize = 13.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                    items(chatsForDate.filter {
-                        it.message.contains(searchQuery.text, ignoreCase = true)
-                    }) { chat ->
-                        ChatBubble(
-                            chat = chat,
-                            isUser = chat.senderID == currentAdmissionNumber,
-                            context = context,
-                            navController = navController
-                        )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                        )
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "To maintain a positive learning environment, group chats are moderated by admins",
+                                        modifier = Modifier.padding(5.dp),
+                                        style = CC.descriptionTextStyle(context),
+                                        textAlign = TextAlign.Center,
+                                        color = GlobalColors.textColor
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(10.dp))
+                        }
+
+                        items(chatsForDate.filter {
+                            it.message.contains(searchQuery.text, ignoreCase = true)
+                        }) { chat ->
+                            ChatBubble(
+                                chat = chat,
+                                isUser = chat.senderID == currentAdmissionNumber,
+                                context = context,
+                                navController = navController
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CC.SingleLinedTextField(
+                        value = message,
+                        onValueChange = { message = it },
+                        label = "Message",
+                        enabled = true,
+                        singleLine = false,
+                        context = context
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (message.isNotBlank() && user.firstName.isNotBlank()) {
+                                sendMessage(message)
+                                message = ""
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.Send, "Send")
                     }
                 }
             }
-
-            ChatInput(
-                modifier = Modifier.fillMaxWidth(),
-                onMessageChange = { message = it },
-                sendMessage = { sendMessage(message) },
-                context
-            )
         }
-    }
+    })
 }
-
 
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -377,43 +470,13 @@ fun ChatBubble(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopBar(context: Context, navController: NavController, isSearchVisible: Boolean, onValuechange:(Boolean) -> Unit){
-    TopAppBar(title = { Text("Group Discussions", style = CC.titleTextStyle(context)) },
-        actions = {
-            IconButton(onClick = { onValuechange(isSearchVisible) }) {
-                Icon(
-                    Icons.Filled.Search, contentDescription = "Search", tint = CC.textColor()
-                )
-            }
-            IconButton(onClick = { navController.navigate("users") }) {
-                Icon(
-                    Icons.Filled.Person, "Participants", tint = CC.textColor()
-                )
-            }
-        },
-
-        navigationIcon = {
-            IconButton(onClick = { navController.navigate("dashboard") }) {
-                Icon(
-                    Icons.Default.ArrowBackIosNew,
-                    contentDescription = "Back",
-                    tint = CC.textColor()
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
-    )
-}
-
 @Preview
 @Composable
-fun MyPreview() {
-    CompositionLocalProvider(LocalContext provides LocalContext.current) {
-        ChatScreen(
-            navController = rememberNavController(),
-            LocalContext.current
-        ) // The Composable that uses the CompositionLocal
-    }
+fun PreviewMyScreen() {
+    // ChatScreen(rememberNavController(), LocalContext.current)
+    ChatBubble(
+        chat = Chat(
+            senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01"
+        ), isUser = true, context = LocalContext.current, rememberNavController()
+    )
 }
