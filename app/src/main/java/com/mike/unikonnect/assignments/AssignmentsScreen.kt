@@ -80,7 +80,6 @@ fun AssignmentScreen(navController: NavController, context: Context) {
         }
     }
 
-
     DisposableEffect(Unit) {
         GlobalColors.loadColorScheme(context)
         onDispose {
@@ -133,7 +132,6 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 delay(10)
             }
         }
-
 
         val indicator = @Composable { tabPositions: List<TabPosition> ->
             Box(
@@ -215,7 +213,6 @@ fun AssignmentScreen(navController: NavController, context: Context) {
     }
 }
 
-
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AssignmentsList(courseCode: String, context: Context) {
@@ -254,7 +251,7 @@ fun AssignmentsList(courseCode: String, context: Context) {
                     }
                 }
             }
-            items(assignments!!) { assignment ->
+            items(assignments!!, key = { assignment -> assignment.id }) { assignment -> // Unique key for each item
 
                 AssignmentCard(assignment = assignment, context)
 
@@ -361,7 +358,6 @@ fun LoadingAssignmentCard() {
         }
     }
 }
-
 
 @Preview
 @Composable
