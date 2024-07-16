@@ -13,6 +13,7 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -66,6 +67,7 @@ import com.mike.unikonnect.chat.ChatScreen
 import com.mike.unikonnect.chat.ParticipantsScreen
 import com.mike.unikonnect.chat.UserChatScreen
 import com.mike.unikonnect.classes.Screen
+import com.mike.unikonnect.classes.Update
 import com.mike.unikonnect.course_Resources.CourseScreen
 import com.mike.unikonnect.courses.CoursesScreen
 import com.mike.unikonnect.dashboard.Dashboard
@@ -87,13 +89,16 @@ fun MainScreen(mainActivity: MainActivity) {
     val versionName = packageInfo.versionName
     var isDownloading by remember { mutableStateOf(false) }
     var downloadId by remember { mutableLongStateOf(-1L) }
+    var myUpdate by remember { mutableStateOf(Update()) }
 
     LaunchedEffect(Unit) {
         while (true) {
-            GlobalColors.loadColorScheme(context) // Assuming this is necessary for each check
+            GlobalColors.loadColorScheme(context)
             getUpdate { localUpdate ->
                 if (localUpdate != null) {
-                    if (localUpdate.id != versionName) {
+                    myUpdate= localUpdate
+
+                    if (myUpdate.version != versionName) {
                         update = true
                     }
                 }
@@ -217,19 +222,21 @@ fun MainScreen(mainActivity: MainActivity) {
                         trackColor = CommonComponents.extraColor1()
                     )
                 }
-
+                val downloadUrl = myUpdate.updateLink
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
                         onClick = {
-                            if (!isDownloading) {
-                                startDownload(context, "https://github.com/mikesplore/Uni-Konnect/releases/download/V1.2.7/UniKonnect.apk") { progress, id ->
+                            if (!isDownloading && downloadUrl.isNotEmpty()) {
+                                startDownload(context, url = downloadUrl ) { progress, id ->
                                     downloadId = id
                                     isDownloading = progress < 100
                                 }
                                 isDownloading = true
+                            }else{
+                                Toast.makeText(context, "Download failed: Could not get download link", Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -257,7 +264,7 @@ fun MainScreen(mainActivity: MainActivity) {
 @Composable
 fun MyNavHost(context: Context,pagerState: PagerState,coroutineScope: CoroutineScope, screens: List<Screen>, mainActivity: MainActivity){
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "dashboard") {
+    NavHost(navController, startDestination = "splashscreen") {
 
         composable(route = "login", enterTransition = {
             fadeIn(animationSpec = tween(1000))
