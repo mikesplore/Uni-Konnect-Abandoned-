@@ -478,10 +478,6 @@ fun Biometrics(context: Context, mainActivity: MainActivity) {
                     MyDatabase.fetchPreferences(currentUser.id) { preferences ->
                         preferences?.let {
                             isBiometricsEnabled = preferences.biometrics == "enabled"
-                            Log.d(
-                                "Shared Preferences",
-                                "Retrieved preferences for student ID: ${currentUser.id}: $preferences"
-                            )
                         } ?: Log.e(
                             "Shared Preferences",
                             "Preferences not found for student ID: ${currentUser.id}"
