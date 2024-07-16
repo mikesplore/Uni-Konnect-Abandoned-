@@ -43,8 +43,6 @@ class MainActivity : AppCompatActivity() {
         setContent {
             sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
             MainScreen(this)
-
-
         }
         createNotificationChannel(this)
     }
