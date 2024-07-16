@@ -50,18 +50,12 @@ import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.getAnnouncements
 import com.mike.unikonnect.R
-import com.mike.unikonnect.classes.Announcement
-import com.mike.unikonnect.classes.ScreenTime
+import com.mike.unikonnect.chat.ExitScreen
+import com.mike.unikonnect.model.Announcement
+import com.mike.unikonnect.model.ScreenTime
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
-object Details {
-    var email: MutableState<String> = mutableStateOf("")
-    var firstName: MutableState<String> = mutableStateOf("null")
-    var lastName: MutableState<String> = mutableStateOf("null")
-
-
-}
 
 
 @Composable
@@ -79,45 +73,11 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
             delay(1000) // Update every second (adjust as needed)
         }
     }
-
-
-    DisposableEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
-        onDispose {
-            // Fetch the screen details
-            MyDatabase.getScreenDetails(screenID) { screenDetails ->
-                if (screenDetails != null) {
-                    MyDatabase.writeScren(courseScreen = screenDetails) {}
-                    // Fetch existing screen time
-                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
-                        val totalScreenTime = if (existingScreenTime != null) {
-                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
-                            existingScreenTime.time + timeSpent
-                        } else {
-                            timeSpent
-                        }
-
-                        // Create a new ScreenTime object
-                        val screentime = ScreenTime(
-                            id = screenID,
-                            screenName = screenDetails.screenName,
-                            time = totalScreenTime
-                        )
-
-                        // Save the updated screen time
-                        MyDatabase.saveScreenTime(screenTime = screentime, onSuccess = {
-                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
-                        }, onFailure = {
-                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
-                        })
-                    }
-
-                } else {
-                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
-                }
-            }
-        }
-    }
+    ExitScreen(
+        context = context,
+        screenID = screenID,
+        timeSpent = timeSpent
+    )
 
     LaunchedEffect(key1 = Unit) { // Trigger the effect only once
         while (true) { // Continuous loop
