@@ -58,6 +58,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -90,9 +91,11 @@ import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.MyDatabase.updatePassword
 import com.mike.unikonnect.R
-import com.mike.unikonnect.classes.Feedback
-import com.mike.unikonnect.classes.User
-import com.mike.unikonnect.classes.UserPreferences
+import com.mike.unikonnect.chat.ExitScreen
+import com.mike.unikonnect.model.Feedback
+import com.mike.unikonnect.model.User
+import com.mike.unikonnect.model.UserPreferences
+import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,11 +107,23 @@ fun Settings(navController: NavController, context: Context, mainActivity: MainA
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var signInMethod by remember { mutableStateOf("") }
     val fontPrefs = remember { FontPreferences(context) }
+    val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var timeSpent by remember { mutableLongStateOf(0L) }
     var savedFont by remember { mutableStateOf("system") }
-
+    val screeenID = "SC8"
     LaunchedEffect(Unit) {
         savedFont = fontPrefs.getSelectedFont().toString()
+        while (true) {
+            timeSpent = System.currentTimeMillis() - startTime
+            delay(1000)
+        }
     }
+
+    ExitScreen(
+        context,
+        screeenID,
+        timeSpent
+    )
 
     // Fetch user data when the composable is launched
     LaunchedEffect(auth.currentUser?.email) {
