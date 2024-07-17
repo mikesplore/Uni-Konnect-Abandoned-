@@ -194,7 +194,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                                 Spacer(modifier = Modifier.height(20.dp))
                                 CC.SingleLinedTextField(
                                     value = firstName,
-                                    onValueChange = { firstName = it },
+                                    onValueChange = {
+                                        fN ->
+                                        firstName = fN },
                                     label = "First Name",
                                     singleLine = true,
                                     context = context
@@ -202,7 +204,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                                 Spacer(modifier = Modifier.height(20.dp))
                                 CC.SingleLinedTextField(
                                     value = lastName,
-                                    onValueChange = { lastName = it },
+                                    onValueChange = {
+                                        lN ->
+                                        lastName = lN },
                                     label = "Last Name",
                                     singleLine = true,
                                     context = context
@@ -212,7 +216,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                             Spacer(modifier = Modifier.height(20.dp))
                             CC.SingleLinedTextField(
                                 value = email,
-                                onValueChange = { email = it },
+                                onValueChange = {
+                                    eM ->
+                                    email = eM },
                                 label = "Email",
                                 singleLine = true,
                                 context = context
@@ -221,7 +227,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                             Spacer(modifier = Modifier.height(20.dp))
                             CC.PasswordTextField(
                                 value = password,
-                                onValueChange = { password = it },
+                                onValueChange = {
+                                    pS ->
+                                    password = pS },
                                 label = "Password",
                                 context = context
                             )
@@ -304,8 +312,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                 Details.email.value = email
                                                 email = ""
                                                 password = ""
-                                                auth.currentUser?.email?.let {
-                                                    fetchUserDataByEmail(it) { fetchedUser ->
+                                                auth.currentUser?.email?.let { current ->
+                                                    fetchUserDataByEmail(current) { fetchedUser ->
                                                        if(fetchedUser != null){
                                                            navController.navigate("dashboard")
                                                        }else{
