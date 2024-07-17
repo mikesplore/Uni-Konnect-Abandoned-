@@ -12,5 +12,5 @@ object Details {
     var firstName: MutableState<String> = mutableStateOf("null")
     var lastName: MutableState<String> = mutableStateOf("null")
 
-
 }
+
