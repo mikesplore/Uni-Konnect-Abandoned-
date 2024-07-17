@@ -6,7 +6,6 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -25,13 +24,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomNavigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -47,6 +44,10 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -78,6 +79,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerDefaults
 import com.google.accompanist.pager.PagerState
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MainActivity
 import com.mike.unikonnect.MyDatabase
@@ -85,11 +87,9 @@ import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.attendance.SignAttendanceScreen
 import com.mike.unikonnect.announcements.AnnouncementsScreen
 import com.mike.unikonnect.assignments.AssignmentScreen
-import com.mike.unikonnect.chat.ExitScreen
 import com.mike.unikonnect.model.Screen
-import com.mike.unikonnect.model.ScreenTime
-import com.mike.unikonnect.model.Screens
 import com.mike.unikonnect.homescreen.HomeScreen
+import com.mike.unikonnect.model.Update
 import com.mike.unikonnect.settings.BiometricPromptManager
 import com.mike.unikonnect.timetble.TimetableScreen
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
@@ -116,7 +116,6 @@ fun Dashboard(
     val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var timeSpent by remember { mutableLongStateOf(0L) }
     val screenID = "SC10"
-    val screenName = "Dashboard Screen"
     val promptManager = remember { BiometricPromptManager(mainActivity) }
 
 
@@ -127,17 +126,29 @@ fun Dashboard(
         }
     }
 
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
     val currentUser = auth.currentUser
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var signInMethod by remember { mutableStateOf("") }
+    var update by remember { mutableStateOf(Update()) }
 
     LaunchedEffect(key1 = Unit) { // Use a stable key
+        GlobalColors.loadColorScheme(context)
+        MyDatabase.getUpdate { fetched ->
+            if (fetched != null) {
+                update = fetched
+
+            }
+        }
         while (true) {
             delay(10L) // Delay for 10 seconds
             auth.currentUser?.email?.let { email ->
@@ -434,7 +445,7 @@ fun Dashboard(
                                 action = Intent.ACTION_SEND
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "$currentName invites you to join Uni Konnect! Get organized and ace your studies.\n Download now: https://github.com/mikesplore/Uni-Konnect/releases/tag/V1.2.6"
+                                    "$currentName invites you to join Uni Konnect! Get organized and ace your studies.\n Download now: ${update.updateLink}"
                                 ) // Customize the text
                                 type = "text/plain"
                             }
@@ -543,80 +554,78 @@ fun Dashboard(
             )
 
         }, bottomBar = {
-            BottomNavigation(
-                modifier = Modifier.background(Color.Transparent),
-                backgroundColor = Color.Transparent
+            NavigationBar(
+                modifier = Modifier
+                    .height(85.dp)
+                    .background(Color.Transparent),
+                containerColor = Color.Transparent
             ) {
-
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(75.dp),
-                    contentAlignment = Alignment.Center
+                        .background(CC.primary().copy()),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .background(
-                                CC
-                                    .extraColor2()
-                                    .copy()
-                            ),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        screens.forEachIndexed { index, screen ->
-                            val isSelected = pagerState.currentPage == index
+                    screens.forEachIndexed { index, screen ->
+                        val isSelected = pagerState.currentPage == index
 
-                            val iconColor by animateColorAsState(
-                                targetValue = if (isSelected) CC.textColor()
-                                else CC.primary(), label = "", animationSpec = tween(1000)
-                            )
-                            val iconSize by animateFloatAsState(
-                                targetValue = if (isSelected) 40f else 25f,
-                                label = "",
-                                animationSpec = tween(2000)
-                            )
-                            val offsetY by animateDpAsState(
-                                targetValue = if (isSelected) (-10).dp else 0.dp,
-                                label = "",
-                                animationSpec = tween(1000)
-                            )
+                        val iconColor by animateColorAsState(
+                            targetValue = if (isSelected) CC.textColor() else CC.textColor().copy(0.7f),
+                            label = "",
+                            animationSpec = tween(500)
+                        )
+                        val iconSize by animateFloatAsState(
+                            targetValue = if (isSelected) 30f else 25f,
+                            label = "",
+                            animationSpec = tween(500)
+                        )
 
-                            Column(
-                                modifier = Modifier
-
-                                    .height(60.dp)
-                                    .offset(y = offsetY),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                    contentDescription = screen.name,
-                                    tint = iconColor,
-                                    modifier = Modifier
-                                        .clickable {
-                                            coroutineScope.launch {
-                                                pagerState.animateScrollToPage(index)
-                                            }
-                                        }
-                                        .size(iconSize.dp))
-                                AnimatedVisibility(visible = isSelected,
+                        // Use NavigationBarItem
+                        NavigationBarItem(
+                            selected = isSelected,
+                            label = {
+                                AnimatedVisibility(
+                                    visible = isSelected,
                                     enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
                                         animationSpec = tween(500)
                                     ) { initialState -> initialState },
                                     exit = fadeOut(animationSpec = tween(500)) + slideOutVertically(
                                         animationSpec = tween(500)
-                                    ) { initialState -> initialState }) {
+                                    ) { initialState -> initialState }
+                                ) {
                                     Text(
                                         text = screen.name,
-                                        style = CC.descriptionTextStyle(context),
+                                        style = CC.descriptionTextStyle(context).copy(fontSize = 13.sp),
                                         color = CC.textColor()
                                     )
                                 }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = CC.extraColor2(),
+                                unselectedIconColor = CC.textColor(),
+                                selectedIconColor = CC.textColor()
+                            ),
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(index)
+                                }
+                            },
+                            icon = {
+                                Column(
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                                        contentDescription = screen.name,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(iconSize.dp)
+                                    )
+
+                                }
                             }
-                        }
+                        )
                     }
                 }
             }
@@ -632,10 +641,11 @@ fun Dashboard(
             ) { page ->
                 when (screens[page]) {
                     Screen.Home -> HomeScreen(context, navController)
-                    Screen.Assignments -> AssignmentScreen(navController, context)
-                    Screen.Announcements -> AnnouncementsScreen(navController, context)
+                    Screen.Assignments -> AssignmentScreen( context)
+                    Screen.Announcements -> AnnouncementsScreen( context)
                     Screen.Timetable -> TimetableScreen(context)
-                    Screen.Attendance -> SignAttendanceScreen(navController, context)
+                    Screen.Attendance -> SignAttendanceScreen( context)
+
                 }
             }
         }
