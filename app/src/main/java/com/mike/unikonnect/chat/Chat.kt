@@ -3,7 +3,6 @@ package com.mike.unikonnect.chat
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -67,10 +66,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.model.Chat
-import com.mike.unikonnect.model.ScreenTime
 import com.mike.unikonnect.model.User
 import com.mike.unikonnect.homescreen.Background
 import com.mike.unikonnect.ui.theme.GlobalColors
@@ -113,11 +112,15 @@ fun ChatScreen(
     }
 
 
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
 
     // Fetch user data when the composable is launched
