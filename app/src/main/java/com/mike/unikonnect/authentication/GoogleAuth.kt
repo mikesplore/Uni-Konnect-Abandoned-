@@ -86,9 +86,8 @@ fun GoogleAuth(
         } else if (success){
             //show a check to indicate successful authentication
             Icon(
-                Icons.Default.Check,"Success",
-                tint = CC.textColor(),
-                modifier = Modifier.size(50.dp))
+                Icons.Default.Check, "Success", tint = CC.textColor()
+            )
         }
         else {
             // Show GitHub image when not loading
