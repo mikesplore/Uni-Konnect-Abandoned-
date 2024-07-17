@@ -1,7 +1,6 @@
 package com.mike.unikonnect.timetble
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -55,12 +54,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.model.Day
-import com.mike.unikonnect.model.ScreenTime
 import com.mike.unikonnect.model.Timetable
-import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase
-import com.mike.unikonnect.chat.ExitScreen
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
@@ -92,11 +89,15 @@ fun TimetableScreen(context: Context) {
         }
     }
 
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
 
     Column(
