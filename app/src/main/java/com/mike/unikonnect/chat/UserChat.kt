@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.homescreen.Background
 import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase
@@ -49,11 +50,9 @@ import java.util.Date
 import java.util.Locale
 import com.mike.unikonnect.model.User
 import com.mike.unikonnect.model.Message
-import com.mike.unikonnect.model.ScreenTime
 import com.mike.unikonnect.CommonComponents as CC
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserChatScreen(navController: NavController, context: Context, targetUserId: String) {
     var user by remember { mutableStateOf(User()) }
@@ -96,12 +95,15 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
             delay(1000) // Update every second (adjust as needed)
         }
     }
-
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
 
     //functions for sending and retrieving messages
@@ -166,9 +168,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     }
 
 
-        Box(
-
-        ) {
+        Box{
             Background(context)
             val scrollState = rememberLazyListState()
             Column(
@@ -373,7 +373,8 @@ fun TopAppBarComponent(
 fun ChatInput(modifier: Modifier = Modifier, onMessageChange: (String) -> Unit, sendMessage: (String) -> Unit, context: Context) {
 
     var input by remember { mutableStateOf(TextFieldValue("")) }
-    val textEmpty: Boolean by derivedStateOf { input.text.isEmpty() }
+    val textEmpty by remember { derivedStateOf { input.text.isEmpty() }
+    }
 
     Row(
         modifier = modifier
@@ -527,43 +528,3 @@ fun generateConversationId(userId1: String, userId2: String): String {
     }
 }
 
-@Composable
-fun ExitScreen(context: Context, screenID: String, timeSpent: Long){
-    DisposableEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
-        onDispose {
-            // Fetch the screen details
-            MyDatabase.getScreenDetails(screenID) { screenDetails ->
-                if (screenDetails != null) {
-                    MyDatabase.writeScren(courseScreen = screenDetails) {}
-                    // Fetch existing screen time
-                    MyDatabase.getScreenTime(screenID) { existingScreenTime ->
-                        val totalScreenTime = if (existingScreenTime != null) {
-                            Log.d("Screen Time", "Retrieved Screen time: $existingScreenTime")
-                            existingScreenTime.time + timeSpent
-                        } else {
-                            timeSpent
-                        }
-
-                        // Create a new ScreenTime object
-                        val screenTime = ScreenTime(
-                            id = screenID,
-                            screenName = screenDetails.screenName,
-                            time = totalScreenTime
-                        )
-
-                        // Save the updated screen time
-                        MyDatabase.saveScreenTime(screenTime = screenTime, onSuccess = {
-                            Log.d("Screen Time", "Saved $totalScreenTime to the database")
-                        }, onFailure = {
-                            Log.d("Screen Time", "Failed to save $totalScreenTime to the database")
-                        })
-                    }
-
-                } else {
-                    Log.d("Screen Time", "Screen details not found for ID: $screenID")
-                }
-            }
-        }
-    }
-}
