@@ -324,7 +324,7 @@ fun MyNavHost(context: Context,pagerState: PagerState,coroutineScope: CoroutineS
         }, exitTransition = {
             fadeOut(animationSpec = tween(1000))
         }) {
-            SignAttendanceScreen(navController, context)
+            SignAttendanceScreen(context)
         }
 
         composable(route = "appearance", enterTransition = {
