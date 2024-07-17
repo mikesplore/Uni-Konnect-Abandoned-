@@ -44,7 +44,6 @@ import com.mike.unikonnect.CommonComponents as CC
 @Composable
 fun PasswordReset(navController: NavController, context: Context) {
     var email by remember { mutableStateOf("") }
-    val message by remember { mutableStateOf("") }
     val auth: FirebaseAuth = Firebase.auth
     var loading by remember { mutableStateOf(false) }
     var visible by remember { mutableStateOf(true) }
@@ -93,7 +92,9 @@ fun PasswordReset(navController: NavController, context: Context) {
                 ) {
                     CC.SingleLinedTextField(
                         value = email,
-                        onValueChange = { it -> email = it },
+                        onValueChange = {
+                            eM ->
+                            email = eM },
                         label = "Email",
                         singleLine = true,
                         context = context
@@ -119,7 +120,7 @@ fun PasswordReset(navController: NavController, context: Context) {
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                             email = ""
-                                            //navController.navigate("login")
+                                            navController.navigate("login")
                                         } else {
                                             Toast.makeText(
                                                 context,
