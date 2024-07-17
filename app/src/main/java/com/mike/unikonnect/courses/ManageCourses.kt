@@ -113,7 +113,7 @@ fun CoursesScreen(navController: NavController, context: Context) {
                 }
             } else {
                 courses.forEach { course ->
-                    CourseCard(course = course, navController = navController, context = context)
+                    CourseCard(course = course, context = context)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -128,7 +128,7 @@ fun CoursesScreenPreview() {
 }
 
 @Composable
-fun CourseCard(course: Course, navController: NavController, context: Context) {
+fun CourseCard(course: Course, context: Context) {
     var isFlipped by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
