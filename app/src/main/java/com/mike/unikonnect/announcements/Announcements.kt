@@ -2,7 +2,6 @@ package com.mike.unikonnect.announcements
 
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -43,23 +41,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.mike.unikonnect.homescreen.ColorProgressIndicator
-import com.mike.unikonnect.ui.theme.GlobalColors
-import com.mike.unikonnect.MyDatabase
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.MyDatabase.getAnnouncements
 import com.mike.unikonnect.R
-import com.mike.unikonnect.chat.ExitScreen
+import com.mike.unikonnect.homescreen.ColorProgressIndicator
 import com.mike.unikonnect.model.Announcement
-import com.mike.unikonnect.model.ScreenTime
 import kotlinx.coroutines.delay
 import com.mike.unikonnect.CommonComponents as CC
 
 
-
 @Composable
-fun AnnouncementsScreen(navController: NavController, context: Context) {
+fun AnnouncementsScreen(context: Context) {
 
     var isLoading by rememberSaveable { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
@@ -73,11 +65,13 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
             delay(1000) // Update every second (adjust as needed)
         }
     }
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context, screenID = screenID, timeSpent = timeSpent
+            )
+        }
+    }
 
     LaunchedEffect(key1 = Unit) { // Trigger the effect only once
         while (true) { // Continuous loop
@@ -90,54 +84,54 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
         }
     }
 
-        Column(
-            modifier = Modifier
-                .background(CC.primary())
-                .fillMaxSize()
-        ) {
-            if (isLoading) {
-                Column(
+    Column(
+        modifier = Modifier
+            .background(CC.primary())
+            .fillMaxSize()
+    ) {
+        if (isLoading) {
+            Column(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .background(CC.primary(), RoundedCornerShape(10.dp))
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ColorProgressIndicator(
                     modifier = Modifier
-                        .padding(10.dp)
-                        .background(CC.primary(), RoundedCornerShape(10.dp))
-                        .fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ColorProgressIndicator(modifier = Modifier
                         .height(100.dp)
                         .fillMaxWidth(0.9f)
-                        .clip(RoundedCornerShape(10.dp)))
-                }
-            } else if (announcements.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("😒", fontSize = 50.sp)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "No Announcements found.",
-                        style = CC.descriptionTextStyle(context),
-                        textAlign = TextAlign.Center
+                        .clip(RoundedCornerShape(10.dp))
+                )
+            }
+        } else if (announcements.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("😒", fontSize = 50.sp)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "No Announcements found.",
+                    style = CC.descriptionTextStyle(context),
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(16.dp),
+            ) {
+                items(announcements, key = { announcement -> announcement.id }) { announcement ->
+                    AnnouncementCard(
+                        announcement = announcement, context = context
                     )
-                }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(16.dp),
-                ) {
-                    items(announcements,
-                        key = { announcement -> announcement.id }) { announcement ->
-                        AnnouncementCard(
-                            announcement = announcement, context = context
-                        )
-                    }
                 }
             }
         }
     }
-
+}
 
 
 @Composable
@@ -218,6 +212,6 @@ fun AnnouncementCard(
 @Composable
 fun AlertsPreview() {
     AnnouncementsScreen(
-        navController = rememberNavController(), context = LocalContext.current,
+        context = LocalContext.current,
     )
 }
