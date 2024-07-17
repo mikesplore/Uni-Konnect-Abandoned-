@@ -55,6 +55,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -84,6 +85,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.ui.theme.FontPreferences
 import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MainActivity
@@ -91,7 +93,6 @@ import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
 import com.mike.unikonnect.MyDatabase.updatePassword
 import com.mike.unikonnect.R
-import com.mike.unikonnect.chat.ExitScreen
 import com.mike.unikonnect.model.Feedback
 import com.mike.unikonnect.model.User
 import com.mike.unikonnect.model.UserPreferences
@@ -110,7 +111,7 @@ fun Settings(navController: NavController, context: Context, mainActivity: MainA
     val startTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var timeSpent by remember { mutableLongStateOf(0L) }
     var savedFont by remember { mutableStateOf("system") }
-    val screeenID = "SC8"
+    val screenID = "SC8"
     LaunchedEffect(Unit) {
         savedFont = fontPrefs.getSelectedFont().toString()
         while (true) {
@@ -119,11 +120,15 @@ fun Settings(navController: NavController, context: Context, mainActivity: MainA
         }
     }
 
-    ExitScreen(
-        context,
-        screeenID,
-        timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
     // Fetch user data when the composable is launched
     LaunchedEffect(auth.currentUser?.email) {
