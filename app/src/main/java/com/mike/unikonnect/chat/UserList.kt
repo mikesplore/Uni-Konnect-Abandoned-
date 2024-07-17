@@ -180,15 +180,13 @@ fun ProfileCard(user: User, navController: NavController, context: Context) {
     val auth = FirebaseAuth.getInstance()
     var currentMe by remember { mutableStateOf(User()) }
     var currentPerson by remember { mutableStateOf("") }
-    var loading by remember { mutableStateOf(false) }
     var admissionNumber by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
     var messages by remember { mutableStateOf(emptyList<Message>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(loading) {
+    LaunchedEffect(Unit) {
         auth.currentUser?.email?.let { email ->
             fetchUserDataByEmail(email) { fetchedUser ->
                 fetchedUser?.let {
