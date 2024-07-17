@@ -156,7 +156,6 @@ data class ScreenTime(
 data class Screens(
     val screenId: String = "",
     val screenName: String = "",
-
 )
 
 sealed class Screen(
@@ -167,14 +166,14 @@ sealed class Screen(
     )
 
     data object Timetable :
-        Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday, "Timetable")
+        Screen(Icons.Filled.CalendarToday, Icons.Outlined.CalendarToday, "Events")
 
     data object Assignments : Screen(
-        Icons.AutoMirrored.Filled.Assignment, Icons.AutoMirrored.Outlined.Assignment, "Assignments"
+        Icons.AutoMirrored.Filled.Assignment, Icons.AutoMirrored.Outlined.Assignment, "Work"
     )
 
     data object Announcements : Screen(
-        Icons.Filled.AddAlert, Icons.Outlined.AddAlert, "Announcements"
+        Icons.Filled.AddAlert, Icons.Outlined.AddAlert, "Alerts"
     )
 
     data object Attendance : Screen(
