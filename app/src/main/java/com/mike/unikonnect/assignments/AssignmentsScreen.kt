@@ -1,9 +1,7 @@
 package com.mike.unikonnect.assignments
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -49,22 +47,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.MyDatabase
-import com.mike.unikonnect.chat.ExitScreen
 import com.mike.unikonnect.model.Details
 import com.mike.unikonnect.model.Assignment
 import com.mike.unikonnect.model.Course
-import com.mike.unikonnect.model.ScreenTime
 import com.mike.unikonnect.homescreen.ColorProgressIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.mike.unikonnect.CommonComponents as CC
 
-
 @Composable
-fun AssignmentScreen(navController: NavController, context: Context) {
+fun AssignmentScreen(context: Context) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -81,24 +75,27 @@ fun AssignmentScreen(navController: NavController, context: Context) {
         }
     }
 
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
-
-        LaunchedEffect(key1 = Unit) { // Trigger the effect only once
-            while (true) { // Continuous loop
+        LaunchedEffect(key1 = Unit) {
+            while (true) {
                 MyDatabase.fetchCourses { fetchedCourses ->
-                    courses.clear() // Clear previous courses
+                    courses.clear()
                     courses.addAll(fetchedCourses)
                     loading = false
                 }
-                delay(10)
+                delay(1000)
             }
         }
 
@@ -107,7 +104,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 modifier = Modifier
                     .tabIndicatorOffset(tabPositions[selectedTabIndex])
                     .height(4.dp)
-                    .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
+                    .width(screenWidth / (courses.size.coerceAtLeast(1)))
                     .background(CC.secondary(), CircleShape)
             )
         }
@@ -135,7 +132,6 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 }
 
             } else {
-
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
                     modifier = Modifier.background(CC.primary()),
@@ -145,28 +141,30 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     containerColor = CC.primary()
                 ) {
                     courses.forEachIndexed { index, course ->
-
-                        Tab(selected = selectedTabIndex == index, onClick = {
-                            selectedTabIndex = index
-                            coroutineScope.launch {
-                                // Load assignments for the selected course
-                            }
-                        }, text = {
-
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        if (selectedTabIndex == index) CC.secondary() else CC.primary(),
-                                        RoundedCornerShape(8.dp)
+                        Tab(
+                            selected = selectedTabIndex == index,
+                            onClick = {
+                                selectedTabIndex = index
+                                coroutineScope.launch {
+                                    // Load assignments for the selected course
+                                }
+                            },
+                            text = {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            if (selectedTabIndex == index) CC.secondary() else CC.primary(),
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(8.dp), contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = course.courseName,
+                                        color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                                     )
-                                    .padding(8.dp), contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = course.courseName,
-                                    color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
-                                )
-                            }
-                        }, modifier = Modifier.background(CC.primary())
+                                }
+                            },
+                            modifier = Modifier.background(CC.primary())
                         )
                     }
                 }
@@ -178,20 +176,18 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 }
             }
         }
-
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AssignmentsList(courseCode: String, context: Context) {
     var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
-    LaunchedEffect(key1 = courseCode) { // Trigger when courseCode changes
-        while (true) { // Continuous loop
+    LaunchedEffect(key1 = courseCode) {
+        while (true) {
             MyDatabase.getAssignments(courseCode) { fetchedAssignments ->
                 assignments = fetchedAssignments
             }
-            delay(10) // Wait for 5 seconds
+            delay(1000)
         }
     }
 
@@ -199,14 +195,12 @@ fun AssignmentsList(courseCode: String, context: Context) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
-
         ) {
             LoadingAssignmentCard()
             LoadingAssignmentCard()
             LoadingAssignmentCard()
         }
     } else {
-
         LazyColumn {
             if (assignments!!.isEmpty() || courseCode.isEmpty()) {
                 item {
@@ -219,16 +213,14 @@ fun AssignmentsList(courseCode: String, context: Context) {
                         Text("No assignments found.", style = CC.descriptionTextStyle(context))
                     }
                 }
-            }
-            items(assignments!!, key = { assignment -> assignment.id }) { assignment -> // Unique key for each item
-
-                AssignmentCard(assignment = assignment, context)
-
+            } else {
+                items(assignments!!.distinctBy { it.id }, key = { assignment -> assignment.id }) { assignment ->
+                    AssignmentCard(assignment = assignment, context)
+                }
             }
         }
     }
 }
-
 
 @Composable
 fun AssignmentCard(assignment: Assignment, context: Context) {
@@ -238,7 +230,7 @@ fun AssignmentCard(assignment: Assignment, context: Context) {
             .padding(8.dp),
         colors = CardDefaults.cardColors(containerColor = CC.secondary()),
         elevation = CardDefaults.elevatedCardElevation(),
-        shape = RoundedCornerShape(12.dp) // Slightly more rounded corners
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -248,39 +240,29 @@ fun AssignmentCard(assignment: Assignment, context: Context) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column { // Group assignment name and author
-                    Text(
-                        text = assignment.name,
-                        style = CC.titleTextStyle(context).copy(
-                            fontSize = 18.sp,
-                        )
-                    )
-                    Text(
-                        text = "By ${Details.firstName.value}",
-                        style = CC.descriptionTextStyle(context),
-                        color = CC.extraColor1()
-                    )
-                }
-
-                // Deadline section (add formatting as needed)
                 Text(
-                    text = "Due: ${assignment.dueDate}", // Assuming assignment has a deadline property
+                    text = assignment.name,
+                    style = CC.titleTextStyle(context).copy(
+                        fontSize = 18.sp,
+                    )
+                )
+
+                Text(
+                    text = "Due: ${assignment.dueDate}",
                     style = CC.descriptionTextStyle(context),
-                    color =  CC.textColor() // Change color if overdue
+                    color = CC.textColor()
                 )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Assignment description (optional expansion)
             var expanded by remember { mutableStateOf(false) }
             Text(
                 text = assignment.description,
                 style = CC.descriptionTextStyle(context),
-                maxLines = if (expanded) Int.MAX_VALUE else 2, // Show 2 lines initially, expandable
+                maxLines = if (expanded) Int.MAX_VALUE else 2,
                 overflow = TextOverflow.Ellipsis,
-                onTextLayout = { if (it.hasVisualOverflow && !expanded) expanded = true }, // Auto-expand if needed
-                modifier = Modifier.clickable { expanded = !expanded } // Toggle expansion
+                modifier = Modifier.clickable { expanded = !expanded }
             )
         }
     }
@@ -293,15 +275,16 @@ fun LoadingAssignmentCard() {
         enter = slideInVertically(tween(1000)),
         exit = slideOutVertically(tween(1000))
     ) {
-
-
         Card(
             modifier = Modifier
                 .height(100.dp)
                 .fillMaxWidth()
-                .padding(8.dp), colors = CardDefaults.cardColors(
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(
                 containerColor = CC.secondary(), contentColor = CC.textColor()
-            ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
+            ),
+            elevation = CardDefaults.elevatedCardElevation(),
+            shape = RoundedCornerShape(8.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -322,12 +305,10 @@ fun LoadingAssignmentCard() {
                     ColorProgressIndicator(modifier = Modifier.fillMaxSize())
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-
             }
         }
     }
 }
-
 @Preview
 @Composable
 fun AssignmentScreenPreview() {
