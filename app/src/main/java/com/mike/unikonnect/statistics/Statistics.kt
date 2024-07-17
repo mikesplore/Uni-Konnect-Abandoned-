@@ -58,10 +58,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.ui.theme.GlobalColors
 import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.getAllScreenTimes
-import com.mike.unikonnect.chat.ExitScreen
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -85,11 +85,15 @@ fun BarGraph(navController: NavController, context: Context) {
         }
     }
 
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
 
     LaunchedEffect(Unit) {
