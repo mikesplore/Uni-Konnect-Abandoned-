@@ -123,7 +123,7 @@ fun ProfileScreen(navController: NavController, context: Context) {
             Spacer(modifier = Modifier.height(20.dp))
             GenderRow(context)
             Spacer(modifier = Modifier.height(50.dp))
-            DangerZone(navController, context)
+            DangerZone(context)
 
 
         }
@@ -411,9 +411,9 @@ fun GenderRow(context: Context) {
     var currentUser by remember { mutableStateOf(User()) }
     var save by remember { mutableStateOf(false) }
     val auth = FirebaseAuth.getInstance()
-    var phoneNumber by remember { mutableStateOf(currentUser.phoneNumber) }
     val user = auth.currentUser
-    var gender by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf(currentUser.gender ) }
+
     gender = if (!selectedFemale && !selectedMale) {
         "not set"
     } else if (!selectedFemale) {
@@ -437,6 +437,7 @@ fun GenderRow(context: Context) {
                 }
             }
         }
+
     }
     if (save) {
         MyDatabase.writeUsers(user = User(
@@ -504,7 +505,7 @@ fun GenderRow(context: Context) {
 }
 
 @Composable
-fun DangerZone(navController: NavController, context: Context) {
+fun DangerZone(context: Context) {
     val auth = FirebaseAuth.getInstance()
     val user = auth.currentUser
     var showPuzzle by remember { mutableStateOf(false) }
