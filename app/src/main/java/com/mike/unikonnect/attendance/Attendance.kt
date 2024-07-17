@@ -29,12 +29,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
-import com.mike.unikonnect.ui.theme.GlobalColors
+import com.mike.unikonnect.ExitScreen
 import com.mike.unikonnect.MyDatabase
 import com.mike.unikonnect.MyDatabase.fetchUserDataByEmail
-import com.mike.unikonnect.chat.ExitScreen
 import com.mike.unikonnect.homescreen.ColorProgressIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -44,12 +42,11 @@ import com.mike.unikonnect.model.User
 import com.mike.unikonnect.model.Course
 import com.mike.unikonnect.model.AttendanceState
 import com.mike.unikonnect.model.Attendance
-import com.mike.unikonnect.model.ScreenTime
 import java.util.*
 
 
 @Composable
-fun SignAttendanceScreen(navController: NavController, context: Context) {
+fun SignAttendanceScreen(context: Context) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val configuration = LocalConfiguration.current
     val auth = FirebaseAuth.getInstance()
@@ -74,11 +71,15 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
         }
     }
 
-    ExitScreen(
-        context = context,
-        screenID = screenID,
-        timeSpent = timeSpent
-    )
+    DisposableEffect(Unit) {
+        onDispose {
+            ExitScreen(
+                context = context,
+                screenID = screenID,
+                timeSpent = timeSpent
+            )
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -114,11 +115,11 @@ fun SignAttendanceScreen(navController: NavController, context: Context) {
         LaunchedEffect(auth.currentUser) {
             auth.currentUser?.email?.let {
                 fetchUserDataByEmail(it) { fetchedUser ->
-                    fetchedUser?.let {
-                        user = it
-                        currentName = it.firstName + " " + it.lastName
-                        currentEmail = it.email
-                        currentAdmissionNumber = it.id
+                    fetchedUser?.let { fetched ->
+                        user = fetched
+                        currentName = fetched.firstName + " " + fetched.lastName
+                        currentEmail = fetched.email
+                        currentAdmissionNumber = fetched.id
                     }
                 }
             }
